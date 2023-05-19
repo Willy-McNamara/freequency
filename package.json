@@ -1,0 +1,39 @@
+{
+  "name": "freequency_v1",
+  "version": "1.0.0",
+  "description": "An updated build of my music practice and social app, freequency!",
+  "main": "index.jsx",
+  "scripts": {
+    "start": "webpack serve --mode development",
+    "build": "webpack --mode production"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Willy-McNamara/freequency_v1.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/Willy-McNamara/freequency_v1/issues"
+  },
+  "homepage": "https://github.com/Willy-McNamara/freequency_v1#readme",
+  "dependencies": {
+    "@babel/core": "^7.21.8",
+    "@babel/preset-env": "^7.21.5",
+    "@babel/preset-react": "^7.18.6",
+    "@babel/preset-typescript": "^7.21.5",
+    "@types/react": "^18.2.6",
+    "babel-loader": "^9.1.2",
+    "express": "^4.18.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-native": "^0.71.8",
+    "react-native-web": "^0.19.4",
+    "ts-loader": "^9.4.2",
+    "typescript": "^4.9.5",
+    "webpack": "^5.83.1",
+    "webpack-cli": "^5.1.1",
+    "webpack-dev-server": "^4.15.0"
+  }
+}
