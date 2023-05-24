@@ -62,7 +62,7 @@ Please contact me for instructions on using this repo!
 ## Usage
 
 Check out my [UI demo](https://www.loom.com/share/3d44174f8a0d43c6812df4a966c41145) to get a taste for how this app will be used! 
-You can also see some examples of where this came from by visiting my [v0, a web app](https://github.com/Willy-McNamara/Freequency) I stood up in 2 days
+You can also see some examples of where this came from by visiting my [v0, a web app](https://github.com/Willy-McNamara/Freequency), a bootcamp project I stood up in 2 days.
 
 
 
@@ -80,24 +80,30 @@ Design Sprint
  * Update readme
  * Define Git workflow
  * Define Testing workflow
+
 Basic Build Sprint
  * Stand up a basic implementation of the front end using new tech stack
  * Scaffold back end using new tech stack
  * Create an ETL file which can be used to seed and reseed the database with mock data when I make changes! 
  * Seed the database 
+
 Feature Sprint: Authorization
  * Implement basic authorization
  * Standup functioning log-in and sign-up pages. 
  * Update backend schemas to accommodate auth data. 
+
 Feature Sprint: Dovetailed Sessions and Recordings
  * Structure database such that recordings are coordinated with sessions, and can be referenced in the same chronology. 
 Feature Sprint: Sessions Feed
  * Some method of viewing all sessions and recordings in chronological order, perhaps exactly like strava, but for these practice sessions. 
+
 Feature Sprint: Improved Playback
  * Implement playback which allows the user to change the looped section in real time using sliders
  * Build this in a sandbox with react native to begin learning mobile principals! 
+
 Final Build and Polish Sprint
  * Make sure everything is playing nice in the sandbox! 
+
 Deployment Sprint
  * Deploy v1 to AWS.  
 
