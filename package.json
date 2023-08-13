@@ -7,6 +7,9 @@
     "start": "webpack serve --mode development",
     "build": "webpack --mode production"
   },
+  "alias": {
+    "react-native": "react-native-web"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Willy-McNamara/freequency_v1.git"
@@ -28,12 +31,15 @@
     "express": "^4.18.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-native": "^0.71.8",
-    "react-native-web": "^0.19.4",
     "ts-loader": "^9.4.2",
     "typescript": "^4.9.5",
     "webpack": "^5.83.1",
     "webpack-cli": "^5.1.1",
     "webpack-dev-server": "^4.15.0"
+  },
+  "devDependencies": {
+    "@babel/preset-flow": "^7.22.5",
+    "@types/react-dom": "^18.2.4",
+    "babel-plugin-module-resolver": "^5.0.0"
   }
 }

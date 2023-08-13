@@ -10,6 +10,5 @@
     "resolveJsonModule": true,
     "skipLibCheck": true
   },
-  "include": ["src"],
-  "extends": "@tsconfig/react-native/tsconfig.json"
+  "include": ["src"]
 }
