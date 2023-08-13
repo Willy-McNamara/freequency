@@ -1,17 +1,11 @@
 import React from 'react';
-import { AppRegistry } from 'react-native';
-import { View, Text } from 'react-native-web';
+import ReactDOM from 'react-dom';
 
 const App = () => {
-  return (
-    <View>
-      <Text>Hello, World!</Text>
-    </View>
-  );
+  return <div>Hello, World!</div>;
 };
 
-// Register the app for React Native Web
-AppRegistry.registerComponent('App', () => App);
-AppRegistry.runApplication('App', { rootTag: document.getElementById('root') });
+ReactDOM.render(<App />, document.getElementById('root'));
+
 
 
