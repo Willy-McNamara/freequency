@@ -1,4 +1,4 @@
-# freequency_v1
+# freequency
 
 <!-- TABLE OF CONTENTS -->
 <details open="open">
