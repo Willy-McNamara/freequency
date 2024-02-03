@@ -26,6 +26,7 @@
 ## About The Project
 
 This is an updated build of my musical practice social app, freequency!
+The full scope of and plan for this project, along with my ongoing Dev Journal, is available in this [Google Doc](https://docs.google.com/document/d/12gWzqi_L2uPKPjtufqDp4NZdo3ObvkeuTdnaZCX6Eok/edit?usp=sharing).
 
 The main goals of this application are to:
  * Build a community around practice
