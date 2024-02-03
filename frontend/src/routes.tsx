@@ -1,23 +1,31 @@
 import * as React from "react";
 import {
   createBrowserRouter,
-  Link,
 } from "react-router-dom";
+import Feed from "./pages/Feed";
+import Root from "./Root";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: (
-      <div>
-        <h1>Hello World</h1>
-        <Link to="about">About Us</Link>
-      </div>
-    ),
-  },
-  {
-    path: "about",
-    element: <div>About</div>,
+    element: <Root />,
+    children: [
+      {
+        index: true,
+        path: "Feed",
+        element: <Feed />,
+      },
+      {
+        path: "Practice",
+        element: <div>Practice</div>,
+      },
+      {
+        path: "Profile",
+        element: <div>Profile</div>,
+      },
+    ],
   },
 ]);
+
 
 export default router;
