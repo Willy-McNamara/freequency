@@ -26,5 +26,6 @@ module.exports = {
   devServer: {
     static: path.join(__dirname, 'dist'),
     port: 3000,
+    historyApiFallback: true,
   },
 };
