@@ -5,10 +5,8 @@
   "main": "index.jsx",
   "scripts": {
     "start": "webpack serve --mode development",
-    "build": "webpack --mode production"
-  },
-  "alias": {
-    "react-native": "react-native-web"
+    "build": "webpack --mode production",
+    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.tsx\""
   },
   "repository": {
     "type": "git",
@@ -26,11 +24,22 @@
     "@babel/preset-env": "^7.21.5",
     "@babel/preset-react": "^7.18.6",
     "@babel/preset-typescript": "^7.21.5",
+    "@chakra-ui/icons": "^2.1.1",
+    "@chakra-ui/react": "^2.8.2",
+    "@emotion/react": "^11.11.3",
     "@types/react": "^18.2.6",
     "babel-loader": "^9.1.2",
+    "eslint": "^8.56.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
     "express": "^4.18.2",
+    "npm": "^10.4.0",
+    "prettier": "^3.2.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-icons": "^5.0.1",
+    "react-router": "^6.22.0",
+    "react-router-dom": "^6.22.0",
     "ts-loader": "^9.4.2",
     "typescript": "^4.9.5",
     "webpack": "^5.83.1",
