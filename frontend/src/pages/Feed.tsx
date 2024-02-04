@@ -1,6 +1,7 @@
 import React from "react";
 import { feedPost, dummyFeed } from "../dummyData/dummyData";
 import Post from "./components/Post";
+import { Flex } from "@chakra-ui/react";
 
 const Feed = () => {
 
@@ -10,17 +11,15 @@ const Feed = () => {
   */
 
   return(
-    <div>
-        <h1>Feed</h1>
-        <div>
+    <Flex direction="column" align="center">
           flexBox to contain feed
           {dummyFeed.map((post: feedPost) => {
           return (
             <Post post={post}/>
           )
         })}
-        </div>
-    </div>
+
+    </Flex>
   )
 }
 
