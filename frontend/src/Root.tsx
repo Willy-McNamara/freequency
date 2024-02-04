@@ -17,6 +17,7 @@ const Root = () => {
         <Link to="Profile">Profile</Link>
         <Link to="Practice">Practice</Link>
       </Flex>
+      <Box m="3.5rem"></Box>
       <Outlet />
     </Flex>
   );

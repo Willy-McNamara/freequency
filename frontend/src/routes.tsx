@@ -2,6 +2,8 @@ import * as React from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import Feed from './pages/Feed';
 import Root from './Root';
+import Profile from './pages/Profile';
+import Practice from './pages/Practice';
 
 const router = createBrowserRouter([
   {
@@ -15,11 +17,11 @@ const router = createBrowserRouter([
       },
       {
         path: 'Practice',
-        element: <div>Practice</div>,
+        element: <Practice />,
       },
       {
         path: 'Profile',
-        element: <div>Profile</div>,
+        element: <Profile />,
       },
     ],
   },
