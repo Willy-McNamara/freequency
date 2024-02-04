@@ -11,7 +11,6 @@ const Feed = () => {
 
   return (
     <Flex direction="column" align="center">
-      flexBox to contain feed
       {dummyFeed.map((post: feedPost) => {
         return <Post post={post} />;
       })}
