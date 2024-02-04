@@ -16,7 +16,6 @@ import {
 import { dummyMemberOne, Member } from '../dummyData/dummyData';
 import { FaGasPump, FaChartLine, FaClock } from 'react-icons/fa6';
 import { ImFire } from 'react-icons/im';
-import { CiClock1 } from 'react-icons/ci';
 
 const Profile = () => {
   return (
@@ -38,20 +37,21 @@ const Profile = () => {
           <List spacing={3}>
             <ListItem>
               <ListIcon as={FaChartLine} color="green.500" />
-              Logged ___ sessions
+              Logged {dummyMemberOne.memberTotalSessions} sessions
             </ListItem>
             <ListItem>
               <ListIcon as={FaClock} color="blue.500" />
-              Spent ___ minutes practicing
+              Spent {dummyMemberOne.memberTotalPracticeMinutes} minutes
+              practicing
             </ListItem>
             <ListItem>
               <ListIcon as={ImFire} color="red.500" />
-              Recieved ___ gas ups
+              Recieved {dummyMemberOne.memberTotalGasUpsRecieved} gas ups
             </ListItem>
             {/* You can also use custom icons from react-icons */}
             <ListItem>
               <ListIcon as={FaGasPump} color="brown.500" />
-              Given out ___ gas ups
+              Given out {dummyMemberOne.memberTotalGasUpsGiven} gas ups
             </ListItem>
           </List>
         </CardBody>
