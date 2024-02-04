@@ -8,7 +8,6 @@ import { PiMusicNotesFill } from 'react-icons/pi';
 const Root = () => {
   return (
     <Flex direction="column" align="center">
-      <h1>Route shell</h1>
       <Flex
         position="absolute"
         left="2vw"
