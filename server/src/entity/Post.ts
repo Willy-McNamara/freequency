@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 
 @Entity()
-export class User {
+export class Post {
   @PrimaryGeneratedColumn()
   postId: string;
 
@@ -12,11 +12,16 @@ export class User {
   sessionId: string;
 
   @Column()
-  postComments: string[];
+  postComments: string;
 
   @Column()
   postGasUps: number;
 
   @Column()
-  postGasUpMemberIds: string[];
+  postGasUpMemberIds: string;
 }
+
+/*
+removing arrays so that I can test database connection.
+need to figure out how to properly store arrays in postgres...
+*/
