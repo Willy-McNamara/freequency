@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
     "target": "es6",
     "module": "commonjs",
     "lib": ["es6", "dom"],
@@ -8,7 +10,7 @@
     "strict": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
   },
-  "include": ["src", "src/*"]
+  "include": ["src", "src/*"],
 }
