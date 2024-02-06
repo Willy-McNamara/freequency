@@ -1,28 +1,44 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  ManyToOne,
+  OneToMany,
+} from "typeorm";
+import { GasUp } from "./GasUp";
+import { Musician } from "./Musician";
+import { Comment } from "./Comment";
 
 @Entity()
 export class Session {
   @PrimaryGeneratedColumn()
-  sessionId: string;
+  id: number;
 
   @Column()
-  memberID: string;
+  title: string;
 
   @Column()
-  sessionTitle: string;
+  notes: string;
 
   @Column()
-  sessionDuration: number;
+  duration: number; // Duration in minutes
 
   @Column()
-  sessionNotes: string;
+  isPublic: boolean;
 
   @Column()
-  sessionPublic: boolean;
+  takeId: string; // Identifier for the media BLOB saved elsewhere
 
-  @Column()
-  sessionTakeID: string;
+  @CreateDateColumn()
+  date: Date;
 
-  @Column()
-  sessionDateTime: Date;
+  @ManyToOne((type) => Musician, (musician) => musician.sessions)
+  musician: Musician;
+
+  @OneToMany((type) => GasUp, (like) => like.session)
+  gasUps: GasUp[];
+
+  @OneToMany((type) => Comment, (comment) => comment.session)
+  comments: Comment[];
 }
