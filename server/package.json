@@ -15,7 +15,7 @@
       "dotenv": "^16.4.1",
       "pg": "^8.4.0",
       "reflect-metadata": "^0.1.13",
-      "typeorm": "0.3.20"
+      "typeorm": "^0.3.20"
    },
    "scripts": {
       "start": "ts-node src/index.ts",

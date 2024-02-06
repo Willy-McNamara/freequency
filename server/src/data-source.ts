@@ -1,9 +1,14 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
-import { Member } from "./entity/Member";
+import { Musician } from "./entity/Musician";
 import { Session } from "./entity/Session";
-import { Post } from "./entity/Post";
-require("dotenv").config();
+import { GasUp } from "./entity/GasUp";
+import { Comment } from "./entity/Comment";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+console.log("logging env vars :", process.env);
 
 export const AppDataSource = new DataSource({
   type: "postgres",
@@ -14,7 +19,7 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_DATABASE,
   synchronize: true,
   logging: false,
-  entities: [Member, Post, Session],
+  entities: [Musician, Session, Comment, GasUp],
   migrations: [],
   subscribers: [],
 });
