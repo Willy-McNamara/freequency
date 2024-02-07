@@ -1,0 +1,61 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Session {
+  id           Int          @id @default(autoincrement())
+  title        String
+  notes        String
+  duration     Int
+  isPublic     Boolean
+  takeId       String
+  createdAt    DateTime     @default(now())
+  musicianId   Int
+  musician     Musician     @relation(fields: [musicianId], references: [id])
+  gasUps       GasUp[]
+  comments     Comment[]
+}
+
+model Musician {
+  id                  Int         @id @default(autoincrement())
+  googleId            String
+  username            String      @unique
+  email               String      @unique
+  password            String
+  profilePictureUrl   String?
+  totalSessions       Int
+  totalPracticeMinutes Int
+  totalGasUps         Int
+  longestStreak       Int
+  currentStreak       Int
+  createdAt           DateTime    @default(now())
+  gasUps              GasUp[]
+  comments            Comment[]
+  sessions            Session[]
+}
+
+model GasUp {
+  id         Int      @id @default(autoincrement())
+  musicianId Int
+  sessionId  Int
+  musician   Musician @relation(fields: [musicianId], references: [id])
+  session    Session  @relation(fields: [sessionId], references: [id])
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  text      String
+  createdAt  DateTime @default(now())
+  musicianId Int
+  sessionId  Int
+  musician  Musician @relation(fields: [musicianId], references: [id])
+  session   Session  @relation(fields: [sessionId], references: [id])
+}
