@@ -6,10 +6,15 @@ import {
   IconButton,
   Heading,
 } from '@chakra-ui/react';
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { FaMicrophone, FaVideo } from 'react-icons/fa6';
+import SaveSessionModal from './components/SaveSessionModal';
 
 const Practice = () => {
+  const notesRef = useRef(null);
+  // placeholder minutes until implement timer
+  const [minutesPracticed, setMinutesPracticed] = useState(23);
+
   return (
     <Flex direction="column" align="center">
       <Button colorScheme="green" size="lg" m="1.5rem">
@@ -17,7 +22,11 @@ const Practice = () => {
       </Button>
       <Heading>00:01</Heading>
       <Text>didn’t use timer? you can edit this number when you save.</Text>
-      <Textarea m="3rem" placeholder="Take notes about your session here..." />
+      <Textarea
+        ref={notesRef}
+        m="3rem"
+        placeholder="Take notes about your session here..."
+      />
       <Flex direction="row" align="center">
         <Text>tap to capture an audio or video take</Text>
         <IconButton
@@ -33,9 +42,10 @@ const Practice = () => {
           icon={<FaVideo />}
         ></IconButton>
       </Flex>
-      <Button m="1rem" colorScheme="green" size="md">
-        save session
-      </Button>
+      <SaveSessionModal
+        notesRef={notesRef}
+        minutesPracticed={minutesPracticed}
+      />
     </Flex>
   );
 };

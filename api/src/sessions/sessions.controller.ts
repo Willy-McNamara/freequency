@@ -1,8 +1,8 @@
-import { Controller, Get, Post, Body } from "@nestjs/common";
-import { SessionsService } from "./sessions.service";
-import { SessionDto, CreateSessionDto } from "./dto/session.dto";
+import { Controller, Get, Post, Body } from '@nestjs/common';
+import { SessionsService } from './sessions.service';
+import { SessionDto, CreateSessionDto } from './dto/session.dto';
 
-@Controller("sessions")
+@Controller('sessions')
 export class SessionsController {
   constructor(private readonly sessionsService: SessionsService) {}
 
@@ -12,9 +12,13 @@ export class SessionsController {
   }
 
   @Post()
-  async createSession(
-    @Body() createSessionDto: CreateSessionDto
-  ): Promise<SessionDto> {
+  async createSession(@Body() reqBody: CreateSessionDto): Promise<SessionDto> {
+    /*
+    testing our create session route
     return this.sessionsService.createSession(createSessionDto);
+    */
+    console.log('logging request body in createSession :', reqBody);
+    await setTimeout(() => {}, 2000);
+    return new SessionDto();
   }
 }

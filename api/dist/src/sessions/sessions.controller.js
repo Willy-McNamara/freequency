@@ -23,8 +23,9 @@ let SessionsController = class SessionsController {
     async getAllSessions() {
         return this.sessionsService.getAllSessions();
     }
-    async createSession(createSessionDto) {
-        return this.sessionsService.createSession(createSessionDto);
+    async createSession(reqBody) {
+        console.log('logging request body in createSession :', reqBody);
+        return new session_dto_1.SessionDto();
     }
 };
 exports.SessionsController = SessionsController;
@@ -42,7 +43,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], SessionsController.prototype, "createSession", null);
 exports.SessionsController = SessionsController = __decorate([
-    (0, common_1.Controller)("sessions"),
+    (0, common_1.Controller)('sessions'),
     __metadata("design:paramtypes", [sessions_service_1.SessionsService])
 ], SessionsController);
 //# sourceMappingURL=sessions.controller.js.map
