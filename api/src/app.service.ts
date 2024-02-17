@@ -1,8 +1,17 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
+import { RenderPayloadDTO } from './dto/app.dto';
+import { MusicianFrontendDTO } from 'src/musicians/dto/musician.dto';
+import { FrontendSessionDto } from 'src/sessions/dto/session.dto';
 
 @Injectable()
 export class AppService {
-  getHello(): string {
-    return "Hello World!";
+  formatRenderPayload(
+    musicianData: MusicianFrontendDTO,
+    sessionData: FrontendSessionDto[],
+  ): RenderPayloadDTO {
+    return {
+      musician: musicianData,
+      feed: sessionData,
+    };
   }
 }

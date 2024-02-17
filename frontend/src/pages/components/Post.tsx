@@ -16,27 +16,31 @@ import {
   Badge,
 } from '@chakra-ui/react';
 import { ChatIcon, ArrowUpIcon } from '@chakra-ui/icons';
+import { FrontendSessionDto } from '../../types/sessions.types';
 
 type props = {
-  post: feedPost;
+  post: FrontendSessionDto;
 };
 
 const Post = ({ post }: props) => {
+  if (!post.isPublic) {
+    return;
+  }
   return (
     <Card w="35rem" m="1.5rem">
       <CardHeader pb="0">
         <Flex direction="column">
           <Flex flex="1" gap="4" alignItems="center" flexWrap="wrap">
             <Avatar name="User Icon" />
-            <Heading size="sm">{post.username}</Heading>
+            <Heading size="sm">{post.musicianUsername}</Heading>
           </Flex>
         </Flex>
       </CardHeader>
       <CardBody pt="0">
         <Text p="0.5rem 0px 0.5rem" fontSize="xl">
-          {post.sessionTitle} | {post.sessionDuration} minutes
+          {post.title} | {post.duration} minutes
         </Text>
-        <Text>{post.sessionNotes}</Text>
+        <Text>{post.notes}</Text>
       </CardBody>
       <Badge colorScheme="green"> Audio or Video, recorded take here</Badge>
 

@@ -1,11 +1,20 @@
 import React from 'react';
-import { Link, Outlet } from 'react-router-dom';
+import { Link, Outlet, useLoaderData } from 'react-router-dom';
 import { Flex, Box, Heading, Icon } from '@chakra-ui/react';
 import { TbHandRock } from 'react-icons/tb';
 import { CgProfile } from 'react-icons/cg';
 import { PiMusicNotesFill } from 'react-icons/pi';
+import { RenderPayloadDTO } from './types/app.types';
 
 const Root = () => {
+  /*
+  probably keep state here for loader data? this way the pagination can update state in
+  this Root, saving the users place if they nav away from the feed and back to it again
+  */
+  const initPayload = useLoaderData() as RenderPayloadDTO;
+
+  console.log('log loader data in Root :', initPayload);
+
   return (
     <Flex direction="column" align="center">
       <Flex
@@ -35,7 +44,7 @@ const Root = () => {
         </Link>
       </Flex>
       <Box m="3.5rem"></Box>
-      <Outlet />
+      <Outlet context={initPayload} />
     </Flex>
   );
 };

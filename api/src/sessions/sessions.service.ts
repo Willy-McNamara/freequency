@@ -3,7 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import {
   CommentDto,
   CreateSessionDto,
-  FrontendSessionDtos,
+  FrontendSessionDto,
   GasUpDto,
   SessionDto,
 } from './dto/session.dto';
@@ -12,7 +12,7 @@ import {
 export class SessionsService {
   constructor(private prisma: PrismaService) {}
 
-  async getAllSessions(): Promise<SessionDto[]> {
+  async getAllSessions(): Promise<FrontendSessionDto[]> {
     const prisma = this.prisma;
 
     // Query all sessions from the database
@@ -25,7 +25,7 @@ export class SessionsService {
     });
 
     // Map the database sessions to SessionWithDetailsDto objects
-    const frontendSessionDtos: FrontendSessionDtos[] = sessions.map(
+    const frontendSessionDto: FrontendSessionDto[] = sessions.map(
       (session) => ({
         id: session.id,
         title: session.title,
@@ -41,7 +41,7 @@ export class SessionsService {
       }),
     );
 
-    return frontendSessionDtos;
+    return frontendSessionDto;
   }
 
   private mapGasUps(gasUps: GasUpDto[]): GasUpDto[] {

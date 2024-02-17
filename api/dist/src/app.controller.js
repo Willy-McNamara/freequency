@@ -12,14 +12,32 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppController = void 0;
 const common_1 = require("@nestjs/common");
 const app_service_1 = require("./app.service");
+const sessions_service_1 = require("./sessions/sessions.service");
+const musicians_service_1 = require("./musicians/musicians.service");
 let AppController = class AppController {
-    constructor(appService) {
+    constructor(appService, musiciansService, sessionsService) {
         this.appService = appService;
+        this.musiciansService = musiciansService;
+        this.sessionsService = sessionsService;
+    }
+    async initialRender() {
+        const musicianData = await this.musiciansService.getMusicianById(1);
+        const sessionsData = await this.sessionsService.getAllSessions();
+        const combinedData = this.appService.formatRenderPayload(musicianData, sessionsData);
+        return combinedData;
     }
 };
 exports.AppController = AppController;
+__decorate([
+    (0, common_1.Get)('/initialRender'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], AppController.prototype, "initialRender", null);
 exports.AppController = AppController = __decorate([
     (0, common_1.Controller)(),
-    __metadata("design:paramtypes", [app_service_1.AppService])
+    __metadata("design:paramtypes", [app_service_1.AppService,
+        musicians_service_1.MusiciansService,
+        sessions_service_1.SessionsService])
 ], AppController);
 //# sourceMappingURL=app.controller.js.map

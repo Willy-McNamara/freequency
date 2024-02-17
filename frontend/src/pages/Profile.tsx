@@ -16,15 +16,18 @@ import {
 import { dummyMemberOne, Member } from '../dummyData/dummyData';
 import { FaGasPump, FaChartLine, FaClock } from 'react-icons/fa6';
 import { ImFire } from 'react-icons/im';
+import { useOutletContext } from 'react-router';
+import { RenderPayloadDTO } from '../types/app.types';
 
 const Profile = () => {
+  const initRender = useOutletContext() as RenderPayloadDTO;
+  const musician = initRender.musician;
+
   return (
     <Flex direction="column" align="center" maxW="35rem">
       <Flex direction="column" align="center" p="1.5rem">
         <Avatar size="lg" name="User Name" />
-        <Text mt="1rem">
-          Member since: {dummyMemberOne.memberSince.toString()}
-        </Text>
+        <Text mt="1rem">Member since: {musician.createdAt.toString()}</Text>
         <Text>Other metadata here? (instruments? genres?)</Text>
       </Flex>
       <Card m="3rem">
@@ -37,21 +40,20 @@ const Profile = () => {
           <List spacing={3}>
             <ListItem>
               <ListIcon as={FaChartLine} color="green.500" />
-              Logged {dummyMemberOne.memberTotalSessions} sessions
+              Logged {musician.totalSessions} sessions
             </ListItem>
             <ListItem>
               <ListIcon as={FaClock} color="blue.500" />
-              Spent {dummyMemberOne.memberTotalPracticeMinutes} minutes
-              practicing
+              Spent {musician.totalPracticeMinutes} minutes practicing
             </ListItem>
             <ListItem>
               <ListIcon as={ImFire} color="red.500" />
-              Recieved {dummyMemberOne.memberTotalGasUpsRecieved} gas ups
+              Recieved {musician.totalGasUps} gas ups
             </ListItem>
-            {/* You can also use custom icons from react-icons */}
+            {/* Need to update schema to account for giving/getting GasUps */}
             <ListItem>
               <ListIcon as={FaGasPump} color="brown.500" />
-              Given out {dummyMemberOne.memberTotalGasUpsGiven} gas ups
+              Given out {4} gas ups
             </ListItem>
           </List>
         </CardBody>

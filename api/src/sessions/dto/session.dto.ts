@@ -20,7 +20,7 @@ export class SessionDto {
   comments: CommentDto[];
 }
 
-export class FrontendSessionDtos {
+export class FrontendSessionDto {
   id: number;
   title: string;
   notes: string;
