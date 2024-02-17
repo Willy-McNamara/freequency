@@ -25,7 +25,7 @@ let SessionsService = class SessionsService {
                 comments: true,
             },
         });
-        const frontendSessionDtos = sessions.map((session) => ({
+        const frontendSessionDto = sessions.map((session) => ({
             id: session.id,
             title: session.title,
             notes: session.notes,
@@ -38,7 +38,7 @@ let SessionsService = class SessionsService {
             gasUps: this.mapGasUps(session.gasUps),
             comments: this.mapComments(session.comments),
         }));
-        return frontendSessionDtos;
+        return frontendSessionDto;
     }
     mapGasUps(gasUps) {
         return gasUps.map((gasUp) => ({

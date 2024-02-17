@@ -1,15 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CommentDto = exports.GasUpDto = exports.FrontendSessionDtos = exports.SessionDto = exports.CreateSessionDto = void 0;
+exports.CommentDto = exports.GasUpDto = exports.FrontendSessionDto = exports.SessionDto = exports.CreateSessionDto = void 0;
 class CreateSessionDto {
 }
 exports.CreateSessionDto = CreateSessionDto;
 class SessionDto {
 }
 exports.SessionDto = SessionDto;
-class FrontendSessionDtos {
+class FrontendSessionDto {
 }
-exports.FrontendSessionDtos = FrontendSessionDtos;
+exports.FrontendSessionDto = FrontendSessionDto;
 class GasUpDto {
 }
 exports.GasUpDto = GasUpDto;

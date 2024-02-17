@@ -18,7 +18,7 @@ export declare class SessionDto {
     gasUps: GasUpDto[];
     comments: CommentDto[];
 }
-export declare class FrontendSessionDtos {
+export declare class FrontendSessionDto {
     id: number;
     title: string;
     notes: string;

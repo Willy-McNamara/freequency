@@ -14,8 +14,14 @@ const prisma_module_1 = require("./prisma/prisma.module");
 const sessions_module_1 = require("./sessions/sessions.module");
 const musicians_module_1 = require("./musicians/musicians.module");
 const serve_static_1 = require("@nestjs/serve-static");
+const logger_middleware_1 = require("./logger.middleware");
 const path_1 = require("path");
+const musicians_service_1 = require("./musicians/musicians.service");
+const sessions_service_1 = require("./sessions/sessions.service");
 let AppModule = class AppModule {
+    configure(consumer) {
+        consumer.apply(logger_middleware_1.LoggerMiddleware).forRoutes('*');
+    }
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
@@ -24,13 +30,12 @@ exports.AppModule = AppModule = __decorate([
             prisma_module_1.PrismaModule,
             sessions_module_1.SessionsModule,
             musicians_module_1.MusiciansModule,
-            musicians_module_1.MusiciansModule,
             serve_static_1.ServeStaticModule.forRoot({
                 rootPath: (0, path_1.join)(__dirname, '../../../frontend/dist'),
             }),
         ],
         controllers: [app_controller_1.AppController],
-        providers: [app_service_1.AppService],
+        providers: [app_service_1.AppService, musicians_service_1.MusiciansService, sessions_service_1.SessionsService],
     })
 ], AppModule);
 //# sourceMappingURL=app.module.js.map
