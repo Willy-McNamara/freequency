@@ -27,19 +27,29 @@ import {
 } from '@chakra-ui/react';
 import axios from 'axios';
 
-const SaveSessionModal = ({ notesRef, minutesPracticed }) => {
-  console.log('logging notesRef in modal', notesRef);
+const SaveSessionModal = ({ notesRef, durationRef }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const sessionTitleRef = useRef(null);
   const [hasTitle, setHasTitle] = useState(true);
-  const [minutes, setMinutes] = useState(minutesPracticed);
+  const [minutes, setMinutes] = useState(0);
   const [isPublic, setIsPublic] = useBoolean(true);
   const toast = useToast();
   const toastId = 'active';
-
-  console.log('no error yet');
   let [notes, setNotes] = useState('');
-  console.log('reached');
+
+  const updatePracticeTime = () => {
+    const convertTimeStringToMinutes = (timeString: string): number => {
+      const [hours, minutes, seconds] = timeString.split(':').map(Number);
+
+      const totalMinutes = hours * 60 + minutes + Math.floor(seconds / 60);
+
+      return totalMinutes;
+    };
+    const minutes = convertTimeStringToMinutes(
+      durationRef?.current?.textContent,
+    );
+    setMinutes(minutes);
+  };
 
   let handleInputChange = (e: { target: { value: any } }) => {
     let inputValue = e.target.value;
@@ -55,6 +65,7 @@ const SaveSessionModal = ({ notesRef, minutesPracticed }) => {
           } else {
             setNotes(notesRef.current.value);
           }
+          updatePracticeTime();
           onOpen();
         }}
         m="1rem"
@@ -91,7 +102,7 @@ const SaveSessionModal = ({ notesRef, minutesPracticed }) => {
                     defaultValue={minutes}
                     value={minutes}
                     onChange={(e) => {
-                      setMinutes(e);
+                      setMinutes(Number(e));
                     }}
                     min={1}
                     max={1440}
@@ -134,8 +145,6 @@ const SaveSessionModal = ({ notesRef, minutesPracticed }) => {
                   isPublic: isPublic,
                   musicianId: '1', // placeholder for musicianId, eventually get from Auth
                 };
-
-                console.log('logging newSessionPayload :', newSessionPayload);
 
                 // create an axios post request to save the session
                 const saveSession = axios
