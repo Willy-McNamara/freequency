@@ -49,6 +49,7 @@ const Practice = () => {
       <Textarea
         ref={notesRef}
         m="3rem"
+        bg="white"
         placeholder="Take notes about your session here..."
       />
       <Flex direction="row" align="center">
