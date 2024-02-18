@@ -9,7 +9,7 @@ import {
 import React, { useRef, useState } from 'react';
 import { FaMicrophone, FaVideo } from 'react-icons/fa6';
 import SaveSessionModal from './components/SaveSessionModal';
-import DurationTimer from './components/CountUpTimer';
+import DurationTimer from './components/DurationTimer';
 import moment from 'moment';
 
 const Practice = () => {
