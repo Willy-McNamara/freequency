@@ -16,14 +16,8 @@ const Root = () => {
   console.log('log loader data in Root :', initPayload);
 
   return (
-    <Flex direction="column" align="center">
-      <Flex
-        position="absolute"
-        left="2vw"
-        top="30vh"
-        direction="column"
-        align="left"
-      >
+    <Flex direction="column" align="center" bgColor="#f7f7e9" minHeight="100vh">
+      <Flex position="absolute" left="2vw" top="30vh" direction="column">
         <Link to="Feed">
           <Flex direction="row" align="center" m="0.25rem">
             <Icon as={TbHandRock} boxSize="3em" mr="0.5rem"></Icon>

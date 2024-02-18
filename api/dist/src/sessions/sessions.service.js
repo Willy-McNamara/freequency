@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SessionsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const uuid_1 = require("uuid");
 let SessionsService = class SessionsService {
     constructor(prisma) {
         this.prisma = prisma;
@@ -56,18 +57,18 @@ let SessionsService = class SessionsService {
             sessionId: comment.sessionId,
         }));
     }
-    async createSession(createSessionDto) {
+    async createSession(req) {
         const prisma = this.prisma;
         try {
             const createdSession = await prisma.session.create({
                 data: {
-                    title: createSessionDto.title,
-                    notes: createSessionDto.notes,
-                    duration: createSessionDto.duration,
-                    isPublic: createSessionDto.isPublic,
-                    takeId: createSessionDto.takeId,
+                    title: req.title,
+                    notes: req.notes,
+                    duration: Number(req.duration),
+                    isPublic: req.isPublic,
+                    takeId: (0, uuid_1.v4)(),
                     musician: {
-                        connect: { id: createSessionDto.musicianId },
+                        connect: { id: Number(req.musicianId) },
                     },
                 },
                 include: {

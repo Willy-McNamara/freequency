@@ -24,8 +24,7 @@ let SessionsController = class SessionsController {
         return this.sessionsService.getAllSessions();
     }
     async createSession(reqBody) {
-        console.log('logging request body in createSession :', reqBody);
-        return new session_dto_1.SessionDto();
+        return this.sessionsService.createSession(reqBody);
     }
 };
 exports.SessionsController = SessionsController;

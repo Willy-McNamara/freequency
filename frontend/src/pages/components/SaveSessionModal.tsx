@@ -132,6 +132,7 @@ const SaveSessionModal = ({ notesRef, minutesPracticed }) => {
                   notes: notes,
                   duration: minutes,
                   isPublic: isPublic,
+                  musicianId: '1', // placeholder for musicianId, eventually get from Auth
                 };
 
                 console.log('logging newSessionPayload :', newSessionPayload);

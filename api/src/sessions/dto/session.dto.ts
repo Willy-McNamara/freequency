@@ -1,10 +1,9 @@
 export class CreateSessionDto {
   title: string;
   notes: string;
-  duration: number;
+  duration: string;
   isPublic: boolean;
-  takeId: string;
-  musicianId: number; // Assuming you provide the musicianId when creating a session
+  musicianId: string; // Assuming you provide the musicianId when creating a session
 }
 
 export class SessionDto {

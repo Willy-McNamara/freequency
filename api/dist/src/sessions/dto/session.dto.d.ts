@@ -1,10 +1,9 @@
 export declare class CreateSessionDto {
     title: string;
     notes: string;
-    duration: number;
+    duration: string;
     isPublic: boolean;
-    takeId: string;
-    musicianId: number;
+    musicianId: string;
 }
 export declare class SessionDto {
     id: number;
