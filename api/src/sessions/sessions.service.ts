@@ -7,6 +7,7 @@ import {
   GasUpDto,
   SessionDto,
 } from './dto/session.dto';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class SessionsService {
@@ -64,20 +65,20 @@ export class SessionsService {
     }));
   }
 
-  async createSession(createSessionDto: CreateSessionDto): Promise<SessionDto> {
+  async createSession(req: CreateSessionDto): Promise<SessionDto> {
     const prisma = this.prisma;
 
     try {
       // Create a new session in the database
       const createdSession = await prisma.session.create({
         data: {
-          title: createSessionDto.title,
-          notes: createSessionDto.notes,
-          duration: createSessionDto.duration,
-          isPublic: createSessionDto.isPublic,
-          takeId: createSessionDto.takeId,
+          title: req.title,
+          notes: req.notes,
+          duration: Number(req.duration),
+          isPublic: req.isPublic,
+          takeId: uuidv4(),
           musician: {
-            connect: { id: createSessionDto.musicianId },
+            connect: { id: Number(req.musicianId) },
           },
         },
         include: {
