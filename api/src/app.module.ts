@@ -9,6 +9,7 @@ import { LoggerMiddleware } from './logger.middleware';
 import { join } from 'path';
 import { MusiciansService } from './musicians/musicians.service';
 import { SessionsService } from './sessions/sessions.service';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { SessionsService } from './sessions/sessions.service';
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '../../../frontend/dist'),
     }),
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService, MusiciansService, SessionsService],
