@@ -5,26 +5,31 @@ import Feed from './pages/Feed';
 import Root from './Root';
 import Profile from './pages/Profile';
 import Practice from './pages/Practice';
+import Login from './pages/Login';
 
 const router = createBrowserRouter([
   {
     path: '/',
     element: <Root />,
-    loader: async () => {
-      /*
-      grabs data for given user (id provided via auth? prob need to do something with routing...)
-      */
+    loader: async ({ request }) => {
       const payload = await axios
         .get('http://localhost:3000/initialRender')
         .catch((err) => {
-          return err;
+          console.log('error in root loader :', err);
+          return 'error - navigate to login';
         });
       console.log('logging payload from root loader :', payload);
+      if (typeof payload === 'string') {
+        return payload;
+      }
       return payload.data;
     },
     children: [
       {
-        index: true,
+        path: '',
+        element: <Feed />,
+      },
+      {
         path: 'Feed',
         element: <Feed />,
       },
@@ -37,6 +42,10 @@ const router = createBrowserRouter([
         element: <Profile />,
       },
     ],
+  },
+  {
+    path: '/login',
+    element: <Login />,
   },
 ]);
 

@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { GoogleAuthGuard } from './google.guard';
 
 @Controller('auth')
@@ -11,8 +11,11 @@ export class AuthController {
 
   @Get('google/callback')
   @UseGuards(GoogleAuthGuard)
-  async googleLoginCallback(Request) {
-    console.log('google login callback route hit. here is req');
-    return 'google login callback route hit';
+  async googleLoginCallback(@Req() req: any, @Res() res: any) {
+    const user = req.user; // this is the return of GoogleAuthStrategy.validate()
+
+    res.cookie('jwt', user.token, { httpOnly: true, secure: true });
+
+    res.redirect('http://localhost:3000/');
   }
 }
