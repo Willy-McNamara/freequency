@@ -14,7 +14,6 @@ const common_1 = require("@nestjs/common");
 const app_service_1 = require("./app.service");
 const sessions_service_1 = require("./sessions/sessions.service");
 const musicians_service_1 = require("./musicians/musicians.service");
-const jwt_guard_1 = require("./auth/jwt.guard");
 let AppController = class AppController {
     constructor(appService, musiciansService, sessionsService) {
         this.appService = appService;
@@ -31,7 +30,6 @@ let AppController = class AppController {
 exports.AppController = AppController;
 __decorate([
     (0, common_1.Get)('/initialRender'),
-    (0, common_1.UseGuards)(jwt_guard_1.JwtAuthGuard),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)

@@ -13,7 +13,7 @@ export class AppController {
   ) {}
 
   @Get('/initialRender')
-  @UseGuards(JwtAuthGuard)
+  //@UseGuards(JwtAuthGuard)
   async initialRender(): Promise<any> {
     const musicianData = await this.musiciansService.getMusicianById(1);
     const sessionsData = await this.sessionsService.getAllSessions();

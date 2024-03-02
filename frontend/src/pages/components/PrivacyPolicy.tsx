@@ -23,15 +23,8 @@ const PrivacyPolicy = () => {
   */
 
   return (
-    <Flex
-      position="fixed"
-      left="50%"
-      bottom="20px"
-      transform="translateX(-50%)"
-      direction="column"
-      alignItems="center"
-    >
-      <Button onClick={onOpen} colorScheme="black" variant="link">
+    <>
+      <Button onClick={onOpen} colorScheme="black" variant="link" m="8px">
         Privacy Policy
       </Button>
 
@@ -88,7 +81,7 @@ const PrivacyPolicy = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
-    </Flex>
+    </>
   );
 };
 

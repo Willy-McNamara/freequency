@@ -18,6 +18,7 @@ import { FaGasPump, FaChartLine, FaClock } from 'react-icons/fa6';
 import { ImFire } from 'react-icons/im';
 import { useOutletContext } from 'react-router';
 import { RenderPayloadDTO } from '../types/app.types';
+import Footer from './components/Footer';
 
 const Profile = () => {
   const initRender = useOutletContext() as RenderPayloadDTO;
@@ -25,6 +26,7 @@ const Profile = () => {
 
   return (
     <Flex direction="column" align="center" maxW="35rem">
+      <Footer />
       <Flex direction="column" align="center" p="1.5rem">
         <Avatar size="lg" name="User Name" />
         <Text mt="1rem">Member since: {musician.createdAt.toString()}</Text>
