@@ -18,6 +18,11 @@ const logger_middleware_1 = require("./logger.middleware");
 const path_1 = require("path");
 const musicians_service_1 = require("./musicians/musicians.service");
 const sessions_service_1 = require("./sessions/sessions.service");
+const auth_module_1 = require("./auth/auth.module");
+const core_1 = require("@nestjs/core");
+const unauthorized_exception_filter_1 = require("./filters/unauthorized-exception.filter");
+const jwt_strategy_1 = require("./auth/jwt.strategy");
+const jwt_1 = require("@nestjs/jwt");
 let AppModule = class AppModule {
     configure(consumer) {
         consumer.apply(logger_middleware_1.LoggerMiddleware).forRoutes('*');
@@ -33,9 +38,24 @@ exports.AppModule = AppModule = __decorate([
             serve_static_1.ServeStaticModule.forRoot({
                 rootPath: (0, path_1.join)(__dirname, '../../../frontend/dist'),
             }),
+            auth_module_1.AuthModule,
+            jwt_1.JwtModule.register({
+                secret: process.env.JWT_SECRET,
+                signOptions: { expiresIn: '1h' },
+            }),
         ],
         controllers: [app_controller_1.AppController],
-        providers: [app_service_1.AppService, musicians_service_1.MusiciansService, sessions_service_1.SessionsService],
+        providers: [
+            app_service_1.AppService,
+            musicians_service_1.MusiciansService,
+            sessions_service_1.SessionsService,
+            jwt_strategy_1.JwtStrategy,
+            jwt_1.JwtService,
+            {
+                provide: core_1.APP_FILTER,
+                useClass: unauthorized_exception_filter_1.UnauthorizedExceptionFilter,
+            },
+        ],
     })
 ], AppModule);
 //# sourceMappingURL=app.module.js.map

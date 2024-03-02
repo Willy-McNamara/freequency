@@ -9,6 +9,11 @@ import { LoggerMiddleware } from './logger.middleware';
 import { join } from 'path';
 import { MusiciansService } from './musicians/musicians.service';
 import { SessionsService } from './sessions/sessions.service';
+import { AuthModule } from './auth/auth.module';
+import { APP_FILTER } from '@nestjs/core';
+import { UnauthorizedExceptionFilter } from './filters/unauthorized-exception.filter';
+import { JwtStrategy } from './auth/jwt.strategy';
+import { JwtService, JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -18,9 +23,24 @@ import { SessionsService } from './sessions/sessions.service';
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '../../../frontend/dist'),
     }),
+    AuthModule,
+    JwtModule.register({
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: '1h' },
+    }),
   ],
   controllers: [AppController],
-  providers: [AppService, MusiciansService, SessionsService],
+  providers: [
+    AppService,
+    MusiciansService,
+    SessionsService,
+    JwtStrategy,
+    JwtService,
+    {
+      provide: APP_FILTER,
+      useClass: UnauthorizedExceptionFilter,
+    },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

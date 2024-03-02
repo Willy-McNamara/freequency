@@ -1,7 +1,8 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { AppService } from './app.service';
 import { SessionsService } from './sessions/sessions.service';
 import { MusiciansService } from './musicians/musicians.service';
+import { JwtAuthGuard } from './auth/jwt.guard';
 
 @Controller()
 export class AppController {
@@ -12,6 +13,7 @@ export class AppController {
   ) {}
 
   @Get('/initialRender')
+  @UseGuards(JwtAuthGuard)
   async initialRender(): Promise<any> {
     const musicianData = await this.musiciansService.getMusicianById(1);
     const sessionsData = await this.sessionsService.getAllSessions();

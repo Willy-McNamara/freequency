@@ -1,0 +1,32 @@
+import React from 'react';
+import { Flex, Heading, Divider, Text } from '@chakra-ui/react';
+import GoogleButton from 'react-google-button';
+import Logo from './components/Logo';
+import PrivacyPolicy from './components/PrivacyPolicy';
+
+const Login = () => {
+  const handleGoogleButtonClick = () => {
+    console.log('Google button clicked');
+    window.location.href = 'http://localhost:3000/auth/login';
+  };
+  return (
+    <Flex
+      direction="column"
+      align="center"
+      justifyContent="center"
+      bgColor="#f7f7e9"
+      minHeight="100vh"
+    >
+      <Logo />
+      <Heading size="3xl">Welcome to freequency!</Heading>
+      <Text fontSize="2xl">a community around practice</Text>
+      <Flex direction="column" align="center">
+        <Divider m="2rem" size="large" />
+        <GoogleButton onClick={handleGoogleButtonClick} />
+      </Flex>
+      <PrivacyPolicy />
+    </Flex>
+  );
+};
+
+export default Login;
