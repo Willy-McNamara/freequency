@@ -5,6 +5,7 @@ import {
   MusicianDto,
   MusicianFrontendDTO,
   MusicianJwtDto,
+  MusicianUpdateDto,
 } from './dto/musician.dto';
 import { format } from 'path';
 
@@ -88,8 +89,8 @@ export class MusiciansService {
         createdAt: createdMusician.createdAt,
         comments: [],
         sessions: [],
-        givenName: '',
-        familyName: '',
+        givenName: createdMusician.givenName || '',
+        familyName: createdMusician.familyName || '',
       };
 
       return musicianDto;
@@ -131,5 +132,46 @@ export class MusiciansService {
       email: musician.email,
       displayName: musician.displayName,
     };
+  }
+
+  async updateMusician(
+    musicianUpdateDto: MusicianUpdateDto,
+  ): Promise<MusicianFrontendDTO> {
+    try {
+      const updatedMusician = await this.prisma.musician.update({
+        where: { id: musicianUpdateDto.id },
+        data: {
+          displayName: musicianUpdateDto.updatedDisplayName,
+          bio: musicianUpdateDto.updatedBio,
+          instruments: { set: musicianUpdateDto.updatedInstruments }, // Assuming instruments is a many-to-many relationship
+        },
+      });
+
+      const formattedUpdatedMusician: MusicianFrontendDTO =
+        this.formatMusicianForFrontend(updatedMusician);
+      console.log('musician successfully updated!', formattedUpdatedMusician);
+      return formattedUpdatedMusician;
+    } catch (error) {
+      console.error('Error updating musician:', error);
+      throw new Error(`Failed to update musician: ${error.message}`);
+    }
+  }
+
+  formatMusicianForFrontend(musician: MusicianDto): MusicianFrontendDTO {
+    const musicianDto: MusicianFrontendDTO = {
+      id: musician.id,
+      displayName: musician.displayName,
+      bio: musician.bio ? musician.bio : '',
+      instruments: musician.instruments,
+      profilePictureUrl: musician.profilePictureUrl,
+      totalSessions: musician.totalSessions,
+      totalPracticeMinutes: musician.totalPracticeMinutes,
+      totalGasUps: musician.totalGasUps,
+      longestStreak: musician.longestStreak,
+      currentStreak: musician.currentStreak,
+      createdAt: musician.createdAt,
+    };
+
+    return musicianDto;
   }
 }

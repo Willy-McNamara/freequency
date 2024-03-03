@@ -17,10 +17,12 @@ import {
   Stack,
   Text,
   Box,
+  useToast,
 } from '@chakra-ui/react';
 import { FaRegEdit } from 'react-icons/fa';
 import InstrumentBadgeWrapEditable from './InstrumentBadgeWrapEditable';
 import { PopularInstrument } from '../../types/instruments.types';
+import axios from 'axios';
 
 interface Props {
   displayName: string;
@@ -36,6 +38,9 @@ const EditProfileModal = ({ displayName, initialInstruments, bio }: Props) => {
   const displayNameRef = useRef(null);
   const bioRef = useRef(null);
 
+  const toast = useToast();
+  const toastId = 'active';
+
   const toggleInstrument = (instrument: string) => {
     if (instruments.includes(instrument)) {
       setInstruments(instruments.filter((item) => item !== instrument));
@@ -47,13 +52,48 @@ const EditProfileModal = ({ displayName, initialInstruments, bio }: Props) => {
   const handleClose = () => {
     const updateProfilePayload = {
       updatedDisplayName: displayNameRef?.current?.textContent || displayName,
-      updatedInstruments: instruments || [],
+      updatedInstruments: (instruments as string[]) || [],
       updatedBio: bioRef?.current?.textContent || bio,
     };
 
-    console.log('logging updated profile info on close', updateProfilePayload);
-    // call API with update info!
+    // const examplePromise = new Promise((resolve, reject) => {
+    //   setTimeout(() => {
+    //     resolve(200);
+    //     onClose();
+    //   }, 5000);
+    // });
+    const updateProfile = axios
+      .post('http://localhost:3000/musicians/update', updateProfilePayload)
+      .then((res) => {
+        console.log('res from update musician:', res);
+      })
+      .catch((err) => {
+        console.log('err from update musician:', err);
+      });
 
+    if (!toast.isActive(toastId)) {
+      toast.promise(updateProfile, {
+        success: {
+          title: 'profile updated.',
+          description: 'a whole new you',
+          id: toastId,
+        },
+        error: {
+          title: 'uh oh...',
+          description: 'something went wrong! please try again',
+          id: toastId,
+        },
+        loading: {
+          title: 'udpating your profile...',
+          description: `werkin on it!`,
+          id: toastId,
+        },
+      });
+    }
+
+    // maybe trigger refresh here using window.location.reload(); ?
+    // maybe add a callback to onClose to trigger refresh..
+    // could be cool to do a callback with a setTimeout so the user sees the success message
     onClose();
   };
 
@@ -77,7 +117,7 @@ const EditProfileModal = ({ displayName, initialInstruments, bio }: Props) => {
           <ModalHeader>Update your info</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Box h="20px" />
+            <Box h="15px" />
             <Stack direction="row" alignItems="center">
               <Heading size="xs">Display name</Heading>
               <Text fontSize="xs" as="i">
@@ -115,11 +155,10 @@ const EditProfileModal = ({ displayName, initialInstruments, bio }: Props) => {
             </Editable>
           </ModalBody>
 
-          <ModalFooter>
-            <Button colorScheme="blue" mr={3} onClick={handleClose}>
-              Close
+          <ModalFooter justifyContent="center">
+            <Button colorScheme="green" mr={3} onClick={handleClose}>
+              Save
             </Button>
-            <Button variant="ghost">Secondary Action</Button>
           </ModalFooter>
         </ModalContent>
       </Modal>

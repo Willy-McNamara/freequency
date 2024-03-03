@@ -80,8 +80,8 @@ let MusiciansService = class MusiciansService {
                 createdAt: createdMusician.createdAt,
                 comments: [],
                 sessions: [],
-                givenName: '',
-                familyName: '',
+                givenName: createdMusician.givenName || '',
+                familyName: createdMusician.familyName || '',
             };
             return musicianDto;
         }
@@ -114,6 +114,40 @@ let MusiciansService = class MusiciansService {
             email: musician.email,
             displayName: musician.displayName,
         };
+    }
+    async updateMusician(musicianUpdateDto) {
+        try {
+            const updatedMusician = await this.prisma.musician.update({
+                where: { id: musicianUpdateDto.id },
+                data: {
+                    displayName: musicianUpdateDto.updatedDisplayName,
+                    bio: musicianUpdateDto.updatedBio,
+                    instruments: { set: musicianUpdateDto.updatedInstruments },
+                },
+            });
+            const formattedUpdatedMusician = this.formatMusicianForFrontend(updatedMusician);
+            return formattedUpdatedMusician;
+        }
+        catch (error) {
+            console.error('Error updating musician:', error);
+            throw new Error(`Failed to update musician: ${error.message}`);
+        }
+    }
+    formatMusicianForFrontend(musician) {
+        const musicianDto = {
+            id: musician.id,
+            displayName: musician.displayName,
+            bio: musician.bio ? musician.bio : '',
+            instruments: musician.instruments,
+            profilePictureUrl: musician.profilePictureUrl,
+            totalSessions: musician.totalSessions,
+            totalPracticeMinutes: musician.totalPracticeMinutes,
+            totalGasUps: musician.totalGasUps,
+            longestStreak: musician.longestStreak,
+            currentStreak: musician.currentStreak,
+            createdAt: musician.createdAt,
+        };
+        return musicianDto;
     }
 };
 exports.MusiciansService = MusiciansService;

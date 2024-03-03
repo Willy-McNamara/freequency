@@ -48,6 +48,13 @@ export class MusicianFrontendDTO {
   createdAt: Date;
 }
 
+export class MusicianUpdateDto {
+  id: number;
+  updatedDisplayName: string;
+  updatedBio: string;
+  updatedInstruments: string[];
+}
+
 export class SessionDto {
   id: number;
   title: string;

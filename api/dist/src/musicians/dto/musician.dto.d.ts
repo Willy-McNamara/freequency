@@ -43,6 +43,12 @@ export declare class MusicianFrontendDTO {
     currentStreak: number;
     createdAt: Date;
 }
+export declare class MusicianUpdateDto {
+    id: number;
+    updatedDisplayName: string;
+    updatedBio: string;
+    updatedInstruments: string[];
+}
 export declare class SessionDto {
     id: number;
     title: string;

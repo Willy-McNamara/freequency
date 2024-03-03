@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CommentDto = exports.GasUpDto = exports.SessionDto = exports.MusicianFrontendDTO = exports.MusicianDto = exports.MusicianJwtDto = exports.CreateMusicianDto = void 0;
+exports.CommentDto = exports.GasUpDto = exports.SessionDto = exports.MusicianUpdateDto = exports.MusicianFrontendDTO = exports.MusicianDto = exports.MusicianJwtDto = exports.CreateMusicianDto = void 0;
 class CreateMusicianDto {
 }
 exports.CreateMusicianDto = CreateMusicianDto;
@@ -13,6 +13,9 @@ exports.MusicianDto = MusicianDto;
 class MusicianFrontendDTO {
 }
 exports.MusicianFrontendDTO = MusicianFrontendDTO;
+class MusicianUpdateDto {
+}
+exports.MusicianUpdateDto = MusicianUpdateDto;
 class SessionDto {
 }
 exports.SessionDto = SessionDto;
