@@ -5,6 +5,8 @@ import { TbHandRock } from 'react-icons/tb';
 import { CgProfile } from 'react-icons/cg';
 import { PiMusicNotesFill } from 'react-icons/pi';
 import { RenderPayloadDTO } from './types/app.types';
+import PrivacyPolicy from './pages/components/PrivacyPolicy';
+import Footer from './pages/components/Footer';
 
 const Root = () => {
   /*
@@ -53,7 +55,7 @@ const Root = () => {
             </Flex>
           </Link>
         </Flex>
-        <Box m="3.5rem"></Box>
+        <Box m="1rem"></Box>
         <Outlet context={initPayload} />
       </Flex>
     );

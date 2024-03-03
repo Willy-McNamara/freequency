@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SessionsController = void 0;
 const common_1 = require("@nestjs/common");
 const sessions_service_1 = require("./sessions.service");
-const session_dto_1 = require("./dto/session.dto");
+const jwt_guard_1 = require("../auth/jwt.guard");
 let SessionsController = class SessionsController {
     constructor(sessionsService) {
         this.sessionsService = sessionsService;
@@ -23,8 +23,15 @@ let SessionsController = class SessionsController {
     async getAllSessions() {
         return this.sessionsService.getAllSessions();
     }
-    async createSession(reqBody) {
-        return this.sessionsService.createSession(reqBody);
+    async createSession(body, req) {
+        const newSession = {
+            title: body.title,
+            notes: body.notes,
+            duration: body.duration,
+            isPublic: body.isPublic,
+            musicianId: req.user.id,
+        };
+        return this.sessionsService.createSession(newSession);
     }
 };
 exports.SessionsController = SessionsController;
@@ -35,10 +42,12 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], SessionsController.prototype, "getAllSessions", null);
 __decorate([
-    (0, common_1.Post)(),
+    (0, common_1.Post)('newSession'),
+    (0, common_1.UseGuards)(jwt_guard_1.JwtAuthGuard),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [session_dto_1.CreateSessionDto]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], SessionsController.prototype, "createSession", null);
 exports.SessionsController = SessionsController = __decorate([

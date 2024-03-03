@@ -14,6 +14,8 @@ export class AuthController {
   async googleLoginCallback(@Req() req: any, @Res() res: any) {
     const user = req.user; // this is the return of GoogleAuthStrategy.validate()
 
+    console.log('logging req.user in googleLoginCallback', req.user);
+
     res.cookie('jwt', user.token, { httpOnly: true, secure: true });
 
     res.redirect('http://localhost:3000/');

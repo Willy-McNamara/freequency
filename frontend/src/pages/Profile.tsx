@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Flex,
   Box,
@@ -12,25 +12,56 @@ import {
   ListItem,
   ListIcon,
   CardFooter,
+  Stack,
+  Badge,
 } from '@chakra-ui/react';
 import { dummyMemberOne, Member } from '../dummyData/dummyData';
 import { FaGasPump, FaChartLine, FaClock } from 'react-icons/fa6';
 import { ImFire } from 'react-icons/im';
 import { useOutletContext } from 'react-router';
 import { RenderPayloadDTO } from '../types/app.types';
+import { MusicianFrontendDTO } from '../types/musicians.types';
+import Footer from './components/Footer';
+import InstrumentBadgeStack from './components/InstrumentBadgeStack';
+import EditProfileModal from './components/EditProfileModal';
 
 const Profile = () => {
   const initRender = useOutletContext() as RenderPayloadDTO;
+
   const musician = initRender.musician;
 
   return (
     <Flex direction="column" align="center" maxW="35rem">
+      <Footer />
       <Flex direction="column" align="center" p="1.5rem">
-        <Avatar size="lg" name="User Name" />
-        <Text mt="1rem">Member since: {musician.createdAt.toString()}</Text>
-        <Text>Other metadata here? (instruments? genres?)</Text>
+        <EditProfileModal
+          displayName={musician.displayName}
+          initialInstruments={musician.instruments}
+          bio={musician.bio}
+        />
+        <Flex direction="row" alignItems="center" m="1.5rem">
+          <Avatar
+            size="xl"
+            name={musician.displayName}
+            src={musician.profilePictureUrl}
+          />
+          <Flex direction="column" align="left" ml="1rem">
+            <Heading size="xl">{musician.displayName}</Heading>
+            <Text mb="5px">
+              {'Joined '}
+              {new Date(musician.createdAt).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </Text>
+            <InstrumentBadgeStack instruments={musician.instruments} />
+          </Flex>
+        </Flex>
+
+        <Text>"{musician.bio}"</Text>
       </Flex>
-      <Card m="3rem">
+      <Card m="1rem">
         <CardHeader>
           <Heading size="md">
             Take a moment to appreciate your progress...

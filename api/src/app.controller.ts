@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, UseGuards, Req } from '@nestjs/common';
 import { AppService } from './app.service';
 import { SessionsService } from './sessions/sessions.service';
 import { MusiciansService } from './musicians/musicians.service';
@@ -14,8 +14,15 @@ export class AppController {
 
   @Get('/initialRender')
   @UseGuards(JwtAuthGuard)
-  async initialRender(): Promise<any> {
-    const musicianData = await this.musiciansService.getMusicianById(1);
+  async initialRender(@Req() req: any): Promise<any> {
+    console.log(
+      'logging req.user in initialRender, this is the return of jwtGuard',
+      req.user,
+    );
+    // switch req.user.id to a number (4 for root) when commenting out the jwtGuard
+    const musicianData = await this.musiciansService.getMusicianById(
+      req.user.id,
+    );
     const sessionsData = await this.sessionsService.getAllSessions();
     const combinedData = this.appService.formatRenderPayload(
       musicianData,

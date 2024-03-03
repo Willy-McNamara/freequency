@@ -26,9 +26,9 @@ let MusiciansService = class MusiciansService {
         }
         return {
             id: musician.id,
-            googleId: musician.googleId,
-            username: musician.username,
-            email: musician.email,
+            displayName: musician.displayName,
+            bio: musician.bio ? musician.bio : '',
+            instruments: musician.instruments,
             profilePictureUrl: musician.profilePictureUrl,
             totalSessions: musician.totalSessions,
             totalPracticeMinutes: musician.totalPracticeMinutes,
@@ -44,10 +44,13 @@ let MusiciansService = class MusiciansService {
             const createdMusician = await prisma.musician.create({
                 data: {
                     googleId: createMusicianDto.googleId,
-                    username: createMusicianDto.username,
+                    displayName: createMusicianDto.displayName,
+                    givenName: createMusicianDto.givenName,
+                    familyName: createMusicianDto.familyName,
                     email: createMusicianDto.email,
-                    password: createMusicianDto.password,
                     profilePictureUrl: createMusicianDto.profilePictureUrl,
+                    bio: 'Tell us about yourself as a musician! Eventually other users may be able to see your profile :)',
+                    instruments: ["Singin'"],
                     totalSessions: 0,
                     totalPracticeMinutes: 0,
                     totalGasUps: 0,
@@ -63,10 +66,11 @@ let MusiciansService = class MusiciansService {
             });
             const musicianDto = {
                 id: createdMusician.id,
-                googleId: createdMusician.googleId,
-                username: createdMusician.username,
+                googleId: createdMusician.googleId ? createdMusician.googleId : null,
+                displayName: createdMusician.displayName,
                 email: createdMusician.email,
-                password: createdMusician.password,
+                bio: createdMusician.bio ? createdMusician.bio : '',
+                instruments: createdMusician.instruments,
                 profilePictureUrl: createdMusician.profilePictureUrl,
                 totalSessions: createdMusician.totalSessions,
                 totalPracticeMinutes: createdMusician.totalPracticeMinutes,
@@ -76,12 +80,75 @@ let MusiciansService = class MusiciansService {
                 createdAt: createdMusician.createdAt,
                 comments: [],
                 sessions: [],
+                givenName: createdMusician.givenName || '',
+                familyName: createdMusician.familyName || '',
             };
             return musicianDto;
         }
         catch (error) {
             throw new Error(`Failed to create musician: ${error.message}`);
         }
+    }
+    async findOrCreateMusician(loginInfo) {
+        let email = loginInfo.email;
+        try {
+            const musician = await this.prisma.musician.findUnique({
+                where: { email },
+            });
+            if (musician) {
+                console.log('found musician!', musician);
+                return this.formatMusicianForJwt(musician);
+            }
+            else {
+                console.log('new user! creating musician with this info:', loginInfo);
+                return this.formatMusicianForJwt(await this.createMusician(loginInfo));
+            }
+        }
+        catch (error) {
+            throw new Error(`Failed to find or create musician: ${error.message}`);
+        }
+    }
+    formatMusicianForJwt(musician) {
+        return {
+            id: musician.id,
+            email: musician.email,
+            displayName: musician.displayName,
+        };
+    }
+    async updateMusician(musicianUpdateDto) {
+        try {
+            const updatedMusician = await this.prisma.musician.update({
+                where: { id: musicianUpdateDto.id },
+                data: {
+                    displayName: musicianUpdateDto.updatedDisplayName,
+                    bio: musicianUpdateDto.updatedBio,
+                    instruments: { set: musicianUpdateDto.updatedInstruments },
+                },
+            });
+            const formattedUpdatedMusician = this.formatMusicianForFrontend(updatedMusician);
+            console.log('musician successfully updated!', formattedUpdatedMusician);
+            return formattedUpdatedMusician;
+        }
+        catch (error) {
+            console.error('Error updating musician:', error);
+            throw new Error(`Failed to update musician: ${error.message}`);
+        }
+    }
+    formatMusicianForFrontend(musician) {
+        const musicianDto = {
+            id: musician.id,
+            displayName: musician.displayName,
+            bio: musician.bio ? musician.bio : '',
+            instruments: musician.instruments,
+            profilePictureUrl: musician.profilePictureUrl,
+            totalSessions: musician.totalSessions,
+            totalPracticeMinutes: musician.totalPracticeMinutes,
+            totalGasUps: musician.totalGasUps,
+            longestStreak: musician.longestStreak,
+            currentStreak: musician.currentStreak,
+            createdAt: musician.createdAt,
+        };
+        return musicianDto;
     }
 };
 exports.MusiciansService = MusiciansService;

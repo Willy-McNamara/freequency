@@ -1,41 +1,58 @@
 export class CreateMusicianDto {
   googleId: string;
-  username: string;
+  displayName: string;
+  givenName: string;
+  familyName: string;
   email: string;
-  password: string;
-  profilePictureUrl: string;
+  profilePictureUrl: string | null;
+}
+
+export class MusicianJwtDto {
+  id: number;
+  email: string;
+  displayName: string;
 }
 
 export class MusicianDto {
   id: number;
-  googleId: string;
-  username: string;
+  googleId: string | null;
+  displayName: string;
+  givenName: string;
+  familyName: string;
   email: string;
-  password: string;
-  profilePictureUrl: string;
+  bio: string | null;
+  instruments: string[];
+  profilePictureUrl: string | null;
   totalSessions: number;
   totalPracticeMinutes: number;
   totalGasUps: number;
   longestStreak: number;
   currentStreak: number;
   createdAt: Date;
-  comments: CommentDto[];
-  sessions: SessionDto[];
+  comments?: CommentDto[];
+  sessions?: SessionDto[];
 }
 
 // remove password, sessions, comments for frontend
 export class MusicianFrontendDTO {
   id: number;
-  googleId: string;
-  username: string;
-  email: string;
-  profilePictureUrl: string;
+  displayName: string;
+  bio: string;
+  instruments: string[];
+  profilePictureUrl: string | null;
   totalSessions: number;
   totalPracticeMinutes: number;
   totalGasUps: number;
   longestStreak: number;
   currentStreak: number;
   createdAt: Date;
+}
+
+export class MusicianUpdateDto {
+  id: number;
+  updatedDisplayName: string;
+  updatedBio: string;
+  updatedInstruments: string[];
 }
 
 export class SessionDto {

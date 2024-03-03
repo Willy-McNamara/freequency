@@ -19,7 +19,7 @@ export class SessionsService {
     // Query all sessions from the database
     const sessions = await prisma.session.findMany({
       include: {
-        musician: { select: { username: true } },
+        musician: { select: { displayName: true } },
         gasUps: true,
         comments: true,
       },
@@ -36,7 +36,7 @@ export class SessionsService {
         takeId: session.takeId,
         createdAt: session.createdAt,
         musicianId: session.musicianId,
-        musicianUsername: session.musician.username,
+        musicianDisplayname: session.musician.displayName,
         gasUps: this.mapGasUps(session.gasUps),
         comments: this.mapComments(session.comments),
       }),
@@ -65,24 +65,24 @@ export class SessionsService {
     }));
   }
 
-  async createSession(req: CreateSessionDto): Promise<SessionDto> {
+  async createSession(newSession: CreateSessionDto): Promise<SessionDto> {
     const prisma = this.prisma;
 
     try {
       // Create a new session in the database
       const createdSession = await prisma.session.create({
         data: {
-          title: req.title,
-          notes: req.notes,
-          duration: Number(req.duration),
-          isPublic: req.isPublic,
+          title: newSession.title,
+          notes: newSession.notes,
+          duration: Number(newSession.duration),
+          isPublic: newSession.isPublic,
           takeId: uuidv4(),
           musician: {
-            connect: { id: Number(req.musicianId) },
+            connect: { id: Number(newSession.musicianId) },
           },
         },
         include: {
-          musician: { select: { username: true } },
+          musician: { select: { displayName: true } },
         },
       });
 
@@ -99,6 +99,8 @@ export class SessionsService {
         gasUps: [], // Assuming it's a new session, initialize as empty array
         comments: [], // Assuming it's a new session, initialize as empty array
       };
+
+      // TO DO: update musician's totalSessions and totalPracticeMinutes
 
       return sessionDto;
     } catch (error) {

@@ -143,21 +143,25 @@ const SaveSessionModal = ({ notesRef, durationRef }) => {
                   notes: notes,
                   duration: minutes,
                   isPublic: isPublic,
-                  musicianId: '1', // placeholder for musicianId, eventually get from Auth
                 };
 
                 // create an axios post request to save the session
                 const saveSession = axios
-                  .post('http://localhost:3000/sessions', newSessionPayload)
+                  .post(
+                    'http://localhost:3000/sessions/newSession',
+                    newSessionPayload,
+                  )
                   .then((res) => {
                     console.log(
                       'logging response from save session modal :',
                       res,
                     );
                     onClose();
+                    return Promise.resolve(res);
                   })
                   .catch((err) => {
                     console.log('logging error from save session modal :', err);
+                    return Promise.reject(err);
                   });
 
                 // placeholder for async api call...

@@ -11,13 +11,14 @@ const common_1 = require("@nestjs/common");
 const musicians_service_1 = require("./musicians.service");
 const musicians_controller_1 = require("./musicians.controller");
 const prisma_service_1 = require("../prisma/prisma.service");
+const jwt_1 = require("@nestjs/jwt");
 let MusiciansModule = class MusiciansModule {
 };
 exports.MusiciansModule = MusiciansModule;
 exports.MusiciansModule = MusiciansModule = __decorate([
     (0, common_1.Module)({
         controllers: [musicians_controller_1.MusiciansController],
-        providers: [musicians_service_1.MusiciansService, prisma_service_1.PrismaService],
+        providers: [musicians_service_1.MusiciansService, prisma_service_1.PrismaService, jwt_1.JwtService],
     })
 ], MusiciansModule);
 //# sourceMappingURL=musicians.module.js.map

@@ -21,7 +21,7 @@ let SessionsService = class SessionsService {
         const prisma = this.prisma;
         const sessions = await prisma.session.findMany({
             include: {
-                musician: { select: { username: true } },
+                musician: { select: { displayName: true } },
                 gasUps: true,
                 comments: true,
             },
@@ -35,7 +35,7 @@ let SessionsService = class SessionsService {
             takeId: session.takeId,
             createdAt: session.createdAt,
             musicianId: session.musicianId,
-            musicianUsername: session.musician.username,
+            musicianDisplayname: session.musician.displayName,
             gasUps: this.mapGasUps(session.gasUps),
             comments: this.mapComments(session.comments),
         }));
@@ -57,22 +57,22 @@ let SessionsService = class SessionsService {
             sessionId: comment.sessionId,
         }));
     }
-    async createSession(req) {
+    async createSession(newSession) {
         const prisma = this.prisma;
         try {
             const createdSession = await prisma.session.create({
                 data: {
-                    title: req.title,
-                    notes: req.notes,
-                    duration: Number(req.duration),
-                    isPublic: req.isPublic,
+                    title: newSession.title,
+                    notes: newSession.notes,
+                    duration: Number(newSession.duration),
+                    isPublic: newSession.isPublic,
                     takeId: (0, uuid_1.v4)(),
                     musician: {
-                        connect: { id: Number(req.musicianId) },
+                        connect: { id: Number(newSession.musicianId) },
                     },
                 },
                 include: {
-                    musician: { select: { username: true } },
+                    musician: { select: { displayName: true } },
                 },
             });
             const sessionDto = {
