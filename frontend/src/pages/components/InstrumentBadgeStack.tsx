@@ -5,10 +5,14 @@ import {
   PopularInstrument,
 } from '../../types/instruments.types';
 
-const InstrumentBadgeStack = () => {
+interface Props {
+  instruments: PopularInstrument[];
+}
+
+const InstrumentBadgeStack = ({ instruments }: Props) => {
   // take in instruments
   // render badge for each
-  const instruments: PopularInstrument[] = ['Guitar', 'Piano', 'Drums'];
+  //const instruments: PopularInstrument[] = ['Guitar', 'Piano', 'Drums'];
   return (
     <Stack direction="row">
       {instruments.map((instrument) => {

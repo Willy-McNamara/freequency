@@ -22,6 +22,7 @@ import { useOutletContext } from 'react-router';
 import { RenderPayloadDTO } from '../types/app.types';
 import Footer from './components/Footer';
 import InstrumentBadgeStack from './components/InstrumentBadgeStack';
+import EditProfileModal from './components/EditProfileModal';
 
 const Profile = () => {
   const initRender = useOutletContext() as RenderPayloadDTO;
@@ -31,8 +32,29 @@ const Profile = () => {
     <Flex direction="column" align="center" maxW="35rem">
       <Footer />
       <Flex direction="column" align="center" p="1.5rem">
+        <EditProfileModal
+          displayName={musician.displayName}
+          initialInstruments={musician.instruments}
+          bio={musician.bio}
+        />
         <Avatar size="xl" name="User Name" />
-        <Heading size="xl">DisplayName</Heading>
+        <Heading size="xl">{musician.displayName}</Heading>
+        <Stack spacing="4">
+          <Card variant="unstyled">
+            <CardHeader>
+              <Heading size="sm"> Member since:</Heading>
+            </CardHeader>
+            <CardBody>
+              <Text fontSize="sm">
+                {new Date(musician.createdAt).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </Text>
+            </CardBody>
+          </Card>
+        </Stack>
         <Stack spacing={0.5} mt="5px">
           <Text>
             <Text as="span" textDecoration="underline">
@@ -46,21 +68,15 @@ const Profile = () => {
           </Text>
           <Text>
             <Text as="span" textDecoration="underline">
-              City:
-            </Text>{' '}
-            Music Land
-          </Text>
-          <Text>
-            <Text as="span" textDecoration="underline">
               Instrument:
             </Text>{' '}
-            <InstrumentBadgeStack />
+            <InstrumentBadgeStack instruments={musician.instruments} />
           </Text>
           <Text>
             <Text as="span" textDecoration="underline">
-              About:
+              Bio:
             </Text>{' '}
-            {/* Your content for "About" */}
+            {musician.bio}
           </Text>
         </Stack>
       </Flex>

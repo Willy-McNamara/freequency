@@ -3,15 +3,18 @@ export type PopularInstrument =
   | 'Piano'
   | 'Drums'
   | 'Violin'
-  | 'Saxophone'
+  | `Singin'`
   | 'Trumpet'
   | 'Bass'
   | 'Flute'
   | 'Clarinet'
   | 'Harp'
-  | 'Accordion'
+  | 'Saxophone'
   | 'Trombone';
-
+/*
+I am limited to the main chakra schemes
+I can extend them to include more colors- save that for polish!
+*/
 type PopularColor =
   | 'red'
   | 'blue'
@@ -20,11 +23,9 @@ type PopularColor =
   | 'purple'
   | 'orange'
   | 'pink'
-  | 'brown'
+  | 'gray'
   | 'cyan'
-  | 'magenta'
-  | 'lime'
-  | 'teal';
+  | 'blackAlpha';
 
 type InstrumentBadges = {
   [Instrument in PopularInstrument]: PopularColor;
@@ -35,12 +36,27 @@ export const instrumentBadges: InstrumentBadges = {
   Piano: 'blue',
   Drums: 'green',
   Violin: 'yellow',
-  Saxophone: 'purple',
+  "Singin'": 'purple',
   Trumpet: 'orange',
   Bass: 'pink',
-  Flute: 'brown',
+  Flute: 'gray',
   Clarinet: 'cyan',
-  Harp: 'magenta',
-  Accordion: 'lime',
-  Trombone: 'teal',
+  Harp: 'blue',
+  Saxophone: 'red',
+  Trombone: 'blackAlpha',
 };
+
+export const instrumentsMasterList: PopularInstrument[] = [
+  'Guitar',
+  'Piano',
+  'Drums',
+  'Violin',
+  `Singin'`,
+  'Trumpet',
+  'Bass',
+  'Flute',
+  'Clarinet',
+  'Harp',
+  'Saxophone',
+  'Trombone',
+];

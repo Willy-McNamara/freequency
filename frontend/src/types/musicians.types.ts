@@ -1,9 +1,11 @@
+import { PopularInstrument } from './instruments.types';
+
 export type MusicianFrontendDTO = {
   id: number;
-  googleId: string;
-  username: string;
-  email: string;
-  profilePictureUrl: string;
+  displayName: string;
+  bio: string;
+  instruments: PopularInstrument[];
+  profilePictureUrl: string | null;
   totalSessions: number;
   totalPracticeMinutes: number;
   totalGasUps: number;

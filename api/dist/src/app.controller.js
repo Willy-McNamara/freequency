@@ -17,7 +17,6 @@ const common_1 = require("@nestjs/common");
 const app_service_1 = require("./app.service");
 const sessions_service_1 = require("./sessions/sessions.service");
 const musicians_service_1 = require("./musicians/musicians.service");
-const jwt_guard_1 = require("./auth/jwt.guard");
 let AppController = class AppController {
     constructor(appService, musiciansService, sessionsService) {
         this.appService = appService;
@@ -26,7 +25,7 @@ let AppController = class AppController {
     }
     async initialRender(req) {
         console.log('logging req.user in initialRender, this is the return of jwtGuard', req.user);
-        const musicianData = await this.musiciansService.getMusicianById(req.user.id);
+        const musicianData = await this.musiciansService.getMusicianById(4);
         const sessionsData = await this.sessionsService.getAllSessions();
         const combinedData = this.appService.formatRenderPayload(musicianData, sessionsData);
         return combinedData;
@@ -35,7 +34,6 @@ let AppController = class AppController {
 exports.AppController = AppController;
 __decorate([
     (0, common_1.Get)('/initialRender'),
-    (0, common_1.UseGuards)(jwt_guard_1.JwtAuthGuard),
     __param(0, (0, common_1.Req)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),

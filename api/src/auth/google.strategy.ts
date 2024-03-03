@@ -46,14 +46,6 @@ export class GoogleAuthStrategy extends PassportStrategy(Strategy) {
     });
     console.log('logging profile returned from googleAuthStrategy', profile);
 
-    // look up the user in the db (make sure to validate fields that may be null from google.. swap in dummy data if so)
-    // if user exists, return the user and use id,email to create jwt
-    // if user does not exist, create a new user and use id,email to create jwt
-
-    /*
-    some kind of findOrCreate method here from my musicians service
-    */
-
     const jwtPayload = {
       id: musicianData.id,
       email: musicianData.email,
