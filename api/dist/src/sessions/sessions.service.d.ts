@@ -6,5 +6,5 @@ export declare class SessionsService {
     getAllSessions(): Promise<FrontendSessionDto[]>;
     private mapGasUps;
     private mapComments;
-    createSession(req: CreateSessionDto): Promise<SessionDto>;
+    createSession(newSession: CreateSessionDto): Promise<SessionDto>;
 }

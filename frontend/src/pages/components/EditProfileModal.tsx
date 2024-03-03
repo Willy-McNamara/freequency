@@ -68,6 +68,8 @@ const EditProfileModal = ({ displayName, initialInstruments, bio }: Props) => {
       .post('http://localhost:3000/musicians/update', updateProfilePayload)
       .then((res) => {
         console.log('res from update musician:', res);
+        onClose();
+        window.location.reload();
         return Promise.resolve(res);
       })
       .catch((err) => {
@@ -94,12 +96,6 @@ const EditProfileModal = ({ displayName, initialInstruments, bio }: Props) => {
         },
       });
     }
-
-    // maybe trigger refresh here using window.location.reload(); ?
-    // maybe add a callback to onClose to trigger refresh..
-    // could be cool to do a callback with a setTimeout so the user sees the success message
-    onClose();
-    window.location.reload();
   };
 
   return (

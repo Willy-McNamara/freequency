@@ -65,20 +65,20 @@ export class SessionsService {
     }));
   }
 
-  async createSession(req: CreateSessionDto): Promise<SessionDto> {
+  async createSession(newSession: CreateSessionDto): Promise<SessionDto> {
     const prisma = this.prisma;
 
     try {
       // Create a new session in the database
       const createdSession = await prisma.session.create({
         data: {
-          title: req.title,
-          notes: req.notes,
-          duration: Number(req.duration),
-          isPublic: req.isPublic,
+          title: newSession.title,
+          notes: newSession.notes,
+          duration: Number(newSession.duration),
+          isPublic: newSession.isPublic,
           takeId: uuidv4(),
           musician: {
-            connect: { id: Number(req.musicianId) },
+            connect: { id: Number(newSession.musicianId) },
           },
         },
         include: {
@@ -99,6 +99,8 @@ export class SessionsService {
         gasUps: [], // Assuming it's a new session, initialize as empty array
         comments: [], // Assuming it's a new session, initialize as empty array
       };
+
+      // TO DO: update musician's totalSessions and totalPracticeMinutes
 
       return sessionDto;
     } catch (error) {
