@@ -24,14 +24,13 @@ let MusiciansController = class MusiciansController {
         return this.musiciansService.getMusicianById(Number(id));
     }
     async updateMusician(body, req) {
-        console.log('logging body in updateMusician', body);
         const updateMusicianDto = {
             id: req.user.id,
             updatedDisplayName: body.updatedDisplayName,
             updatedBio: body.updatedBio,
             updatedInstruments: body.updatedInstruments,
         };
-        console.log('logging updateMusicianDto in updateMusician', updateMusicianDto);
+        console.log('updateMusicianDto', updateMusicianDto);
         return this.musiciansService.updateMusician(updateMusicianDto);
     }
 };

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Flex,
   Box,
@@ -20,12 +20,14 @@ import { FaGasPump, FaChartLine, FaClock } from 'react-icons/fa6';
 import { ImFire } from 'react-icons/im';
 import { useOutletContext } from 'react-router';
 import { RenderPayloadDTO } from '../types/app.types';
+import { MusicianFrontendDTO } from '../types/musicians.types';
 import Footer from './components/Footer';
 import InstrumentBadgeStack from './components/InstrumentBadgeStack';
 import EditProfileModal from './components/EditProfileModal';
 
 const Profile = () => {
   const initRender = useOutletContext() as RenderPayloadDTO;
+
   const musician = initRender.musician;
 
   return (
@@ -37,48 +39,27 @@ const Profile = () => {
           initialInstruments={musician.instruments}
           bio={musician.bio}
         />
-        <Avatar size="xl" name="User Name" />
-        <Heading size="xl">{musician.displayName}</Heading>
-        <Stack spacing="4">
-          <Card variant="unstyled">
-            <CardHeader>
-              <Heading size="sm"> Member since:</Heading>
-            </CardHeader>
-            <CardBody>
-              <Text fontSize="sm">
-                {new Date(musician.createdAt).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
-              </Text>
-            </CardBody>
-          </Card>
-        </Stack>
-        <Stack spacing={0.5} mt="5px">
-          <Text>
-            <Text as="span" textDecoration="underline">
-              Member since:
-            </Text>{' '}
-            {new Date(musician.createdAt).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}
-          </Text>
-          <Text>
-            <Text as="span" textDecoration="underline">
-              Instrument:
-            </Text>{' '}
+        <Flex direction="row" alignItems="center" m="1.5rem">
+          <Avatar
+            size="xl"
+            name={musician.displayName}
+            src={musician.profilePictureUrl}
+          />
+          <Flex direction="column" align="left" ml="1rem">
+            <Heading size="xl">{musician.displayName}</Heading>
+            <Text mb="5px">
+              {'Joined '}
+              {new Date(musician.createdAt).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </Text>
             <InstrumentBadgeStack instruments={musician.instruments} />
-          </Text>
-          <Text>
-            <Text as="span" textDecoration="underline">
-              Bio:
-            </Text>{' '}
-            {musician.bio}
-          </Text>
-        </Stack>
+          </Flex>
+        </Flex>
+
+        <Text>"{musician.bio}"</Text>
       </Flex>
       <Card m="1rem">
         <CardHeader>

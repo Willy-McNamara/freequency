@@ -126,6 +126,7 @@ let MusiciansService = class MusiciansService {
                 },
             });
             const formattedUpdatedMusician = this.formatMusicianForFrontend(updatedMusician);
+            console.log('musician successfully updated!', formattedUpdatedMusician);
             return formattedUpdatedMusician;
         }
         catch (error) {

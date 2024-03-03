@@ -62,13 +62,17 @@ const EditProfileModal = ({ displayName, initialInstruments, bio }: Props) => {
     //     onClose();
     //   }, 5000);
     // });
+
+    console.log('updateProfilePayload:', updateProfilePayload);
     const updateProfile = axios
       .post('http://localhost:3000/musicians/update', updateProfilePayload)
       .then((res) => {
         console.log('res from update musician:', res);
+        return Promise.resolve(res);
       })
       .catch((err) => {
         console.log('err from update musician:', err);
+        return Promise.reject(err);
       });
 
     if (!toast.isActive(toastId)) {
@@ -95,6 +99,7 @@ const EditProfileModal = ({ displayName, initialInstruments, bio }: Props) => {
     // maybe add a callback to onClose to trigger refresh..
     // could be cool to do a callback with a setTimeout so the user sees the success message
     onClose();
+    window.location.reload();
   };
 
   return (
@@ -149,8 +154,8 @@ const EditProfileModal = ({ displayName, initialInstruments, bio }: Props) => {
                 (edit inline)
               </Text>
             </Stack>
-            <Editable defaultValue={bio} ref={bioRef}>
-              <EditablePreview />
+            <Editable defaultValue={bio}>
+              <EditablePreview ref={bioRef} />
               <EditableTextarea />
             </Editable>
           </ModalBody>

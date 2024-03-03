@@ -7,8 +7,8 @@ export type PopularInstrument =
   | 'Trumpet'
   | 'Bass'
   | 'Flute'
-  | 'Clarinet'
-  | 'Harp'
+  | 'DJing'
+  | 'Producing'
   | 'Saxophone'
   | 'Trombone';
 /*
@@ -40,8 +40,8 @@ export const instrumentBadges: InstrumentBadges = {
   Trumpet: 'orange',
   Bass: 'pink',
   Flute: 'gray',
-  Clarinet: 'cyan',
-  Harp: 'blue',
+  DJing: 'cyan',
+  Producing: 'blue',
   Saxophone: 'red',
   Trombone: 'blackAlpha',
 };
@@ -55,8 +55,8 @@ export const instrumentsMasterList: PopularInstrument[] = [
   'Trumpet',
   'Bass',
   'Flute',
-  'Clarinet',
-  'Harp',
+  'DJing',
+  'Producing',
   'Saxophone',
   'Trombone',
 ];
