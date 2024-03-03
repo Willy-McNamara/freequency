@@ -1,7 +1,8 @@
 import React from 'react';
-import { useDisclosure, Flex, Divider, Center } from '@chakra-ui/react';
+import { Flex, Divider, Center } from '@chakra-ui/react';
 import Contact from './Contact';
 import PrivacyPolicy from './PrivacyPolicy';
+import About from './About';
 
 const Footer = () => {
   return (
@@ -13,6 +14,10 @@ const Footer = () => {
       direction="row"
       alignItems="center"
     >
+      <About />
+      <Center height="20px">
+        <Divider color="black" orientation="vertical" />
+      </Center>
       <PrivacyPolicy />
       <Center height="20px">
         <Divider color="black" orientation="vertical" />

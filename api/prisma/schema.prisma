@@ -26,21 +26,27 @@ model Session {
 
 model Musician {
   id                  Int         @id @default(autoincrement())
-  googleId            String
-  username            String      @unique
+  googleId            String?
+  displayName            String      @unique
+  givenName           String
+  familyName          String
   email               String      @unique
-  password            String
+  bio                 String?     @db.VarChar(300)
+  instruments         String[]
   profilePictureUrl   String?
-  totalSessions       Int
-  totalPracticeMinutes Int
-  totalGasUps         Int
-  longestStreak       Int
-  currentStreak       Int
+  totalSessions       Int         @default(0)
+  totalPracticeMinutes Int         @default(0)
+  totalGasUps         Int         @default(0)
+  longestStreak       Int         @default(0)
+  currentStreak       Int         @default(0)
   createdAt           DateTime    @default(now())
   gasUps              GasUp[]
   comments            Comment[]
   sessions            Session[]
+
+  @@index([id, email])
 }
+
 
 model GasUp {
   id         Int      @id @default(autoincrement())

@@ -28,7 +28,12 @@ const PrivacyPolicy = () => {
         Privacy Policy
       </Button>
 
-      <Modal onClose={onClose} isOpen={isOpen} isCentered>
+      <Modal
+        onClose={onClose}
+        isOpen={isOpen}
+        scrollBehavior="inside"
+        isCentered
+      >
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Privacy Policy</ModalHeader>

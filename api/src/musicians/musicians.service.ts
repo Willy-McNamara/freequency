@@ -1,10 +1,12 @@
-import { Injectable } from "@nestjs/common";
-import { PrismaService } from "../prisma/prisma.service";
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
 import {
   CreateMusicianDto,
   MusicianDto,
   MusicianFrontendDTO,
-} from "./dto/musician.dto";
+  MusicianJwtDto,
+} from './dto/musician.dto';
+import { format } from 'path';
 
 @Injectable()
 export class MusiciansService {
@@ -25,9 +27,9 @@ export class MusiciansService {
     // Map and return DTO
     return {
       id: musician.id,
-      googleId: musician.googleId,
-      username: musician.username,
-      email: musician.email,
+      displayName: musician.displayName,
+      bio: musician.bio ? musician.bio : '',
+      instruments: musician.instruments,
       profilePictureUrl: musician.profilePictureUrl,
       totalSessions: musician.totalSessions,
       totalPracticeMinutes: musician.totalPracticeMinutes,
@@ -39,7 +41,7 @@ export class MusiciansService {
   }
 
   async createMusician(
-    createMusicianDto: CreateMusicianDto
+    createMusicianDto: CreateMusicianDto,
   ): Promise<MusicianDto> {
     const prisma = this.prisma;
 
@@ -48,10 +50,13 @@ export class MusiciansService {
       const createdMusician = await prisma.musician.create({
         data: {
           googleId: createMusicianDto.googleId,
-          username: createMusicianDto.username,
+          displayName: createMusicianDto.displayName,
+          givenName: createMusicianDto.givenName,
+          familyName: createMusicianDto.familyName,
           email: createMusicianDto.email,
-          password: createMusicianDto.password,
           profilePictureUrl: createMusicianDto.profilePictureUrl,
+          bio: 'Tell us about yourself as a musician! Eventually other users may be able to see your profile :)',
+          instruments: ["Singin'"],
           totalSessions: 0,
           totalPracticeMinutes: 0,
           totalGasUps: 0,
@@ -69,10 +74,11 @@ export class MusiciansService {
       // Map the created musician to the DTO
       const musicianDto: MusicianDto = {
         id: createdMusician.id,
-        googleId: createdMusician.googleId,
-        username: createdMusician.username,
+        googleId: createdMusician.googleId ? createdMusician.googleId : null,
+        displayName: createdMusician.displayName,
         email: createdMusician.email,
-        password: createdMusician.password,
+        bio: createdMusician.bio ? createdMusician.bio : '',
+        instruments: createdMusician.instruments,
         profilePictureUrl: createdMusician.profilePictureUrl,
         totalSessions: createdMusician.totalSessions,
         totalPracticeMinutes: createdMusician.totalPracticeMinutes,
@@ -82,6 +88,8 @@ export class MusiciansService {
         createdAt: createdMusician.createdAt,
         comments: [],
         sessions: [],
+        givenName: '',
+        familyName: '',
       };
 
       return musicianDto;
@@ -89,5 +97,39 @@ export class MusiciansService {
       // Handle any errors during creation
       throw new Error(`Failed to create musician: ${error.message}`);
     }
+  }
+
+  async findOrCreateMusician(
+    loginInfo: CreateMusicianDto,
+  ): Promise<MusicianJwtDto> {
+    // Implement a findOrCreate method for musicians
+    // try to find musician by email
+    let email = loginInfo.email;
+    try {
+      const musician = await this.prisma.musician.findUnique({
+        where: { email },
+      });
+      if (musician) {
+        console.log('found musician!', musician);
+        return this.formatMusicianForJwt(musician);
+      } else {
+        console.log('new user! creating musician with this info:', loginInfo);
+        // create and return
+        return this.formatMusicianForJwt(await this.createMusician(loginInfo));
+      }
+    } catch (error) {
+      // not sure what to do for the user in this scenario.. probably a modal of some kind. maybe i can
+      // set that up via react router?
+      throw new Error(`Failed to find or create musician: ${error.message}`);
+    }
+  }
+
+  formatMusicianForJwt(musician: MusicianDto): MusicianJwtDto {
+    // Implement a method to format a musician for the frontend
+    return {
+      id: musician.id,
+      email: musician.email,
+      displayName: musician.displayName,
+    };
   }
 }

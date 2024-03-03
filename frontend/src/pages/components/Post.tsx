@@ -32,7 +32,7 @@ const Post = ({ post }: props) => {
         <Flex direction="column">
           <Flex flex="1" gap="4" alignItems="center" flexWrap="wrap">
             <Avatar name="User Icon" />
-            <Heading size="sm">{post.musicianUsername}</Heading>
+            <Heading size="sm">{post.musicianDisplayname}</Heading>
           </Flex>
         </Flex>
       </CardHeader>

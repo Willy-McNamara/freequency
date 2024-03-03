@@ -55,7 +55,7 @@ const Root = () => {
             </Flex>
           </Link>
         </Flex>
-        <Box m="3.5rem"></Box>
+        <Box m="1rem"></Box>
         <Outlet context={initPayload} />
       </Flex>
     );

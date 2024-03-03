@@ -7,7 +7,7 @@ export type FrontendSessionDto = {
   takeId: string;
   createdAt: Date;
   musicianId: number;
-  musicianUsername: string;
+  musicianDisplayname: string;
   gasUps: GasUpDto[];
   comments: CommentDto[];
 };

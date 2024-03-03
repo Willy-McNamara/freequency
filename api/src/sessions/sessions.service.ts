@@ -19,7 +19,7 @@ export class SessionsService {
     // Query all sessions from the database
     const sessions = await prisma.session.findMany({
       include: {
-        musician: { select: { username: true } },
+        musician: { select: { displayName: true } },
         gasUps: true,
         comments: true,
       },
@@ -36,7 +36,7 @@ export class SessionsService {
         takeId: session.takeId,
         createdAt: session.createdAt,
         musicianId: session.musicianId,
-        musicianUsername: session.musician.username,
+        musicianDisplayname: session.musician.displayName,
         gasUps: this.mapGasUps(session.gasUps),
         comments: this.mapComments(session.comments),
       }),
@@ -82,7 +82,7 @@ export class SessionsService {
           },
         },
         include: {
-          musician: { select: { username: true } },
+          musician: { select: { displayName: true } },
         },
       });
 

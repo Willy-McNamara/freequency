@@ -12,6 +12,8 @@ import {
   ListItem,
   ListIcon,
   CardFooter,
+  Stack,
+  Badge,
 } from '@chakra-ui/react';
 import { dummyMemberOne, Member } from '../dummyData/dummyData';
 import { FaGasPump, FaChartLine, FaClock } from 'react-icons/fa6';
@@ -19,6 +21,7 @@ import { ImFire } from 'react-icons/im';
 import { useOutletContext } from 'react-router';
 import { RenderPayloadDTO } from '../types/app.types';
 import Footer from './components/Footer';
+import InstrumentBadgeStack from './components/InstrumentBadgeStack';
 
 const Profile = () => {
   const initRender = useOutletContext() as RenderPayloadDTO;
@@ -28,11 +31,40 @@ const Profile = () => {
     <Flex direction="column" align="center" maxW="35rem">
       <Footer />
       <Flex direction="column" align="center" p="1.5rem">
-        <Avatar size="lg" name="User Name" />
-        <Text mt="1rem">Member since: {musician.createdAt.toString()}</Text>
-        <Text>Other metadata here? (instruments? genres?)</Text>
+        <Avatar size="xl" name="User Name" />
+        <Heading size="xl">DisplayName</Heading>
+        <Stack spacing={0.5} mt="5px">
+          <Text>
+            <Text as="span" textDecoration="underline">
+              Member since:
+            </Text>{' '}
+            {new Date(musician.createdAt).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}
+          </Text>
+          <Text>
+            <Text as="span" textDecoration="underline">
+              City:
+            </Text>{' '}
+            Music Land
+          </Text>
+          <Text>
+            <Text as="span" textDecoration="underline">
+              Instrument:
+            </Text>{' '}
+            <InstrumentBadgeStack />
+          </Text>
+          <Text>
+            <Text as="span" textDecoration="underline">
+              About:
+            </Text>{' '}
+            {/* Your content for "About" */}
+          </Text>
+        </Stack>
       </Flex>
-      <Card m="3rem">
+      <Card m="1rem">
         <CardHeader>
           <Heading size="md">
             Take a moment to appreciate your progress...
