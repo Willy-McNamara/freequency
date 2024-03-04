@@ -13,16 +13,14 @@ export class AppController {
   ) {}
 
   @Get('/initialRender')
-  @UseGuards(JwtAuthGuard)
+  //@UseGuards(JwtAuthGuard)
   async initialRender(@Req() req: any): Promise<any> {
     console.log(
       'logging req.user in initialRender, this is the return of jwtGuard',
       req.user,
     );
     // switch req.user.id to a number (4 for root) when commenting out the jwtGuard
-    const musicianData = await this.musiciansService.getMusicianById(
-      req.user.id,
-    );
+    const musicianData = await this.musiciansService.getMusicianById(4);
     const sessionsData = await this.sessionsService.getAllSessions();
     const combinedData = this.appService.formatRenderPayload(
       musicianData,

@@ -14,15 +14,30 @@ import {
   CardFooter,
   Button,
   Badge,
+  useBoolean,
+  Divider,
+  Textarea,
 } from '@chakra-ui/react';
 import { ChatIcon, ArrowUpIcon } from '@chakra-ui/icons';
 import { FrontendSessionDto } from '../../types/sessions.types';
+import { xCommentDto, mockComments } from '../../types/sessions.types';
 
 type props = {
   post: FrontendSessionDto;
 };
 
 const Post = ({ post }: props) => {
+  const [isOpen, setIsOpen] = useBoolean(false);
+  // check if post has comments, if so, grab only the latest two
+  const subComments: xCommentDto[] | null = true
+    ? mockComments.slice(-2)
+    : null;
+
+  const toggleCommentBox = () => {
+    console.log('comment box clicked');
+    setIsOpen.toggle();
+  };
+
   if (!post.isPublic) {
     return;
   }
@@ -52,14 +67,59 @@ const Post = ({ post }: props) => {
             minW: '136px',
           },
         }}
+        p="0.5rem"
       >
         <Button flex="1" variant="ghost" leftIcon={<ArrowUpIcon />}>
           Gas Up
         </Button>
-        <Button flex="1" variant="ghost" leftIcon={<ChatIcon />}>
+        <Button
+          flex="1"
+          variant="ghost"
+          leftIcon={<ChatIcon />}
+          onClick={toggleCommentBox}
+        >
           Comment
         </Button>
       </CardFooter>
+      {subComments && (
+        <CardFooter p="0.25rem 1.5rem">
+          <Flex direction="column" align="left">
+            {subComments.map((comment) => (
+              <Flex direction="row" key={comment.id} mb="20px">
+                <Avatar size="sm" name="User Icon" />
+                <Flex direction="column" alignItems="left" ml="10px">
+                  <Heading size="xs">{comment.musicianDisplayName}</Heading>
+                  <Text fontSize="sm" maxW="30rem">
+                    {comment.text}
+                  </Text>{' '}
+                  {/* maxW is based off the post width, 35rem */}
+                </Flex>
+              </Flex>
+            ))}
+            {mockComments.length > 2 && (
+              <Text fontSize="xs" as="i" mb="1rem">
+                View all comments...
+              </Text>
+            )}
+          </Flex>
+        </CardFooter>
+      )}
+      {isOpen && (
+        <CardFooter p="0 1.5rem 0.75rem">
+          <Flex direction="column" align="left" w="100%">
+            <Divider mb="1rem" w="100%" />
+            <Flex direction="row" justifyItems="center" w="30rem">
+              <Avatar size="sm" name="User Icon" />
+              <Textarea
+                placeholder="Where do I even begin..."
+                resize="none"
+                ml="10px"
+                size="sm"
+              />
+            </Flex>
+          </Flex>
+        </CardFooter>
+      )}
     </Card>
   );
 };
