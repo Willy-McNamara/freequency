@@ -21,6 +21,9 @@ import {
 import { ChatIcon, ArrowUpIcon } from '@chakra-ui/icons';
 import { FrontendSessionDto } from '../../types/sessions.types';
 import { xCommentDto, mockComments } from '../../types/sessions.types';
+import AddComment from './AddComment';
+import ViewAllComments from './ViewAllComments';
+import CommentDisplay from './CommentDisplay';
 
 type props = {
   post: FrontendSessionDto;
@@ -29,8 +32,18 @@ type props = {
 const Post = ({ post }: props) => {
   const [isOpen, setIsOpen] = useBoolean(false);
   // check if post has comments, if so, grab only the latest two
+  const [commentList, setCommentList] = React.useState<xCommentDto[] | []>(
+    mockComments,
+  );
+
+  const handleNewComment = (newComment: xCommentDto) => {
+    setCommentList([...commentList, newComment]);
+    setIsOpen.off();
+  };
+
+  // this has to be derived from state, so that it rerenders when the comment list is updated
   const subComments: xCommentDto[] | null = true
-    ? mockComments.slice(-2)
+    ? commentList?.slice(-2)
     : null;
 
   const toggleCommentBox = () => {
@@ -85,41 +98,18 @@ const Post = ({ post }: props) => {
         <CardFooter p="0.25rem 1.5rem">
           <Flex direction="column" align="left">
             {subComments.map((comment) => (
-              <Flex direction="row" key={comment.id} mb="20px">
-                <Avatar size="sm" name="User Icon" />
-                <Flex direction="column" alignItems="left" ml="10px">
-                  <Heading size="xs">{comment.musicianDisplayName}</Heading>
-                  <Text fontSize="sm" maxW="30rem">
-                    {comment.text}
-                  </Text>{' '}
-                  {/* maxW is based off the post width, 35rem */}
-                </Flex>
-              </Flex>
+              <CommentDisplay comment={comment} />
             ))}
             {mockComments.length > 2 && (
-              <Text fontSize="xs" as="i" mb="1rem">
-                View all comments...
-              </Text>
+              <ViewAllComments
+                commentList={commentList}
+                handleNewComment={handleNewComment}
+              />
             )}
           </Flex>
         </CardFooter>
       )}
-      {isOpen && (
-        <CardFooter p="0 1.5rem 0.75rem">
-          <Flex direction="column" align="left" w="100%">
-            <Divider mb="1rem" w="100%" />
-            <Flex direction="row" justifyItems="center" w="30rem">
-              <Avatar size="sm" name="User Icon" />
-              <Textarea
-                placeholder="Where do I even begin..."
-                resize="none"
-                ml="10px"
-                size="sm"
-              />
-            </Flex>
-          </Flex>
-        </CardFooter>
-      )}
+      {isOpen && <AddComment handleNewComment={handleNewComment} />}
     </Card>
   );
 };

@@ -84,3 +84,13 @@ export const mockComments: xCommentDto[] = [
     musicianDisplayName: 'Musician5',
   },
 ];
+
+export const mockComment = {
+  id: 6,
+  text: 'I am the new comment',
+  createdAt: new Date(),
+  musicianId: 105,
+  sessionId: 201,
+  musicianProfilePhotoUrl: 'https://example.com/musician5.jpg',
+  musicianDisplayName: 'Musician6',
+};
