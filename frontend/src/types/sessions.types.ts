@@ -16,6 +16,8 @@ export type GasUpDto = {
   id: number;
   musicianId: number;
   sessionId: number;
+  musicianProfileUrl: string;
+  musicianDisplayName: string; // New field
 };
 
 export type CommentDto = {
@@ -92,5 +94,51 @@ export const mockComment = {
   musicianId: 105,
   sessionId: 201,
   musicianProfilePhotoUrl: 'https://example.com/musician5.jpg',
+  musicianDisplayName: 'Musician6',
+};
+
+export const dummyGasUps: GasUpDto[] = [
+  {
+    id: 1,
+    musicianId: 101,
+    sessionId: 201,
+    musicianProfileUrl: 'https://example.com/musician1.jpg',
+    musicianDisplayName: 'Musician1',
+  },
+  {
+    id: 2,
+    musicianId: 102,
+    sessionId: 201,
+    musicianProfileUrl: 'https://example.com/musician2.jpg',
+    musicianDisplayName: 'Musician2',
+  },
+  {
+    id: 3,
+    musicianId: 103,
+    sessionId: 201,
+    musicianProfileUrl: 'https://example.com/musician3.jpg',
+    musicianDisplayName: 'Musician3',
+  },
+  {
+    id: 4,
+    musicianId: 104,
+    sessionId: 201,
+    musicianProfileUrl: 'https://example.com/musician4.jpg',
+    musicianDisplayName: 'Musician4',
+  },
+  {
+    id: 5,
+    musicianId: 105,
+    sessionId: 201,
+    musicianProfileUrl: 'https://example.com/musician5.jpg',
+    musicianDisplayName: 'Musician5',
+  },
+];
+
+export const dummyGasUp = {
+  id: 6,
+  musicianId: 105,
+  sessionId: 201,
+  musicianProfileUrl: 'https://example.com/musician5.jpg',
   musicianDisplayName: 'Musician6',
 };

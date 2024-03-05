@@ -26,7 +26,7 @@ const ViewAllComments = ({
   const { isOpen, onOpen, onClose } = useDisclosure();
   return (
     <>
-      <Button onClick={onOpen} variant="link">
+      <Button onClick={onOpen} variant="link" fontWeight="normal">
         <Text fontSize="xs" as="i" mb="1rem">
           View all comments...
         </Text>
@@ -35,7 +35,7 @@ const ViewAllComments = ({
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Modal Title</ModalHeader>
+          <ModalHeader>What the people are sayin'...</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             {commentList.map((comment) => (

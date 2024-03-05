@@ -30,15 +30,15 @@ const router = createBrowserRouter([
         element: <Feed />,
       },
       {
-        path: 'Feed',
+        path: 'feed',
         element: <Feed />,
       },
       {
-        path: 'Practice',
+        path: 'practice',
         element: <Practice />,
       },
       {
-        path: 'Profile',
+        path: 'profile',
         element: <Profile />,
       },
     ],

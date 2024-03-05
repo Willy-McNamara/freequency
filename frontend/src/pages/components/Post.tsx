@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { feedPost } from '../../dummyData/dummyData';
 import {
   Avatar,
@@ -24,6 +24,10 @@ import { xCommentDto, mockComments } from '../../types/sessions.types';
 import AddComment from './AddComment';
 import ViewAllComments from './ViewAllComments';
 import CommentDisplay from './CommentDisplay';
+import { FaGasPump } from 'react-icons/fa6';
+import LikesDisplay from './LikesDisplay';
+import ViewAllLikes from './ViewAllLikes';
+import { dummyGasUps, dummyGasUp, GasUpDto } from '../../types/sessions.types';
 
 type props = {
   post: FrontendSessionDto;
@@ -31,10 +35,12 @@ type props = {
 
 const Post = ({ post }: props) => {
   const [isOpen, setIsOpen] = useBoolean(false);
+  const [isLiked, setIsLiked] = useBoolean(false);
   // check if post has comments, if so, grab only the latest two
-  const [commentList, setCommentList] = React.useState<xCommentDto[] | []>(
+  const [commentList, setCommentList] = useState<xCommentDto[] | []>(
     mockComments,
   );
+  const [gasUpsList, setGasUpsList] = useState<GasUpDto[] | []>(dummyGasUps);
 
   const handleNewComment = (newComment: xCommentDto) => {
     setCommentList([...commentList, newComment]);
@@ -51,6 +57,18 @@ const Post = ({ post }: props) => {
     setIsOpen.toggle();
   };
 
+  const handleGasUp = () => {
+    console.log('gas up clicked');
+    setIsLiked.toggle();
+    if (isLiked) {
+      setGasUpsList(gasUpsList.filter((gasUp) => gasUp.id !== dummyGasUp.id));
+    } else {
+      setGasUpsList([...gasUpsList, dummyGasUp]);
+    }
+  };
+
+  const likes = ['user1', 'user2', 'user3', 'user4', 'user5'];
+
   if (!post.isPublic) {
     return;
   }
@@ -64,13 +82,19 @@ const Post = ({ post }: props) => {
           </Flex>
         </Flex>
       </CardHeader>
-      <CardBody pt="0">
+      <CardBody pt="0" pb="0">
         <Text p="0.5rem 0px 0.5rem" fontSize="xl">
           {post.title} | {post.duration} minutes
         </Text>
-        <Text>{post.notes}</Text>
+        <Text m="1rem 0">{post.notes}</Text>
+        <Flex direction="row">
+          <Badge colorScheme="green"> Audio or Video, recorded take here</Badge>
+        </Flex>
+        <Flex mt="1rem" align="center">
+          {/* <LikesDisplay likes={likes} /> */}
+          <ViewAllLikes gasUps={gasUpsList} />
+        </Flex>
       </CardBody>
-      <Badge colorScheme="green"> Audio or Video, recorded take here</Badge>
 
       <CardFooter
         justify="space-between"
@@ -82,7 +106,12 @@ const Post = ({ post }: props) => {
         }}
         p="0.5rem"
       >
-        <Button flex="1" variant="ghost" leftIcon={<ArrowUpIcon />}>
+        <Button
+          flex="1"
+          variant={isLiked ? 'solid' : 'ghost'}
+          onClick={handleGasUp}
+          leftIcon={<FaGasPump />}
+        >
           Gas Up
         </Button>
         <Button

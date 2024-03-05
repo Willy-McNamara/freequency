@@ -59,7 +59,7 @@ const AddComment = ({ handleNewComment }: AddCommentProps) => {
             icon={<IoIosSend />}
             onClick={handlePostRequest}
             isDisabled={isProcessing}
-            m="0 0.5rem"
+            m="0 0 0 0.5rem"
           />
         </Flex>
       </Flex>
