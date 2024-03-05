@@ -60,6 +60,7 @@ const Post = ({ post }: props) => {
   const handleGasUp = () => {
     console.log('gas up clicked');
     setIsLiked.toggle();
+    // post like to backend.. untoggle if fails
     if (isLiked) {
       setGasUpsList(gasUpsList.filter((gasUp) => gasUp.id !== dummyGasUp.id));
     } else {

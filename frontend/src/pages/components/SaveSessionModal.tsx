@@ -41,6 +41,14 @@ const SaveSessionModal = ({ notesRef, durationRef }) => {
     const convertTimeStringToMinutes = (timeString: string): number => {
       const [hours, minutes, seconds] = timeString.split(':').map(Number);
 
+      console.log(
+        'logging time string, and destructured values :',
+        timeString,
+        hours,
+        minutes,
+        seconds,
+      );
+
       const totalMinutes = hours * 60 + minutes + Math.floor(seconds / 60);
 
       return totalMinutes;
