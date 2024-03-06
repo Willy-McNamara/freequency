@@ -32,4 +32,8 @@ module.exports = {
     port: 3001,
     historyApiFallback: true,
   },
+  watchOptions: {
+    // supposed to help w/ build time
+    ignored: /node_modules/,
+  },
 };

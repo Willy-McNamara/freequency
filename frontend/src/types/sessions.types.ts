@@ -20,15 +20,12 @@ export type GasUpDto = {
   musicianDisplayName: string; // New field
 };
 
-export type CommentDto = {
-  id: number;
-  text: string;
-  createdAt: Date;
+export type NewGasUpDto = {
   musicianId: number;
   sessionId: number;
 };
 
-export type xCommentDto = {
+export type CommentDto = {
   id: number;
   text: string;
   createdAt: Date;
@@ -38,8 +35,13 @@ export type xCommentDto = {
   musicianDisplayName: string; // New field
 };
 
+export type AddCommentDto = {
+  text: string;
+  sessionId: number;
+};
+
 // Mock comments
-export const mockComments: xCommentDto[] = [
+export const mockComments: CommentDto[] = [
   {
     id: 1,
     text: 'Great performance!',

@@ -6,7 +6,7 @@ const { execSync } = require('child_process');
 config({ path: '.env.local' });
 
 // name this migration
-const migrationName = 'profile-updates-march-2-24';
+const migrationName = 'comment/like-updates-march-5-24';
 execSync(`npx prisma migrate dev --name ${migrationName}`, {
   stdio: 'inherit',
 });

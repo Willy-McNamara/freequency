@@ -9,18 +9,31 @@ import {
   IconButton,
 } from '@chakra-ui/react';
 import { IoIosSend } from 'react-icons/io';
-import { mockComment, xCommentDto } from '../../types/sessions.types';
+import {
+  mockComment,
+  CommentDto,
+  AddCommentDto,
+} from '../../types/sessions.types';
+import axios from 'axios';
 
 interface AddCommentProps {
-  handleNewComment: (newComment: xCommentDto) => void;
+  handleNewComment: (newComment: CommentDto) => void;
+  sessionId: number;
 }
 
-const AddComment = ({ handleNewComment }: AddCommentProps) => {
+const AddComment = ({ handleNewComment, sessionId }: AddCommentProps) => {
   const textareaRef = useRef(null);
   const [isProcessing, setProcessing] = useState(false);
 
   const handlePostRequest = () => {
     const text = textareaRef.current.value;
+
+    const newComment: AddCommentDto = {
+      text,
+      sessionId,
+    };
+
+    console.log('newComment:', newComment); // success
 
     // Disable the component and mock the post request using setTimeout
     setProcessing(true);
@@ -29,8 +42,16 @@ const AddComment = ({ handleNewComment }: AddCommentProps) => {
       // Reset the disabled state after the mock request is complete
       setProcessing(false);
 
-      // this would be in the .then of the actual post request
-      handleNewComment(mockComment);
+      axios
+        .post('/sessions/addComment', newComment)
+        .then((response) => {
+          console.log('response:', response);
+          // this would be in the .then of the actual post request
+          handleNewComment(response.data);
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
     }, 1000); // Mocking a 1-second delay
   };
 

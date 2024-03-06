@@ -29,11 +29,10 @@ const LikesDisplay = ({ gasUps }: LikesDisplayProps) => {
           />
         </Box>
       ))}
-      {gasUps.length > maxAvatars && (
-        <Button ml="0.25rem" as="i" variant="link" fontWeight="normal">
-          {gasUps.length} gas ups
-        </Button>
-      )}
+
+      <Button ml="0.25rem" as="i" variant="link" fontWeight="normal">
+        {gasUps.length} gas ups
+      </Button>
     </Flex>
   );
 };

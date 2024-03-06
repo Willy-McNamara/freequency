@@ -46,6 +46,8 @@ let SessionsService = class SessionsService {
             id: gasUp.id,
             musicianId: gasUp.musicianId,
             sessionId: gasUp.sessionId,
+            musicianProfilePhotoUrl: gasUp.musicianProfilePhotoUrl,
+            musicianDisplayName: gasUp.musicianDisplayName,
         }));
     }
     mapComments(comments) {
@@ -55,6 +57,8 @@ let SessionsService = class SessionsService {
             createdAt: comment.createdAt,
             musicianId: comment.musicianId,
             sessionId: comment.sessionId,
+            musicianDisplayName: comment.musicianDisplayName,
+            musicianProfilePhotoUrl: comment.musicianProfilePhotoUrl,
         }));
     }
     async createSession(newSession) {
@@ -91,6 +95,87 @@ let SessionsService = class SessionsService {
         }
         catch (error) {
             throw new Error(`Failed to create session: ${error.message}`);
+        }
+    }
+    async addComment(newComment) {
+        const prisma = this.prisma;
+        try {
+            const createdGasUp = await prisma.$transaction(async (prisma) => {
+                const musician = await prisma.musician.findUnique({
+                    where: { id: newComment.musicianId },
+                    select: { displayName: true, profilePictureUrl: true },
+                });
+                const createdComment = await prisma.comment.create({
+                    data: {
+                        text: newComment.text,
+                        musicianProfilePhotoUrl: musician.profilePictureUrl,
+                        musicianDisplayName: musician.displayName,
+                        musician: {
+                            connect: { id: newComment.musicianId },
+                        },
+                        session: {
+                            connect: { id: newComment.sessionId },
+                        },
+                    },
+                });
+                const commentDto = {
+                    id: createdComment.id,
+                    text: createdComment.text,
+                    createdAt: createdComment.createdAt,
+                    musicianId: createdComment.musicianId,
+                    sessionId: createdComment.sessionId,
+                    musicianDisplayName: createdComment.musicianDisplayName,
+                    musicianProfilePhotoUrl: createdComment.musicianProfilePhotoUrl,
+                };
+                console.log('comment created! here is comment:', commentDto);
+                return commentDto;
+            });
+            return createdGasUp;
+        }
+        catch (error) {
+            console.log('error adding comment:', error);
+            throw new Error(`Failed to add comment: ${error.message}`);
+        }
+    }
+    async addGasUp(newGasUp) {
+        const prisma = this.prisma;
+        try {
+            const createdGasUp = await prisma.$transaction(async (prisma) => {
+                const updatedGasserUpper = await prisma.musician.update({
+                    where: { id: newGasUp.gasserId },
+                    data: {
+                        totalGasUpsGiven: {
+                            increment: 1,
+                        },
+                    },
+                    select: { displayName: true, profilePictureUrl: true },
+                });
+                const innerCreatedGasUp = await prisma.gasUp.create({
+                    data: {
+                        musicianProfilePhotoUrl: updatedGasserUpper.profilePictureUrl,
+                        musicianDisplayName: updatedGasserUpper.displayName,
+                        musician: {
+                            connect: { id: newGasUp.gasserId },
+                        },
+                        session: {
+                            connect: { id: newGasUp.sessionId },
+                        },
+                    },
+                });
+                await prisma.musician.update({
+                    where: { id: newGasUp.musicianId },
+                    data: {
+                        totalGasUpsRecieved: {
+                            increment: 1,
+                        },
+                    },
+                });
+                return innerCreatedGasUp;
+            });
+            return createdGasUp;
+        }
+        catch (error) {
+            throw new Error(`Failed to gas up: ${error.message}`);
         }
     }
 };

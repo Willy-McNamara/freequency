@@ -36,7 +36,8 @@ model Musician {
   profilePictureUrl   String?
   totalSessions       Int         @default(0)
   totalPracticeMinutes Int         @default(0)
-  totalGasUps         Int         @default(0)
+  totalGasUpsGiven         Int         @default(0)
+  totalGasUpsRecieved         Int         @default(0)
   longestStreak       Int         @default(0)
   currentStreak       Int         @default(0)
   createdAt           DateTime    @default(now())
@@ -52,6 +53,8 @@ model GasUp {
   id         Int      @id @default(autoincrement())
   musicianId Int
   sessionId  Int
+  musicianProfilePhotoUrl   String
+  musicianDisplayName    String
   musician   Musician @relation(fields: [musicianId], references: [id])
   session    Session  @relation(fields: [sessionId], references: [id])
 }
@@ -62,6 +65,8 @@ model Comment {
   createdAt  DateTime @default(now())
   musicianId Int
   sessionId  Int
+  musicianProfilePhotoUrl   String
+  musicianDisplayName    String
   musician  Musician @relation(fields: [musicianId], references: [id])
   session   Session  @relation(fields: [sessionId], references: [id])
 }

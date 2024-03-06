@@ -13,13 +13,11 @@ import DurationTimer from './components/DurationTimer';
 
 const Practice = () => {
   const notesRef = useRef(null);
-  const [startOrResume, setStartOrResume] = useState('Start Session');
   const durationRef = useRef(null);
-
-  // new implentation of timer
 
   const [isActive, setIsActive] = useState<boolean>(false);
   const [isPaused, setIsPaused] = useState<boolean>(true);
+  const [startOrResume, setStartOrResume] = useState('Start Session');
   const [time, setTime] = useState<number>(0);
 
   useEffect(() => {

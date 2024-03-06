@@ -2,55 +2,52 @@ import React, { useState } from 'react';
 import { feedPost } from '../../dummyData/dummyData';
 import {
   Avatar,
-  Box,
   Card,
   CardHeader,
   Flex,
   Heading,
   Text,
-  IconButton,
   CardBody,
-  Image,
   CardFooter,
   Button,
   Badge,
   useBoolean,
-  Divider,
-  Textarea,
 } from '@chakra-ui/react';
 import { ChatIcon, ArrowUpIcon } from '@chakra-ui/icons';
-import { FrontendSessionDto } from '../../types/sessions.types';
-import { xCommentDto, mockComments } from '../../types/sessions.types';
+import { FrontendSessionDto, NewGasUpDto } from '../../types/sessions.types';
+import { CommentDto, mockComments } from '../../types/sessions.types';
 import AddComment from './AddComment';
 import ViewAllComments from './ViewAllComments';
 import CommentDisplay from './CommentDisplay';
 import { FaGasPump } from 'react-icons/fa6';
-import LikesDisplay from './LikesDisplay';
 import ViewAllLikes from './ViewAllLikes';
-import { dummyGasUps, dummyGasUp, GasUpDto } from '../../types/sessions.types';
+import { GasUpDto } from '../../types/sessions.types';
+import axios from 'axios';
 
 type props = {
   post: FrontendSessionDto;
+  musicianId: number;
 };
 
-const Post = ({ post }: props) => {
+const Post = ({ post, musicianId }: props) => {
   const [isOpen, setIsOpen] = useBoolean(false);
-  const [isLiked, setIsLiked] = useBoolean(false);
-  // check if post has comments, if so, grab only the latest two
-  const [commentList, setCommentList] = useState<xCommentDto[] | []>(
-    mockComments,
+  // if the user has already liked this post, set state true
+  const [isLiked, setIsLiked] = useBoolean(
+    post.gasUps.some((gasUp) => gasUp.musicianId === musicianId),
   );
-  const [gasUpsList, setGasUpsList] = useState<GasUpDto[] | []>(dummyGasUps);
 
-  const handleNewComment = (newComment: xCommentDto) => {
+  const [commentList, setCommentList] = useState<CommentDto[] | []>(
+    post.comments,
+  );
+  const [gasUpsList, setGasUpsList] = useState<GasUpDto[] | []>(post.gasUps);
+
+  const handleNewComment = (newComment: CommentDto) => {
     setCommentList([...commentList, newComment]);
     setIsOpen.off();
   };
 
   // this has to be derived from state, so that it rerenders when the comment list is updated
-  const subComments: xCommentDto[] | null = true
-    ? commentList?.slice(-2)
-    : null;
+  const subComments: CommentDto[] | null = true ? commentList?.slice(-2) : null;
 
   const toggleCommentBox = () => {
     console.log('comment box clicked');
@@ -59,13 +56,27 @@ const Post = ({ post }: props) => {
 
   const handleGasUp = () => {
     console.log('gas up clicked');
-    setIsLiked.toggle();
-    // post like to backend.. untoggle if fails
-    if (isLiked) {
-      setGasUpsList(gasUpsList.filter((gasUp) => gasUp.id !== dummyGasUp.id));
-    } else {
-      setGasUpsList([...gasUpsList, dummyGasUp]);
-    }
+    // don't let somebody re-gas a post
+    if (isLiked) return;
+
+    // hahaha i think out of laziness I am just going to not implement UNLIKING for now
+    // if you like it, that's it you have now liked the post forever lol
+    const newGasUp: NewGasUpDto = {
+      sessionId: post.id,
+      musicianId: post.musicianId,
+    };
+
+    axios
+      .post('/sessions/addGasUp', newGasUp)
+      .then((res) => {
+        console.log('res from gasUp post:', res);
+        setIsLiked.on();
+        setGasUpsList([...gasUpsList, res.data]);
+      })
+      .catch((error) => {
+        console.error('Error trying to add gasUp:', error);
+        setIsLiked.off();
+      });
   };
 
   const likes = ['user1', 'user2', 'user3', 'user4', 'user5'];
@@ -92,7 +103,6 @@ const Post = ({ post }: props) => {
           <Badge colorScheme="green"> Audio or Video, recorded take here</Badge>
         </Flex>
         <Flex mt="1rem" align="center">
-          {/* <LikesDisplay likes={likes} /> */}
           <ViewAllLikes gasUps={gasUpsList} />
         </Flex>
       </CardBody>
@@ -130,7 +140,7 @@ const Post = ({ post }: props) => {
             {subComments.map((comment) => (
               <CommentDisplay comment={comment} />
             ))}
-            {mockComments.length > 2 && (
+            {commentList.length > 2 && (
               <ViewAllComments
                 commentList={commentList}
                 handleNewComment={handleNewComment}
@@ -139,7 +149,9 @@ const Post = ({ post }: props) => {
           </Flex>
         </CardFooter>
       )}
-      {isOpen && <AddComment handleNewComment={handleNewComment} />}
+      {isOpen && (
+        <AddComment handleNewComment={handleNewComment} sessionId={post.id} />
+      )}
     </Card>
   );
 };

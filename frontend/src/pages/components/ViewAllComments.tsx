@@ -11,12 +11,12 @@ import {
 } from '@chakra-ui/react';
 import React from 'react';
 import AddComment from './AddComment';
-import { xCommentDto } from '../../types/sessions.types';
+import { CommentDto } from '../../types/sessions.types';
 import CommentDisplay from './CommentDisplay';
 
 interface ViewAllCommentsProps {
-  handleNewComment: (newComment: xCommentDto) => void;
-  commentList: xCommentDto[];
+  handleNewComment: (newComment: CommentDto) => void;
+  commentList: CommentDto[];
 }
 
 const ViewAllComments = ({

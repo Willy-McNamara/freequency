@@ -16,7 +16,7 @@ const Feed = ({}) => {
   return (
     <Flex direction="column" align="center">
       {initRender.feed.map((post: FrontendSessionDto) => {
-        return <Post post={post} />;
+        return <Post post={post} musicianId={initRender.musician.id} />;
       })}
     </Flex>
   );

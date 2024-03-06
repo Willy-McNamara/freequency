@@ -1,9 +1,9 @@
 import React from 'react';
 import { Avatar, Flex, Heading, Text } from '@chakra-ui/react';
-import { xCommentDto } from '../../types/sessions.types';
+import { CommentDto } from '../../types/sessions.types';
 
 interface CommentDisplayProps {
-  comment: xCommentDto;
+  comment: CommentDto;
 }
 
 const CommentDisplay = ({ comment }: CommentDisplayProps) => {
