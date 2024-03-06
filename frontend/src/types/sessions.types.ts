@@ -8,6 +8,7 @@ export type FrontendSessionDto = {
   createdAt: Date;
   musicianId: number;
   musicianDisplayname: string;
+  musicianProfilePictureUrl: string;
   gasUps: GasUpDto[];
   comments: CommentDto[];
 };
@@ -16,8 +17,7 @@ export type GasUpDto = {
   id: number;
   musicianId: number;
   sessionId: number;
-  musicianProfileUrl: string;
-  musicianDisplayName: string; // New field
+  musician: SubMusicianDto;
 };
 
 export type NewGasUpDto = {
@@ -31,8 +31,12 @@ export type CommentDto = {
   createdAt: Date;
   musicianId: number;
   sessionId: number;
-  musicianProfilePhotoUrl: string; // New field
-  musicianDisplayName: string; // New field
+  musician: SubMusicianDto;
+};
+
+export type SubMusicianDto = {
+  profilePictureUrl: string;
+  displayName: string;
 };
 
 export type AddCommentDto = {

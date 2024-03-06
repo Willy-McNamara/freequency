@@ -53,8 +53,6 @@ model GasUp {
   id         Int      @id @default(autoincrement())
   musicianId Int
   sessionId  Int
-  musicianProfilePhotoUrl   String
-  musicianDisplayName    String
   musician   Musician @relation(fields: [musicianId], references: [id])
   session    Session  @relation(fields: [sessionId], references: [id])
 }
@@ -65,8 +63,6 @@ model Comment {
   createdAt  DateTime @default(now())
   musicianId Int
   sessionId  Int
-  musicianProfilePhotoUrl   String
-  musicianDisplayName    String
   musician  Musician @relation(fields: [musicianId], references: [id])
   session   Session  @relation(fields: [sessionId], references: [id])
 }

@@ -79,12 +79,12 @@ const Profile = () => {
             </ListItem>
             <ListItem>
               <ListIcon as={ImFire} color="red.500" />
-              Recieved {musician.totalGasUps} gas ups
+              Recieved {musician.totalGasUpsRecieved} gas ups
             </ListItem>
             {/* Need to update schema to account for giving/getting GasUps */}
             <ListItem>
               <ListIcon as={FaGasPump} color="brown.500" />
-              Given out {4} gas ups
+              Given out {musician.totalGasUpsGiven} gas ups
             </ListItem>
           </List>
         </CardBody>

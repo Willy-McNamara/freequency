@@ -1,12 +1,11 @@
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CommentDto, CreateSessionDto, FrontendSessionDto, GasUpDto, NewCommentDto, NewGasUpDto, SessionDto } from './dto/session.dto';
+import { CreateSessionDto, FrontendSessionDto, NewCommentDto, NewGasUpDto } from './dto/session.dto';
+import { FrontendCommentDto, FrontendGasUpDto } from 'src/musicians/dto/musician.dto';
 export declare class SessionsService {
     private prisma;
     constructor(prisma: PrismaService);
     getAllSessions(): Promise<FrontendSessionDto[]>;
-    private mapGasUps;
-    private mapComments;
-    createSession(newSession: CreateSessionDto): Promise<SessionDto>;
-    addComment(newComment: NewCommentDto): Promise<CommentDto>;
-    addGasUp(newGasUp: NewGasUpDto): Promise<GasUpDto>;
+    createSession(newSession: CreateSessionDto): Promise<FrontendSessionDto>;
+    addComment(newComment: NewCommentDto): Promise<FrontendCommentDto>;
+    addGasUp(newGasUp: NewGasUpDto): Promise<FrontendGasUpDto>;
 }

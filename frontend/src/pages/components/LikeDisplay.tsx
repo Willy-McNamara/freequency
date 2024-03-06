@@ -9,9 +9,13 @@ interface LikeDisplayProps {
 const LikeDisplay = ({ gasUp }: LikeDisplayProps) => {
   return (
     <Flex direction="row" align="center" mb="20px">
-      <Avatar size="sm" name="User Icon" />
+      <Avatar
+        size="sm"
+        name={gasUp.musician.displayName}
+        src={gasUp.musician.profilePictureUrl}
+      />
       <Heading ml="1rem" size="xs">
-        {gasUp.musicianDisplayName}
+        {gasUp.musician.displayName}
       </Heading>
     </Flex>
   );

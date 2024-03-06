@@ -7,8 +7,13 @@ import {
   CommentDto,
   NewGasUpDto,
   GasUpDto,
+  FrontendSessionDto,
 } from './dto/session.dto';
 import { JwtAuthGuard } from '../auth/jwt.guard';
+import {
+  FrontendCommentDto,
+  FrontendGasUpDto,
+} from 'src/musicians/dto/musician.dto';
 
 @Controller('sessions')
 export class SessionsController {
@@ -21,7 +26,10 @@ export class SessionsController {
 
   @Post('newSession')
   @UseGuards(JwtAuthGuard)
-  async createSession(@Body() body: any, @Req() req: any): Promise<SessionDto> {
+  async createSession(
+    @Body() body: any,
+    @Req() req: any,
+  ): Promise<FrontendSessionDto> {
     const newSession: CreateSessionDto = {
       title: body.title,
       notes: body.notes,
@@ -34,7 +42,10 @@ export class SessionsController {
 
   @Post('addComment')
   @UseGuards(JwtAuthGuard)
-  async addComment(@Body() body: any, @Req() req: any): Promise<CommentDto> {
+  async addComment(
+    @Body() body: any,
+    @Req() req: any,
+  ): Promise<FrontendCommentDto> {
     console.log('req.user.id:', req.user.id);
     const newComment: NewCommentDto = {
       text: body.text,
@@ -47,7 +58,10 @@ export class SessionsController {
 
   @Post('addGasUp')
   @UseGuards(JwtAuthGuard)
-  async addGasUp(@Body() body: any, @Req() req: any): Promise<GasUpDto> {
+  async addGasUp(
+    @Body() body: any,
+    @Req() req: any,
+  ): Promise<FrontendGasUpDto> {
     console.log('req.user.id:', req.user.id);
     const newGasUp: NewGasUpDto = {
       gasserId: req.user.id, // the one doing the gassing up

@@ -1,10 +1,11 @@
 import { SessionsService } from './sessions.service';
-import { SessionDto, CommentDto, GasUpDto } from './dto/session.dto';
+import { SessionDto, FrontendSessionDto } from './dto/session.dto';
+import { FrontendCommentDto, FrontendGasUpDto } from 'src/musicians/dto/musician.dto';
 export declare class SessionsController {
     private readonly sessionsService;
     constructor(sessionsService: SessionsService);
     getAllSessions(): Promise<SessionDto[]>;
-    createSession(body: any, req: any): Promise<SessionDto>;
-    addComment(body: any, req: any): Promise<CommentDto>;
-    addGasUp(body: any, req: any): Promise<GasUpDto>;
+    createSession(body: any, req: any): Promise<FrontendSessionDto>;
+    addComment(body: any, req: any): Promise<FrontendCommentDto>;
+    addGasUp(body: any, req: any): Promise<FrontendGasUpDto>;
 }

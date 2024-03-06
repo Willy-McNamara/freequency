@@ -9,9 +9,13 @@ interface CommentDisplayProps {
 const CommentDisplay = ({ comment }: CommentDisplayProps) => {
   return (
     <Flex direction="row" key={comment.id} mb="20px">
-      <Avatar size="sm" name="User Icon" />
+      <Avatar
+        size="sm"
+        name={comment.musician.displayName}
+        src={comment.musician.profilePictureUrl}
+      />
       <Flex direction="column" alignItems="left" ml="10px">
-        <Heading size="xs">{comment.musicianDisplayName}</Heading>
+        <Heading size="xs">{comment.musician.displayName}</Heading>
         <Text fontSize="sm" maxW="30rem">
           {comment.text}
         </Text>{' '}

@@ -17,11 +17,13 @@ import CommentDisplay from './CommentDisplay';
 interface ViewAllCommentsProps {
   handleNewComment: (newComment: CommentDto) => void;
   commentList: CommentDto[];
+  sessionId: number;
 }
 
 const ViewAllComments = ({
   handleNewComment,
   commentList,
+  sessionId,
 }: ViewAllCommentsProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   return (
@@ -43,7 +45,10 @@ const ViewAllComments = ({
             ))}
           </ModalBody>
 
-          <AddComment handleNewComment={handleNewComment} />
+          <AddComment
+            handleNewComment={handleNewComment}
+            sessionId={sessionId}
+          />
         </ModalContent>
       </Modal>
     </>

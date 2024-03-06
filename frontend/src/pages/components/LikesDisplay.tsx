@@ -23,7 +23,8 @@ const LikesDisplay = ({ gasUps }: LikesDisplayProps) => {
           zIndex={index + 1} // Increase zIndex for each Avatar to layer them
         >
           <Avatar
-            name={liker.musicianDisplayName}
+            name={liker.musician.displayName}
+            src={liker.musician.profilePictureUrl}
             size="xs"
             border="2px white solid"
           />

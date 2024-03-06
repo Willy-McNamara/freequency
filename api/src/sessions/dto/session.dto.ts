@@ -29,6 +29,7 @@ export class FrontendSessionDto {
   createdAt: Date;
   musicianId: number;
   musicianDisplayname: string;
+  musicianProfilePictureUrl: string;
   gasUps: GasUpDto[];
   comments: CommentDto[];
 }
@@ -37,8 +38,6 @@ export class GasUpDto {
   id: number;
   musicianId: number;
   sessionId: number;
-  musicianProfilePhotoUrl: string; // New field
-  musicianDisplayName: string; // New field
 }
 
 export class NewGasUpDto {
@@ -53,8 +52,6 @@ export class CommentDto {
   createdAt: Date;
   musicianId: number;
   sessionId: number;
-  musicianProfilePhotoUrl: string; // New field
-  musicianDisplayName: string;
 }
 
 export class NewCommentDto {

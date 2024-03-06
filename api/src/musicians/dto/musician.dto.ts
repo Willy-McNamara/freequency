@@ -74,11 +74,25 @@ export class GasUpDto {
   id: number;
   musicianId: number;
   sessionId: number;
+}
+
+export class FrontendGasUpDto {
+  id: number;
+  musicianId: number;
+  sessionId: number;
   musicianProfilePhotoUrl: string; // New field
   musicianDisplayName: string; // New field
 }
 
 export class CommentDto {
+  id: number;
+  text: string;
+  createdAt: Date;
+  musicianId: number;
+  sessionId: number;
+}
+
+export class FrontendCommentDto {
   id: number;
   text: string;
   createdAt: Date;

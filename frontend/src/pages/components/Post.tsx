@@ -89,7 +89,7 @@ const Post = ({ post, musicianId }: props) => {
       <CardHeader pb="0">
         <Flex direction="column">
           <Flex flex="1" gap="4" alignItems="center" flexWrap="wrap">
-            <Avatar name="User Icon" />
+            <Avatar name="User Icon" src={post.musicianProfilePictureUrl} />
             <Heading size="sm">{post.musicianDisplayname}</Heading>
           </Flex>
         </Flex>
@@ -144,6 +144,7 @@ const Post = ({ post, musicianId }: props) => {
               <ViewAllComments
                 commentList={commentList}
                 handleNewComment={handleNewComment}
+                sessionId={post.id}
               />
             )}
           </Flex>

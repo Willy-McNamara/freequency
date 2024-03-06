@@ -153,6 +153,7 @@ export class MusiciansService {
       const formattedUpdatedMusician: MusicianFrontendDTO =
         this.formatMusicianForFrontend(updatedMusician);
       console.log('musician successfully updated!', formattedUpdatedMusician);
+
       return formattedUpdatedMusician;
     } catch (error) {
       console.error('Error updating musician:', error);
