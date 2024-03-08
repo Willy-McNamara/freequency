@@ -20,8 +20,8 @@ let SessionsController = class SessionsController {
     constructor(sessionsService) {
         this.sessionsService = sessionsService;
     }
-    async getAllSessions() {
-        return this.sessionsService.getAllSessions();
+    async getSessionsOnRender() {
+        return this.sessionsService.getFiveSessions();
     }
     async createSession(body, req) {
         const newSession = {
@@ -60,7 +60,7 @@ __decorate([
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
-], SessionsController.prototype, "getAllSessions", null);
+], SessionsController.prototype, "getSessionsOnRender", null);
 __decorate([
     (0, common_1.Post)('newSession'),
     (0, common_1.UseGuards)(jwt_guard_1.JwtAuthGuard),

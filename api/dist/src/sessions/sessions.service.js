@@ -17,9 +17,12 @@ let SessionsService = class SessionsService {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async getAllSessions() {
+    async getFiveSessions() {
         const prisma = this.prisma;
+        const take = 5;
         const sessions = await prisma.session.findMany({
+            take: take,
+            orderBy: { id: 'desc' },
             include: {
                 gasUps: {
                     include: {
@@ -64,6 +67,63 @@ let SessionsService = class SessionsService {
             comments: session.comments,
         }));
         return frontendSessionDto;
+    }
+    async getSessionsChunk(cursorId) {
+        const prisma = this.prisma;
+        const pageSize = 10;
+        const skip = 1;
+        const take = pageSize;
+        const sessions = await prisma.session.findMany({
+            take,
+            skip,
+            orderBy: { id: 'desc' },
+            cursor: {
+                id: cursorId,
+            },
+            include: {
+                gasUps: {
+                    include: {
+                        musician: {
+                            select: {
+                                displayName: true,
+                                profilePictureUrl: true,
+                            },
+                        },
+                    },
+                },
+                comments: {
+                    include: {
+                        musician: {
+                            select: {
+                                displayName: true,
+                                profilePictureUrl: true,
+                            },
+                        },
+                    },
+                },
+                musician: {
+                    select: {
+                        displayName: true,
+                        profilePictureUrl: true,
+                    },
+                },
+            },
+        });
+        const frontendSessions = sessions.map((session) => ({
+            id: session.id,
+            title: session.title,
+            notes: session.notes,
+            duration: session.duration,
+            isPublic: session.isPublic,
+            takeId: session.takeId,
+            createdAt: session.createdAt,
+            musicianId: session.musicianId,
+            musicianDisplayname: session.musician.displayName,
+            musicianProfilePictureUrl: session.musician.profilePictureUrl,
+            gasUps: session.gasUps,
+            comments: session.comments,
+        }));
+        return frontendSessions;
     }
     async createSession(newSession) {
         const prisma = this.prisma;

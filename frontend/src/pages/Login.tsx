@@ -2,7 +2,7 @@ import React from 'react';
 import { Flex, Heading, Divider, Text } from '@chakra-ui/react';
 import GoogleButton from 'react-google-button';
 import Logo from './components/Logo';
-import PrivacyPolicy from './components/PrivacyPolicy';
+import Footer from './components/Footer';
 
 const Login = () => {
   const handleGoogleButtonClick = () => {
@@ -24,7 +24,7 @@ const Login = () => {
         <Divider m="2rem" size="large" />
         <GoogleButton onClick={handleGoogleButtonClick} />
       </Flex>
-      <PrivacyPolicy />
+      <Footer />
     </Flex>
   );
 };

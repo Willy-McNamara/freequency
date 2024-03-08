@@ -14,16 +14,21 @@ import {
   FrontendCommentDto,
   FrontendGasUpDto,
 } from 'src/musicians/dto/musician.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class SessionsService {
   constructor(private prisma: PrismaService) {}
 
-  async getAllSessions(): Promise<FrontendSessionDto[]> {
+  async getFiveSessions(): Promise<FrontendSessionDto[]> {
     const prisma = this.prisma;
+
+    const take = 5;
 
     // Query all sessions from the database, includes musician.displayName, and displayName + photo for gasUps and comments
     const sessions = await prisma.session.findMany({
+      take: take,
+      orderBy: { id: 'desc' },
       include: {
         gasUps: {
           include: {
@@ -73,6 +78,69 @@ export class SessionsService {
     );
 
     return frontendSessionDto;
+  }
+
+  async getSessionsChunk(cursorId?: number): Promise<FrontendSessionDto[]> {
+    const prisma = this.prisma;
+    const pageSize = 10;
+    const skip = 1;
+    const take = pageSize;
+
+    // Easier for typescript if you include the query directly in the method (not modularized out as a variable)
+    const sessions = await prisma.session.findMany({
+      take,
+      skip,
+      orderBy: { id: 'desc' },
+      cursor: {
+        id: cursorId,
+      },
+      include: {
+        gasUps: {
+          include: {
+            musician: {
+              select: {
+                displayName: true,
+                profilePictureUrl: true,
+              },
+            },
+          },
+        },
+        comments: {
+          include: {
+            musician: {
+              select: {
+                displayName: true,
+                profilePictureUrl: true,
+              },
+            },
+          },
+        },
+        musician: {
+          select: {
+            displayName: true,
+            profilePictureUrl: true,
+          },
+        },
+      },
+    });
+
+    // Map the database sessions to SessionWithDetailsDto objects
+    const frontendSessions: FrontendSessionDto[] = sessions.map((session) => ({
+      id: session.id,
+      title: session.title,
+      notes: session.notes,
+      duration: session.duration,
+      isPublic: session.isPublic,
+      takeId: session.takeId,
+      createdAt: session.createdAt,
+      musicianId: session.musicianId,
+      musicianDisplayname: session.musician.displayName,
+      musicianProfilePictureUrl: session.musician.profilePictureUrl,
+      gasUps: session.gasUps,
+      comments: session.comments,
+    }));
+
+    return frontendSessions;
   }
 
   async createSession(

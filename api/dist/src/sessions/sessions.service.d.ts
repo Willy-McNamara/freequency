@@ -4,7 +4,8 @@ import { FrontendCommentDto, FrontendGasUpDto } from 'src/musicians/dto/musician
 export declare class SessionsService {
     private prisma;
     constructor(prisma: PrismaService);
-    getAllSessions(): Promise<FrontendSessionDto[]>;
+    getFiveSessions(): Promise<FrontendSessionDto[]>;
+    getSessionsChunk(cursorId?: number): Promise<FrontendSessionDto[]>;
     createSession(newSession: CreateSessionDto): Promise<FrontendSessionDto>;
     addComment(newComment: NewCommentDto): Promise<FrontendCommentDto>;
     addGasUp(newGasUp: NewGasUpDto): Promise<FrontendGasUpDto>;

@@ -20,8 +20,8 @@ export class SessionsController {
   constructor(private readonly sessionsService: SessionsService) {}
 
   @Get()
-  async getAllSessions(): Promise<SessionDto[]> {
-    return this.sessionsService.getAllSessions();
+  async getSessionsOnRender(): Promise<SessionDto[]> {
+    return this.sessionsService.getFiveSessions();
   }
 
   @Post('newSession')
