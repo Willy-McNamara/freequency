@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { RefObject, useState } from 'react';
 import { feedPost } from '../../dummyData/dummyData';
 import {
   Avatar,

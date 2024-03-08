@@ -23,6 +23,9 @@ let SessionsController = class SessionsController {
     async getSessionsOnRender() {
         return this.sessionsService.getFiveSessions();
     }
+    async getNextChunk(body) {
+        return this.sessionsService.getSessionsChunk(body.cursor);
+    }
     async createSession(body, req) {
         const newSession = {
             title: body.title,
@@ -61,6 +64,14 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], SessionsController.prototype, "getSessionsOnRender", null);
+__decorate([
+    (0, common_1.Post)('nextChunk'),
+    (0, common_1.UseGuards)(jwt_guard_1.JwtAuthGuard),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], SessionsController.prototype, "getNextChunk", null);
 __decorate([
     (0, common_1.Post)('newSession'),
     (0, common_1.UseGuards)(jwt_guard_1.JwtAuthGuard),

@@ -24,6 +24,12 @@ export class SessionsController {
     return this.sessionsService.getFiveSessions();
   }
 
+  @Post('nextChunk')
+  @UseGuards(JwtAuthGuard)
+  async getNextChunk(@Body() body: any): Promise<SessionDto[]> {
+    return this.sessionsService.getSessionsChunk(body.cursor);
+  }
+
   @Post('newSession')
   @UseGuards(JwtAuthGuard)
   async createSession(
