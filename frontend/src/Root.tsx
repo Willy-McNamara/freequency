@@ -7,6 +7,7 @@ import { PiMusicNotesFill } from 'react-icons/pi';
 import { RenderPayloadDTO } from './types/app.types';
 import PrivacyPolicy from './pages/components/PrivacyPolicy';
 import Footer from './pages/components/Footer';
+import Menu from './pages/components/Menu';
 
 const Root = () => {
   /*
@@ -35,7 +36,7 @@ const Root = () => {
         bgColor="#f7f7e9"
         minHeight="100vh"
       >
-        <Flex position="absolute" left="2vw" top="30vh" direction="column">
+        {/* <Flex position="absolute" left="2vw" top="30vh" direction="column">
           <Link to="feed">
             <Flex direction="row" align="center" m="0.25rem">
               <Icon as={TbHandRock} boxSize="3em" mr="0.5rem"></Icon>
@@ -54,7 +55,8 @@ const Root = () => {
               <Heading>Practice</Heading>
             </Flex>
           </Link>
-        </Flex>
+        </Flex> */}
+        <Menu />
         <Box m="1rem"></Box>
         <Outlet context={initPayload} />
       </Flex>
