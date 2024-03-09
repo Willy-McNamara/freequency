@@ -52,8 +52,10 @@ export const mockComments: CommentDto[] = [
     createdAt: new Date(),
     musicianId: 101,
     sessionId: 201,
-    musicianProfilePhotoUrl: 'https://example.com/musician1.jpg',
-    musicianDisplayName: 'Musician1',
+    musician: {
+      profilePictureUrl: 'https://example.com/musician1.jpg',
+      displayName: 'Musician1',
+    },
   },
   {
     id: 2,
@@ -61,8 +63,10 @@ export const mockComments: CommentDto[] = [
     createdAt: new Date(),
     musicianId: 102,
     sessionId: 201,
-    musicianProfilePhotoUrl: 'https://example.com/musician2.jpg',
-    musicianDisplayName: 'Musician2',
+    musician: {
+      profilePictureUrl: 'https://example.com/musician1.jpg',
+      displayName: 'Musician2',
+    },
   },
   {
     id: 3,
@@ -70,8 +74,10 @@ export const mockComments: CommentDto[] = [
     createdAt: new Date(),
     musicianId: 103,
     sessionId: 201,
-    musicianProfilePhotoUrl: 'https://example.com/musician3.jpg',
-    musicianDisplayName: 'Musician3',
+    musician: {
+      profilePictureUrl: 'https://example.com/musician1.jpg',
+      displayName: 'Musician3',
+    },
   },
   {
     id: 4,
@@ -79,8 +85,10 @@ export const mockComments: CommentDto[] = [
     createdAt: new Date(),
     musicianId: 104,
     sessionId: 201,
-    musicianProfilePhotoUrl: 'https://example.com/musician4.jpg',
-    musicianDisplayName: 'Musician4',
+    musician: {
+      profilePictureUrl: 'https://example.com/musician1.jpg',
+      displayName: 'Musician4',
+    },
   },
   {
     id: 5,
@@ -88,8 +96,10 @@ export const mockComments: CommentDto[] = [
     createdAt: new Date(),
     musicianId: 105,
     sessionId: 201,
-    musicianProfilePhotoUrl: 'https://example.com/musician5.jpg',
-    musicianDisplayName: 'Musician5',
+    musician: {
+      profilePictureUrl: 'https://example.com/musician1.jpg',
+      displayName: 'Musician4',
+    },
   },
 ];
 
@@ -99,8 +109,10 @@ export const mockComment = {
   createdAt: new Date(),
   musicianId: 105,
   sessionId: 201,
-  musicianProfilePhotoUrl: 'https://example.com/musician5.jpg',
-  musicianDisplayName: 'Musician6',
+  musician: {
+    profilePictureUrl: 'https://example.com/musician1.jpg',
+    displayName: 'Musician6',
+  },
 };
 
 export const dummyGasUps: GasUpDto[] = [
@@ -108,36 +120,46 @@ export const dummyGasUps: GasUpDto[] = [
     id: 1,
     musicianId: 101,
     sessionId: 201,
-    musicianProfileUrl: 'https://example.com/musician1.jpg',
-    musicianDisplayName: 'Musician1',
+    musician: {
+      profilePictureUrl: 'https://example.com/musician1.jpg',
+      displayName: 'Musician1',
+    },
   },
   {
     id: 2,
     musicianId: 102,
     sessionId: 201,
-    musicianProfileUrl: 'https://example.com/musician2.jpg',
-    musicianDisplayName: 'Musician2',
+    musician: {
+      profilePictureUrl: 'https://example.com/musician1.jpg',
+      displayName: 'Musician2',
+    },
   },
   {
     id: 3,
     musicianId: 103,
     sessionId: 201,
-    musicianProfileUrl: 'https://example.com/musician3.jpg',
-    musicianDisplayName: 'Musician3',
+    musician: {
+      profilePictureUrl: 'https://example.com/musician1.jpg',
+      displayName: 'Musician3',
+    },
   },
   {
     id: 4,
     musicianId: 104,
     sessionId: 201,
-    musicianProfileUrl: 'https://example.com/musician4.jpg',
-    musicianDisplayName: 'Musician4',
+    musician: {
+      profilePictureUrl: 'https://example.com/musician1.jpg',
+      displayName: 'Musician4',
+    },
   },
   {
     id: 5,
     musicianId: 105,
     sessionId: 201,
-    musicianProfileUrl: 'https://example.com/musician5.jpg',
-    musicianDisplayName: 'Musician5',
+    musician: {
+      profilePictureUrl: 'https://example.com/musician1.jpg',
+      displayName: 'Musician5',
+    },
   },
 ];
 
@@ -145,6 +167,23 @@ export const dummyGasUp = {
   id: 6,
   musicianId: 105,
   sessionId: 201,
-  musicianProfileUrl: 'https://example.com/musician5.jpg',
-  musicianDisplayName: 'Musician6',
+  musician: {
+    profilePictureUrl: 'https://example.com/musician1.jpg',
+    displayName: 'Musician6',
+  },
+};
+
+export const dummySession: FrontendSessionDto = {
+  id: 1,
+  title: 'Session 1',
+  notes: 'This is a session',
+  duration: 60,
+  isPublic: true,
+  takeId: 'take1',
+  createdAt: new Date(),
+  musicianId: 101,
+  musicianDisplayname: 'Musician1',
+  musicianProfilePictureUrl: 'https://example.com/musician1.jpg',
+  gasUps: dummyGasUps,
+  comments: mockComments,
 };

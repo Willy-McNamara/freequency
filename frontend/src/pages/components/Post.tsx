@@ -1,5 +1,4 @@
 import React, { RefObject, useState } from 'react';
-import { feedPost } from '../../dummyData/dummyData';
 import {
   Avatar,
   Card,

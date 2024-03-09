@@ -82,9 +82,8 @@ export class SessionsService {
 
   async getSessionsChunk(cursorId?: number): Promise<FrontendSessionDto[]> {
     const prisma = this.prisma;
-    const pageSize = 10;
     const skip = 1;
-    const take = pageSize;
+    const take = 5;
 
     // Easier for typescript if you include the query directly in the method (not modularized out as a variable)
     const sessions = await prisma.session.findMany({

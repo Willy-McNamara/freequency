@@ -70,9 +70,8 @@ let SessionsService = class SessionsService {
     }
     async getSessionsChunk(cursorId) {
         const prisma = this.prisma;
-        const pageSize = 10;
         const skip = 1;
-        const take = pageSize;
+        const take = 5;
         const sessions = await prisma.session.findMany({
             take,
             skip,
