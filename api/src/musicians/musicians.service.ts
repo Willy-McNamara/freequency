@@ -34,7 +34,8 @@ export class MusiciansService {
       profilePictureUrl: musician.profilePictureUrl,
       totalSessions: musician.totalSessions,
       totalPracticeMinutes: musician.totalPracticeMinutes,
-      totalGasUps: musician.totalGasUps,
+      totalGasUpsGiven: musician.totalGasUpsGiven,
+      totalGasUpsRecieved: musician.totalGasUpsRecieved,
       longestStreak: musician.longestStreak,
       currentStreak: musician.currentStreak,
       createdAt: musician.createdAt,
@@ -60,7 +61,8 @@ export class MusiciansService {
           instruments: ["Singin'"],
           totalSessions: 0,
           totalPracticeMinutes: 0,
-          totalGasUps: 0,
+          totalGasUpsGiven: 0,
+          totalGasUpsRecieved: 0,
           longestStreak: 0,
           currentStreak: 0,
           comments: {
@@ -83,7 +85,8 @@ export class MusiciansService {
         profilePictureUrl: createdMusician.profilePictureUrl,
         totalSessions: createdMusician.totalSessions,
         totalPracticeMinutes: createdMusician.totalPracticeMinutes,
-        totalGasUps: createdMusician.totalGasUps,
+        totalGasUpsGiven: createdMusician.totalGasUpsGiven,
+        totalGasUpsRecieved: createdMusician.totalGasUpsRecieved,
         longestStreak: createdMusician.longestStreak,
         currentStreak: createdMusician.currentStreak,
         createdAt: createdMusician.createdAt,
@@ -150,6 +153,7 @@ export class MusiciansService {
       const formattedUpdatedMusician: MusicianFrontendDTO =
         this.formatMusicianForFrontend(updatedMusician);
       console.log('musician successfully updated!', formattedUpdatedMusician);
+
       return formattedUpdatedMusician;
     } catch (error) {
       console.error('Error updating musician:', error);
@@ -166,7 +170,8 @@ export class MusiciansService {
       profilePictureUrl: musician.profilePictureUrl,
       totalSessions: musician.totalSessions,
       totalPracticeMinutes: musician.totalPracticeMinutes,
-      totalGasUps: musician.totalGasUps,
+      totalGasUpsGiven: musician.totalGasUpsGiven,
+      totalGasUpsRecieved: musician.totalGasUpsRecieved,
       longestStreak: musician.longestStreak,
       currentStreak: musician.currentStreak,
       createdAt: musician.createdAt,

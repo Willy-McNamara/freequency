@@ -12,7 +12,6 @@ interface Props {
 
 const InstrumentBadgeWrap = ({ instruments }: Props) => {
   // place this into a flexbox of desired width for wrapping. May need to make Wrap width=100%..
-
   return (
     <Wrap>
       {instruments.map((instrument) => {

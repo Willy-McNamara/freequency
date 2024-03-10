@@ -8,7 +8,8 @@ export type MusicianFrontendDTO = {
   profilePictureUrl: string | null;
   totalSessions: number;
   totalPracticeMinutes: number;
-  totalGasUps: number;
+  totalGasUpsGiven: number;
+  totalGasUpsRecieved: number;
   longestStreak: number;
   currentStreak: number;
   createdAt: Date;

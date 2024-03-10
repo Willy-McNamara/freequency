@@ -25,7 +25,8 @@ export class MusicianDto {
   profilePictureUrl: string | null;
   totalSessions: number;
   totalPracticeMinutes: number;
-  totalGasUps: number;
+  totalGasUpsGiven: number;
+  totalGasUpsRecieved: number;
   longestStreak: number;
   currentStreak: number;
   createdAt: Date;
@@ -42,7 +43,8 @@ export class MusicianFrontendDTO {
   profilePictureUrl: string | null;
   totalSessions: number;
   totalPracticeMinutes: number;
-  totalGasUps: number;
+  totalGasUpsGiven: number;
+  totalGasUpsRecieved: number;
   longestStreak: number;
   currentStreak: number;
   createdAt: Date;
@@ -59,6 +61,7 @@ export class SessionDto {
   id: number;
   title: string;
   notes: string;
+  instruments: string[];
   duration: number;
   isPublic: boolean;
   takeId: string;
@@ -74,10 +77,28 @@ export class GasUpDto {
   sessionId: number;
 }
 
+export class FrontendGasUpDto {
+  id: number;
+  musicianId: number;
+  sessionId: number;
+  musicianProfilePhotoUrl: string; // New field
+  musicianDisplayName: string; // New field
+}
+
 export class CommentDto {
   id: number;
   text: string;
   createdAt: Date;
   musicianId: number;
   sessionId: number;
+}
+
+export class FrontendCommentDto {
+  id: number;
+  text: string;
+  createdAt: Date;
+  musicianId: number;
+  sessionId: number;
+  musicianProfilePhotoUrl: string; // New field
+  musicianDisplayName: string;
 }

@@ -6,44 +6,60 @@ import {
   IconButton,
   Heading,
 } from '@chakra-ui/react';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FaMicrophone, FaVideo } from 'react-icons/fa6';
 import SaveSessionModal from './components/SaveSessionModal';
 import DurationTimer from './components/DurationTimer';
-import moment from 'moment';
+import { useOutletContext } from 'react-router';
+import { RenderPayloadDTO } from '../types/app.types';
 
 const Practice = () => {
   const notesRef = useRef(null);
-  // placeholder minutes until implement timer
-  const [isRunning, setIsRunning] = useState(false);
-  const [startTime, setStartTime] = useState(0);
-  const [startOrResume, setStartOrResume] = useState('Start Session');
   const durationRef = useRef(null);
 
-  const handleStartStop = () => {
-    if (startTime === 0) {
-      setStartTime(moment().unix());
-      setStartOrResume('Resume Session');
+  const [isActive, setIsActive] = useState<boolean>(false);
+  const [isPaused, setIsPaused] = useState<boolean>(true);
+  const [startOrResume, setStartOrResume] = useState('Start Session');
+  const [time, setTime] = useState<number>(0);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+
+    if (isActive && !isPaused) {
+      interval = setInterval(() => {
+        setTime((prevTime) => prevTime + 1000);
+      }, 1000);
+    } else {
+      clearInterval(interval!);
     }
-    setIsRunning(!isRunning);
+
+    return () => {
+      clearInterval(interval!);
+    };
+  }, [isActive, isPaused]);
+
+  const handleStartPauseResume = () => {
+    if (time === 0) {
+      setIsActive(true);
+      setIsPaused(false);
+      setStartOrResume('Resume Session');
+    } else {
+      setIsPaused((prevIsPaused) => !prevIsPaused);
+    }
   };
 
   return (
-    <Flex direction="column" align="center">
+    <Flex direction="column" align="center" mt="6rem">
       <Button
-        colorScheme={isRunning ? 'red' : 'green'}
+        colorScheme={!isPaused ? 'red' : 'green'}
         size="lg"
         m="1.5rem"
-        onClick={handleStartStop}
+        onClick={handleStartPauseResume}
       >
-        {isRunning && startTime ? 'Pause Session' : startOrResume}
+        {!isPaused && time ? 'Pause Session' : startOrResume}
       </Button>
       <Heading>
-        <DurationTimer
-          startTime={startTime}
-          isRunning={isRunning}
-          durationRef={durationRef}
-        />
+        <DurationTimer time={time} durationRef={durationRef} />
       </Heading>
       <Text>didn’t use timer? you can edit this number when you save.</Text>
       <Textarea

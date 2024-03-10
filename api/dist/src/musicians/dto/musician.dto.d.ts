@@ -23,7 +23,8 @@ export declare class MusicianDto {
     profilePictureUrl: string | null;
     totalSessions: number;
     totalPracticeMinutes: number;
-    totalGasUps: number;
+    totalGasUpsGiven: number;
+    totalGasUpsRecieved: number;
     longestStreak: number;
     currentStreak: number;
     createdAt: Date;
@@ -38,7 +39,8 @@ export declare class MusicianFrontendDTO {
     profilePictureUrl: string | null;
     totalSessions: number;
     totalPracticeMinutes: number;
-    totalGasUps: number;
+    totalGasUpsGiven: number;
+    totalGasUpsRecieved: number;
     longestStreak: number;
     currentStreak: number;
     createdAt: Date;
@@ -53,6 +55,7 @@ export declare class SessionDto {
     id: number;
     title: string;
     notes: string;
+    instruments: string[];
     duration: number;
     isPublic: boolean;
     takeId: string;
@@ -66,10 +69,26 @@ export declare class GasUpDto {
     musicianId: number;
     sessionId: number;
 }
+export declare class FrontendGasUpDto {
+    id: number;
+    musicianId: number;
+    sessionId: number;
+    musicianProfilePhotoUrl: string;
+    musicianDisplayName: string;
+}
 export declare class CommentDto {
     id: number;
     text: string;
     createdAt: Date;
     musicianId: number;
     sessionId: number;
+}
+export declare class FrontendCommentDto {
+    id: number;
+    text: string;
+    createdAt: Date;
+    musicianId: number;
+    sessionId: number;
+    musicianProfilePhotoUrl: string;
+    musicianDisplayName: string;
 }

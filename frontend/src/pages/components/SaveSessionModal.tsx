@@ -26,8 +26,17 @@ import {
   useBoolean,
 } from '@chakra-ui/react';
 import axios from 'axios';
+import { useOutletContext } from 'react-router';
+import { RenderPayloadDTO } from '../../types/app.types';
+import InstrumentBadgeWrapEditable from './InstrumentBadgeWrapEditable';
+import { PopularInstrument } from '../../types/instruments.types';
 
-const SaveSessionModal = ({ notesRef, durationRef }) => {
+interface Props {
+  notesRef: React.RefObject<any>;
+  durationRef: React.RefObject<any>;
+}
+
+const SaveSessionModal = ({ notesRef, durationRef }: Props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const sessionTitleRef = useRef(null);
   const [hasTitle, setHasTitle] = useState(true);
@@ -37,9 +46,33 @@ const SaveSessionModal = ({ notesRef, durationRef }) => {
   const toastId = 'active';
   let [notes, setNotes] = useState('');
 
+  const loaderData = useOutletContext() as RenderPayloadDTO;
+
+  const instrumentsList = loaderData.musician.instruments;
+  const isEmpty = instrumentsList.length === 0;
+  const [instruments, setInstruments] = useState<PopularInstrument[]>(
+    !isEmpty ? [instrumentsList[0]] : [],
+  );
+
+  const toggleInstrument = (instrument: PopularInstrument) => {
+    if (instruments.includes(instrument)) {
+      setInstruments(instruments.filter((item) => item !== instrument));
+    } else {
+      setInstruments([...instruments, instrument]);
+    }
+  };
+
   const updatePracticeTime = () => {
     const convertTimeStringToMinutes = (timeString: string): number => {
       const [hours, minutes, seconds] = timeString.split(':').map(Number);
+
+      console.log(
+        'logging time string, and destructured values :',
+        timeString,
+        hours,
+        minutes,
+        seconds,
+      );
 
       const totalMinutes = hours * 60 + minutes + Math.floor(seconds / 60);
 
@@ -95,31 +128,40 @@ const SaveSessionModal = ({ notesRef, durationRef }) => {
             <FormControl mt={4}>
               <Textarea value={notes} onChange={handleInputChange} size="md" />
             </FormControl>
-            <FormControl mt={4}>
-              <Center>
-                <Flex align="center">
-                  <NumberInput
-                    defaultValue={minutes}
-                    value={minutes}
-                    onChange={(e) => {
-                      setMinutes(Number(e));
-                    }}
-                    min={1}
-                    max={1440}
-                    w="80px"
-                  >
-                    <NumberInputField />
-                    <NumberInputStepper>
-                      <NumberIncrementStepper />
-                      <NumberDecrementStepper />
-                    </NumberInputStepper>
-                  </NumberInput>
-                  <FormLabel ml={2} mb={0}>
-                    minutes practiced
-                  </FormLabel>
-                </Flex>
-              </Center>
-            </FormControl>
+            <Stack align="center" justify="center" mt={3}>
+              {!isEmpty && (
+                <InstrumentBadgeWrapEditable
+                  toggleInstrument={toggleInstrument}
+                  initialInstruments={instruments}
+                  instrumentList={instrumentsList}
+                />
+              )}
+              <FormControl mt={1}>
+                <Center>
+                  <Flex align="center">
+                    <NumberInput
+                      defaultValue={minutes}
+                      value={minutes}
+                      onChange={(e) => {
+                        setMinutes(Number(e));
+                      }}
+                      min={1}
+                      max={1440}
+                      w="80px"
+                    >
+                      <NumberInputField />
+                      <NumberInputStepper>
+                        <NumberIncrementStepper />
+                        <NumberDecrementStepper />
+                      </NumberInputStepper>
+                    </NumberInput>
+                    <FormLabel ml={2} mb={0}>
+                      minutes practiced
+                    </FormLabel>
+                  </Flex>
+                </Center>
+              </FormControl>
+            </Stack>
             <Stack align="center" justify="center" mt={4}>
               <Checkbox isChecked={isPublic} onChange={setIsPublic.toggle}>
                 share to feed?
@@ -141,6 +183,7 @@ const SaveSessionModal = ({ notesRef, durationRef }) => {
                 const newSessionPayload = {
                   title: sessionTitleRef.current.value,
                   notes: notes,
+                  instruments: instruments,
                   duration: minutes,
                   isPublic: isPublic,
                 };

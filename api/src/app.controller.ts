@@ -23,7 +23,7 @@ export class AppController {
     const musicianData = await this.musiciansService.getMusicianById(
       req.user.id,
     );
-    const sessionsData = await this.sessionsService.getAllSessions();
+    const sessionsData = await this.sessionsService.getFiveSessions();
     const combinedData = this.appService.formatRenderPayload(
       musicianData,
       sessionsData,

@@ -17,80 +17,264 @@ let SessionsService = class SessionsService {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async getAllSessions() {
+    async getFiveSessions() {
         const prisma = this.prisma;
+        const take = 5;
         const sessions = await prisma.session.findMany({
+            take: take,
+            orderBy: { id: 'desc' },
             include: {
-                musician: { select: { displayName: true } },
-                gasUps: true,
-                comments: true,
+                gasUps: {
+                    include: {
+                        musician: {
+                            select: {
+                                displayName: true,
+                                profilePictureUrl: true,
+                            },
+                        },
+                    },
+                },
+                comments: {
+                    include: {
+                        musician: {
+                            select: {
+                                displayName: true,
+                                profilePictureUrl: true,
+                            },
+                        },
+                    },
+                },
+                musician: {
+                    select: {
+                        displayName: true,
+                        profilePictureUrl: true,
+                    },
+                },
             },
         });
         const frontendSessionDto = sessions.map((session) => ({
             id: session.id,
             title: session.title,
             notes: session.notes,
+            instruments: session.instruments,
             duration: session.duration,
             isPublic: session.isPublic,
             takeId: session.takeId,
             createdAt: session.createdAt,
             musicianId: session.musicianId,
             musicianDisplayname: session.musician.displayName,
-            gasUps: this.mapGasUps(session.gasUps),
-            comments: this.mapComments(session.comments),
+            musicianProfilePictureUrl: session.musician.profilePictureUrl,
+            gasUps: session.gasUps,
+            comments: session.comments,
         }));
         return frontendSessionDto;
     }
-    mapGasUps(gasUps) {
-        return gasUps.map((gasUp) => ({
-            id: gasUp.id,
-            musicianId: gasUp.musicianId,
-            sessionId: gasUp.sessionId,
+    async getSessionsChunk(cursorId) {
+        const prisma = this.prisma;
+        const skip = 1;
+        const take = 5;
+        const sessions = await prisma.session.findMany({
+            take,
+            skip,
+            orderBy: { id: 'desc' },
+            cursor: {
+                id: cursorId,
+            },
+            include: {
+                gasUps: {
+                    include: {
+                        musician: {
+                            select: {
+                                displayName: true,
+                                profilePictureUrl: true,
+                            },
+                        },
+                    },
+                },
+                comments: {
+                    include: {
+                        musician: {
+                            select: {
+                                displayName: true,
+                                profilePictureUrl: true,
+                            },
+                        },
+                    },
+                },
+                musician: {
+                    select: {
+                        displayName: true,
+                        profilePictureUrl: true,
+                    },
+                },
+            },
+        });
+        const frontendSessions = sessions.map((session) => ({
+            id: session.id,
+            title: session.title,
+            notes: session.notes,
+            instruments: session.instruments,
+            duration: session.duration,
+            isPublic: session.isPublic,
+            takeId: session.takeId,
+            createdAt: session.createdAt,
+            musicianId: session.musicianId,
+            musicianDisplayname: session.musician.displayName,
+            musicianProfilePictureUrl: session.musician.profilePictureUrl,
+            gasUps: session.gasUps,
+            comments: session.comments,
         }));
-    }
-    mapComments(comments) {
-        return comments.map((comment) => ({
-            id: comment.id,
-            text: comment.text,
-            createdAt: comment.createdAt,
-            musicianId: comment.musicianId,
-            sessionId: comment.sessionId,
-        }));
+        return frontendSessions;
     }
     async createSession(newSession) {
         const prisma = this.prisma;
         try {
-            const createdSession = await prisma.session.create({
-                data: {
-                    title: newSession.title,
-                    notes: newSession.notes,
-                    duration: Number(newSession.duration),
-                    isPublic: newSession.isPublic,
-                    takeId: (0, uuid_1.v4)(),
-                    musician: {
-                        connect: { id: Number(newSession.musicianId) },
+            const createdSession = await prisma.$transaction(async (prisma) => {
+                const createdSession = await prisma.session.create({
+                    data: {
+                        title: newSession.title,
+                        notes: newSession.notes,
+                        instruments: newSession.instruments,
+                        duration: Number(newSession.duration),
+                        isPublic: newSession.isPublic,
+                        takeId: (0, uuid_1.v4)(),
+                        musician: {
+                            connect: { id: Number(newSession.musicianId) },
+                        },
                     },
-                },
-                include: {
-                    musician: { select: { displayName: true } },
-                },
+                    include: {
+                        musician: {
+                            select: { displayName: true, profilePictureUrl: true },
+                        },
+                    },
+                });
+                const frontendSessionDto = {
+                    id: createdSession.id,
+                    title: createdSession.title,
+                    notes: createdSession.notes,
+                    instruments: createdSession.instruments,
+                    duration: createdSession.duration,
+                    isPublic: createdSession.isPublic,
+                    takeId: createdSession.takeId,
+                    createdAt: createdSession.createdAt,
+                    musicianId: createdSession.musicianId,
+                    musicianDisplayname: createdSession.musician.displayName,
+                    musicianProfilePictureUrl: createdSession.musician.profilePictureUrl,
+                    gasUps: [],
+                    comments: [],
+                };
+                await prisma.musician.update({
+                    where: { id: frontendSessionDto.musicianId },
+                    data: {
+                        totalPracticeMinutes: {
+                            increment: frontendSessionDto.duration,
+                        },
+                        totalSessions: {
+                            increment: 1,
+                        },
+                    },
+                });
+                return frontendSessionDto;
             });
-            const sessionDto = {
-                id: createdSession.id,
-                title: createdSession.title,
-                notes: createdSession.notes,
-                duration: createdSession.duration,
-                isPublic: createdSession.isPublic,
-                takeId: createdSession.takeId,
-                createdAt: createdSession.createdAt,
-                musicianId: createdSession.musicianId,
-                gasUps: [],
-                comments: [],
-            };
-            return sessionDto;
+            return createdSession;
         }
         catch (error) {
             throw new Error(`Failed to create session: ${error.message}`);
+        }
+    }
+    async addComment(newComment) {
+        const prisma = this.prisma;
+        try {
+            const createdComment = await prisma.$transaction(async (prisma) => {
+                const createdComment = await prisma.comment.create({
+                    data: {
+                        text: newComment.text,
+                        musician: {
+                            connect: { id: newComment.musicianId },
+                        },
+                        session: {
+                            connect: { id: newComment.sessionId },
+                        },
+                    },
+                    include: {
+                        musician: {
+                            select: {
+                                displayName: true,
+                                profilePictureUrl: true,
+                            },
+                        },
+                    },
+                });
+                const commentDto = {
+                    id: createdComment.id,
+                    text: createdComment.text,
+                    createdAt: createdComment.createdAt,
+                    musicianId: createdComment.musicianId,
+                    sessionId: createdComment.sessionId,
+                    musicianDisplayName: createdComment.musician.displayName,
+                    musicianProfilePhotoUrl: createdComment.musician.profilePictureUrl,
+                };
+                console.log('comment created! here is comment:', commentDto);
+                return commentDto;
+            });
+            return createdComment;
+        }
+        catch (error) {
+            console.log('error adding comment:', error);
+            throw new Error(`Failed to add comment: ${error.message}`);
+        }
+    }
+    async addGasUp(newGasUp) {
+        const prisma = this.prisma;
+        try {
+            const createdGasUp = await prisma.$transaction(async (prisma) => {
+                const createdGasUp = await prisma.gasUp.create({
+                    data: {
+                        musician: {
+                            connect: { id: newGasUp.gasserId },
+                        },
+                        session: {
+                            connect: { id: newGasUp.sessionId },
+                        },
+                    },
+                    include: {
+                        musician: {
+                            select: {
+                                displayName: true,
+                                profilePictureUrl: true,
+                            },
+                        },
+                    },
+                });
+                await prisma.musician.update({
+                    where: { id: newGasUp.gasserId },
+                    data: {
+                        totalGasUpsGiven: {
+                            increment: 1,
+                        },
+                    },
+                });
+                await prisma.musician.update({
+                    where: { id: newGasUp.musicianId },
+                    data: {
+                        totalGasUpsRecieved: {
+                            increment: 1,
+                        },
+                    },
+                });
+                const innerCreatedGasUp = {
+                    id: createdGasUp.id,
+                    musicianId: createdGasUp.musicianId,
+                    sessionId: createdGasUp.sessionId,
+                    musicianProfilePhotoUrl: createdGasUp.musician.profilePictureUrl,
+                    musicianDisplayName: createdGasUp.musician.displayName,
+                };
+                return innerCreatedGasUp;
+            });
+            return createdGasUp;
+        }
+        catch (error) {
+            throw new Error(`Failed to gas up: ${error.message}`);
         }
     }
 };

@@ -16,6 +16,10 @@ export class JwtAuthGuard extends AuthGuard('jwt') implements CanActivate {
   }
 
   handleRequest(err: any, user: any): any {
+    if (process.env.DEBUG) {
+      console.log('logging debug TRUE');
+      return { id: 4 };
+    }
     if (err || !user) {
       console.log('error', err);
       throw new UnauthorizedException('Invalid token');
