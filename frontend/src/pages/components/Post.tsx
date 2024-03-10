@@ -24,6 +24,7 @@ import { GasUpDto } from '../../types/sessions.types';
 import axios from 'axios';
 import InstrumentBadgeWrap from './InstrumentBadgeWrap';
 import { PopularInstrument } from '../../types/instruments.types';
+import AudioDisplay from './AudioDisplay';
 
 type props = {
   post: FrontendSessionDto;
@@ -103,9 +104,12 @@ const Post = ({ post, musicianId }: props) => {
           instruments={post.instruments as PopularInstrument[]}
         />
         <Text m="1rem 0">{post.notes}</Text>
-        <Flex direction="row">
-          <Badge colorScheme="green"> Audio or Video, recorded take here</Badge>
-        </Flex>
+        {
+          /* logic for whether or not post has a clip! */
+          <Flex direction="row" h="3rem">
+            <AudioDisplay url={'./chopin.mp3'} context="Post" />
+          </Flex>
+        }
         <Flex mt="1rem" align="center">
           <ViewAllLikes gasUps={gasUpsList} />
         </Flex>

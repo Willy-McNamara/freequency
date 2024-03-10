@@ -30,13 +30,15 @@ import { useOutletContext } from 'react-router';
 import { RenderPayloadDTO } from '../../types/app.types';
 import InstrumentBadgeWrapEditable from './InstrumentBadgeWrapEditable';
 import { PopularInstrument } from '../../types/instruments.types';
+import AudioDisplay from './AudioDisplay';
 
 interface Props {
   notesRef: React.RefObject<any>;
   durationRef: React.RefObject<any>;
+  url: string;
 }
 
-const SaveSessionModal = ({ notesRef, durationRef }: Props) => {
+const SaveSessionModal = ({ notesRef, durationRef, url }: Props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const sessionTitleRef = useRef(null);
   const [hasTitle, setHasTitle] = useState(true);
@@ -88,6 +90,7 @@ const SaveSessionModal = ({ notesRef, durationRef }: Props) => {
     let inputValue = e.target.value;
     setNotes(inputValue);
   };
+  console.log('logging in SSm  url:', url);
 
   return (
     <>
@@ -128,6 +131,11 @@ const SaveSessionModal = ({ notesRef, durationRef }: Props) => {
             <FormControl mt={4}>
               <Textarea value={notes} onChange={handleInputChange} size="md" />
             </FormControl>
+            {url.length !== 0 && (
+              <Flex align="center" m="1rem">
+                <AudioDisplay url={url} context="SaveSessionModal" />
+              </Flex>
+            )}
             <Stack align="center" justify="center" mt={3}>
               {!isEmpty && (
                 <InstrumentBadgeWrapEditable
