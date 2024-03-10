@@ -22,6 +22,8 @@ import { FaGasPump } from 'react-icons/fa6';
 import ViewAllLikes from './ViewAllLikes';
 import { GasUpDto } from '../../types/sessions.types';
 import axios from 'axios';
+import InstrumentBadgeWrap from './InstrumentBadgeWrap';
+import { PopularInstrument } from '../../types/instruments.types';
 
 type props = {
   post: FrontendSessionDto;
@@ -97,6 +99,9 @@ const Post = ({ post, musicianId }: props) => {
         <Text p="0.5rem 0px 0.5rem" fontSize="xl">
           {post.title} | {post.duration} minutes
         </Text>
+        <InstrumentBadgeWrap
+          instruments={post.instruments as PopularInstrument[]}
+        />
         <Text m="1rem 0">{post.notes}</Text>
         <Flex direction="row">
           <Badge colorScheme="green"> Audio or Video, recorded take here</Badge>

@@ -2,6 +2,7 @@ export type FrontendSessionDto = {
   id: number;
   title: string;
   notes: string;
+  instruments: string[];
   duration: number;
   isPublic: boolean;
   takeId: string;
@@ -177,6 +178,7 @@ export const dummySession: FrontendSessionDto = {
   id: 1,
   title: 'Session 1',
   notes: 'This is a session',
+  instruments: [],
   duration: 60,
   isPublic: true,
   takeId: 'take1',

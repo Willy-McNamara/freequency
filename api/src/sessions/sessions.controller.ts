@@ -39,6 +39,7 @@ export class SessionsController {
     const newSession: CreateSessionDto = {
       title: body.title,
       notes: body.notes,
+      instruments: body.instruments,
       duration: body.duration,
       isPublic: body.isPublic,
       musicianId: req.user.id,

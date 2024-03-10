@@ -1,6 +1,7 @@
 export class CreateSessionDto {
   title: string;
   notes: string;
+  instruments: string[];
   duration: string;
   isPublic: boolean;
   musicianId: string; // Assuming you provide the musicianId when creating a session
@@ -10,6 +11,7 @@ export class SessionDto {
   id: number;
   title: string;
   notes: string;
+  instruments: string[];
   duration: number;
   isPublic: boolean;
   takeId: string;
@@ -23,6 +25,7 @@ export class FrontendSessionDto {
   id: number;
   title: string;
   notes: string;
+  instruments: string[];
   duration: number;
   isPublic: boolean;
   takeId: string;

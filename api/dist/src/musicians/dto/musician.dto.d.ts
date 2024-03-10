@@ -55,6 +55,7 @@ export declare class SessionDto {
     id: number;
     title: string;
     notes: string;
+    instruments: string[];
     duration: number;
     isPublic: boolean;
     takeId: string;

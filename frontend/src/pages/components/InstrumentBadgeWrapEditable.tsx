@@ -8,16 +8,19 @@ import {
 
 interface Props {
   initialInstruments: PopularInstrument[];
-  toggleInstrument: (instrument: string) => void;
+  toggleInstrument: (instrument: PopularInstrument) => void;
+  instrumentList?: PopularInstrument[];
 }
 
 const InstrumentBadgeWrapEditable = ({
   initialInstruments,
   toggleInstrument,
+  instrumentList,
 }: Props) => {
+  const instruments = instrumentList || instrumentsMasterList;
   return (
     <Wrap>
-      {instrumentsMasterList.map((instrument) => {
+      {instruments.map((instrument) => {
         const variant = initialInstruments.includes(instrument)
           ? 'solid'
           : 'outline';

@@ -14,6 +14,7 @@ model Session {
   id           Int          @id @default(autoincrement())
   title        String
   notes        String
+  instruments  String[]
   duration     Int
   isPublic     Boolean
   takeId       String

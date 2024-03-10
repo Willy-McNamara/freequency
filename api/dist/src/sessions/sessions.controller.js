@@ -30,6 +30,7 @@ let SessionsController = class SessionsController {
         const newSession = {
             title: body.title,
             notes: body.notes,
+            instruments: body.instruments,
             duration: body.duration,
             isPublic: body.isPublic,
             musicianId: req.user.id,

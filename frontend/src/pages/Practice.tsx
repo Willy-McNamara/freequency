@@ -10,6 +10,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { FaMicrophone, FaVideo } from 'react-icons/fa6';
 import SaveSessionModal from './components/SaveSessionModal';
 import DurationTimer from './components/DurationTimer';
+import { useOutletContext } from 'react-router';
+import { RenderPayloadDTO } from '../types/app.types';
 
 const Practice = () => {
   const notesRef = useRef(null);
@@ -47,7 +49,7 @@ const Practice = () => {
   };
 
   return (
-    <Flex direction="column" align="center">
+    <Flex direction="column" align="center" mt="6rem">
       <Button
         colorScheme={!isPaused ? 'red' : 'green'}
         size="lg"

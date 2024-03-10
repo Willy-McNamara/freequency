@@ -1,6 +1,7 @@
 export declare class CreateSessionDto {
     title: string;
     notes: string;
+    instruments: string[];
     duration: string;
     isPublic: boolean;
     musicianId: string;
@@ -9,6 +10,7 @@ export declare class SessionDto {
     id: number;
     title: string;
     notes: string;
+    instruments: string[];
     duration: number;
     isPublic: boolean;
     takeId: string;
@@ -21,6 +23,7 @@ export declare class FrontendSessionDto {
     id: number;
     title: string;
     notes: string;
+    instruments: string[];
     duration: number;
     isPublic: boolean;
     takeId: string;
