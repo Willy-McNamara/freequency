@@ -4,6 +4,7 @@ import SaveSessionModal from './components/SaveSessionModal';
 import DurationTimer from './components/DurationTimer';
 import AudioDisplay from './components/AudioDisplay';
 import RecordAudio from './components/RecordAudio';
+// import Editor from './components/Editor';
 
 const Practice = () => {
   const notesRef = useRef(null);
@@ -14,6 +15,8 @@ const Practice = () => {
   const [startOrResume, setStartOrResume] = useState('Start Session');
   const [time, setTime] = useState<number>(0);
   const [url, setUrl] = useState<string>('');
+  const [blob, setBlob] = useState<Blob | null>(null);
+  //const [file, setFile] = useState<File | null>(null);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -47,12 +50,25 @@ const Practice = () => {
     the start and end args to Blob.slice are in bytes, 200000 is ~12 seconds of audio.
     found this by trial and error, def room for improvement here!
     */
+    console.log('size of audio file:', blob.size);
+    console.log('type of blob:', blob.type);
     const newBlob: Blob = blob.slice(0, 200000);
     const url = URL.createObjectURL(newBlob);
+    /*
+    it may be best to pass the blob and build the File in saveSession..
+    depends on whether or not I'll include metadata in the File that
+    ill be gettin gback from the server..
+    https://medium.com/@sanjana01999/record-audio-and-upload-it-to-aws-s3-409f5e620805
+
+    setFile(new File([newBlob], 'practice-take.wav', { type: 'audio/wav' }));
+    */
+
+    setBlob(newBlob);
     setUrl(url);
   };
 
   const deleteTake = (url: string) => {
+    setBlob(null);
     setUrl('');
   };
 
@@ -98,6 +114,7 @@ const Practice = () => {
         notesRef={notesRef}
         durationRef={durationRef}
         url={url}
+        blob={blob}
       />
     </Flex>
   );

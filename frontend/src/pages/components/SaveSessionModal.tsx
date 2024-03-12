@@ -31,14 +31,16 @@ import { RenderPayloadDTO } from '../../types/app.types';
 import InstrumentBadgeWrapEditable from './InstrumentBadgeWrapEditable';
 import { PopularInstrument } from '../../types/instruments.types';
 import AudioDisplay from './AudioDisplay';
+import { computeSHA256 } from '../../utils/checksum';
 
 interface Props {
   notesRef: React.RefObject<any>;
   durationRef: React.RefObject<any>;
   url: string;
+  blob: Blob | null;
 }
 
-const SaveSessionModal = ({ notesRef, durationRef, url }: Props) => {
+const SaveSessionModal = ({ notesRef, durationRef, url, blob }: Props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const sessionTitleRef = useRef(null);
   const [hasTitle, setHasTitle] = useState(true);
@@ -68,14 +70,6 @@ const SaveSessionModal = ({ notesRef, durationRef, url }: Props) => {
     const convertTimeStringToMinutes = (timeString: string): number => {
       const [hours, minutes, seconds] = timeString.split(':').map(Number);
 
-      console.log(
-        'logging time string, and destructured values :',
-        timeString,
-        hours,
-        minutes,
-        seconds,
-      );
-
       const totalMinutes = hours * 60 + minutes + Math.floor(seconds / 60);
 
       return totalMinutes;
@@ -90,7 +84,6 @@ const SaveSessionModal = ({ notesRef, durationRef, url }: Props) => {
     let inputValue = e.target.value;
     setNotes(inputValue);
   };
-  console.log('logging in SSm  url:', url);
 
   return (
     <>
@@ -180,7 +173,7 @@ const SaveSessionModal = ({ notesRef, durationRef, url }: Props) => {
           <ModalFooter justifyContent="center">
             <Button
               colorScheme="green"
-              onClick={() => {
+              onClick={async () => {
                 if (sessionTitleRef.current.value.length === 0) {
                   setHasTitle(false);
                   return;
@@ -188,14 +181,29 @@ const SaveSessionModal = ({ notesRef, durationRef, url }: Props) => {
                   setHasTitle(true);
                 }
 
+                // conditional upon url '' / there being a blob
+                if (!blob) return;
+
+                const file = new File([blob], sessionTitleRef.current.value, {
+                  type: 'audio/webm;codecs=opus',
+                });
+
+                const audioPayload = {
+                  fileSize: file.size, // file.size
+                  fileType: 'audio/webm;codecs=opus', // file.type
+                  checksum: await computeSHA256(file),
+                };
+
                 const newSessionPayload = {
                   title: sessionTitleRef.current.value,
                   notes: notes,
                   instruments: instruments,
                   duration: minutes,
                   isPublic: isPublic,
+                  audioPayload: audioPayload,
                 };
-
+                let mediaId: number;
+                let sessionId: number;
                 // create an axios post request to save the session
                 const saveSession = axios
                   .post(
@@ -203,10 +211,27 @@ const SaveSessionModal = ({ notesRef, durationRef, url }: Props) => {
                     newSessionPayload,
                   )
                   .then((res) => {
-                    console.log(
-                      'logging response from save session modal :',
-                      res,
+                    mediaId = res.data.newMedia.id;
+                    sessionId = res.data.newSession.id;
+                    const url = res.data.signedUrl;
+                    return axios.put(url, file, {
+                      headers: {
+                        'Content-Type': file.type,
+                      },
+                    });
+                  })
+                  .then((s3Res) => {
+                    // post confirmation of success to api to link media and session
+                    return axios.post(
+                      'http://localhost:3000/sessions/confirmMedia',
+                      {
+                        mediaId: mediaId,
+                        sessionId: sessionId,
+                      },
                     );
+                  })
+                  .then((res) => {
+                    // refresh or redirect to feed with a refresh to see the new post?
                     onClose();
                     return Promise.resolve(res);
                   })

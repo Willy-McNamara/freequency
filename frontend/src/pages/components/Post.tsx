@@ -11,6 +11,7 @@ import {
   Button,
   Badge,
   useBoolean,
+  Textarea,
 } from '@chakra-ui/react';
 import { ChatIcon, ArrowUpIcon } from '@chakra-ui/icons';
 import { FrontendSessionDto, NewGasUpDto } from '../../types/sessions.types';
@@ -104,12 +105,11 @@ const Post = ({ post, musicianId }: props) => {
           instruments={post.instruments as PopularInstrument[]}
         />
         <Text m="1rem 0">{post.notes}</Text>
-        {
-          /* logic for whether or not post has a clip! */
+        {post.media && (
           <Flex direction="row" h="3rem">
-            <AudioDisplay url={'./chopin.mp3'} context="Post" />
+            <AudioDisplay url={post.media.url} context="Post" />
           </Flex>
-        }
+        )}
         <Flex mt="1rem" align="center">
           <ViewAllLikes gasUps={gasUpsList} />
         </Flex>

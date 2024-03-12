@@ -9,7 +9,7 @@ export type MusicianFrontendDTO = {
   totalSessions: number;
   totalPracticeMinutes: number;
   totalGasUpsGiven: number;
-  totalGasUpsRecieved: number;
+  totalGasUpsReceived: number;
   longestStreak: number;
   currentStreak: number;
   createdAt: Date;

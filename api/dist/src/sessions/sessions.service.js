@@ -50,6 +50,12 @@ let SessionsService = class SessionsService {
                         profilePictureUrl: true,
                     },
                 },
+                media: {
+                    select: {
+                        url: true,
+                        type: true,
+                    },
+                },
             },
         });
         const frontendSessionDto = sessions.map((session) => ({
@@ -66,6 +72,7 @@ let SessionsService = class SessionsService {
             musicianProfilePictureUrl: session.musician.profilePictureUrl,
             gasUps: session.gasUps,
             comments: session.comments,
+            media: session.media ? session.media : null,
         }));
         return frontendSessionDto;
     }
@@ -107,6 +114,12 @@ let SessionsService = class SessionsService {
                         profilePictureUrl: true,
                     },
                 },
+                media: {
+                    select: {
+                        url: true,
+                        type: true,
+                    },
+                },
             },
         });
         const frontendSessions = sessions.map((session) => ({
@@ -123,6 +136,7 @@ let SessionsService = class SessionsService {
             musicianProfilePictureUrl: session.musician.profilePictureUrl,
             gasUps: session.gasUps,
             comments: session.comments,
+            media: session.media ? session.media : null,
         }));
         return frontendSessions;
     }
@@ -162,6 +176,7 @@ let SessionsService = class SessionsService {
                     musicianProfilePictureUrl: createdSession.musician.profilePictureUrl,
                     gasUps: [],
                     comments: [],
+                    media: null,
                 };
                 await prisma.musician.update({
                     where: { id: frontendSessionDto.musicianId },
@@ -257,7 +272,7 @@ let SessionsService = class SessionsService {
                 await prisma.musician.update({
                     where: { id: newGasUp.musicianId },
                     data: {
-                        totalGasUpsRecieved: {
+                        totalGasUpsReceived: {
                             increment: 1,
                         },
                     },

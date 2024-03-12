@@ -14,6 +14,8 @@ import { APP_FILTER } from '@nestjs/core';
 import { UnauthorizedExceptionFilter } from './filters/unauthorized-exception.filter';
 import { JwtStrategy } from './auth/jwt.strategy';
 import { JwtService, JwtModule } from '@nestjs/jwt';
+import { S3 } from '@aws-sdk/client-s3';
+import { S3Service } from './s3/s3.service';
 
 @Module({
   imports: [
@@ -36,6 +38,7 @@ import { JwtService, JwtModule } from '@nestjs/jwt';
     SessionsService,
     JwtStrategy,
     JwtService,
+    S3Service,
     {
       provide: APP_FILTER,
       useClass: UnauthorizedExceptionFilter,

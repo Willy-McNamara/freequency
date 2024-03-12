@@ -6,7 +6,7 @@ const { execSync } = require('child_process');
 config({ path: '.env.local' });
 
 // name this migration
-const migrationName = 'add-instruments-to-Session-march-9-24';
+const migrationName = 'add-Media-march-11-24';
 execSync(`npx prisma migrate dev --name ${migrationName}`, {
   stdio: 'inherit',
 });
