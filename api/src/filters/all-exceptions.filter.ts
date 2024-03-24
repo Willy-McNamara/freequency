@@ -5,6 +5,7 @@ import {
   HttpException,
   HttpStatus,
   UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
 
@@ -36,6 +37,13 @@ export class AllExceptionsFilter implements ExceptionFilter {
       path: httpAdapter.getRequestUrl(ctx.getRequest()),
     };
 
+    Logger.error(
+      'AllExceptionFilter hit!',
+      exception instanceof HttpException
+        ? exception.stack
+        : 'Internal Server Error. Here is exception: ',
+      exception,
+    );
     httpAdapter.reply(ctx.getResponse(), responseBody, httpStatus);
   }
 }

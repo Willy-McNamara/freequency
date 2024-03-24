@@ -4,6 +4,7 @@ import {
   ArgumentsHost,
   HttpStatus,
   UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -15,7 +16,7 @@ export class UnauthorizedExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
 
-    console.log('UnauthorizedExceptionFilter hit!');
+    Logger.error('UnauthorizedExceptionFilter hit!', exception.stack);
 
     if (exception instanceof Error) {
       response
