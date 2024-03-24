@@ -37,6 +37,7 @@ export class SessionsController {
   @Post('nextChunk')
   @UseGuards(JwtAuthGuard)
   async getNextChunk(@Body() body: any): Promise<SessionDto[]> {
+    throw new Error('Not implemented');
     return this.sessionsService.getSessionsChunk(body.cursor);
   }
 

@@ -16,6 +16,7 @@ import { JwtStrategy } from './auth/jwt.strategy';
 import { JwtService, JwtModule } from '@nestjs/jwt';
 import { S3 } from '@aws-sdk/client-s3';
 import { S3Service } from './s3/s3.service';
+import { AllExceptionsFilter } from './filters/all-exceptions.filter';
 
 @Module({
   imports: [
@@ -39,6 +40,10 @@ import { S3Service } from './s3/s3.service';
     JwtStrategy,
     JwtService,
     S3Service,
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    },
     {
       provide: APP_FILTER,
       useClass: UnauthorizedExceptionFilter,

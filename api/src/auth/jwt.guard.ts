@@ -16,7 +16,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') implements CanActivate {
   }
 
   handleRequest(err: any, user: any): any {
-    if (process.env.DEBUG) {
+    if (process.env.DEBUG === 'TRUE') {
       console.log('logging debug TRUE');
       return { id: 4 };
     }
