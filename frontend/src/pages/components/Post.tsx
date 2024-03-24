@@ -11,6 +11,8 @@ import {
   Button,
   Badge,
   useBoolean,
+  Textarea,
+  IconButton,
 } from '@chakra-ui/react';
 import { ChatIcon, ArrowUpIcon } from '@chakra-ui/icons';
 import { FrontendSessionDto, NewGasUpDto } from '../../types/sessions.types';
@@ -24,6 +26,7 @@ import { GasUpDto } from '../../types/sessions.types';
 import axios from 'axios';
 import InstrumentBadgeWrap from './InstrumentBadgeWrap';
 import { PopularInstrument } from '../../types/instruments.types';
+import AudioDisplay from './AudioDisplay';
 
 type props = {
   post: FrontendSessionDto;
@@ -97,17 +100,45 @@ const Post = ({ post, musicianId }: props) => {
       </CardHeader>
       <CardBody pt="0" pb="0">
         <Text p="0.5rem 0px 0.5rem" fontSize="xl">
-          {post.title} | {post.duration} minutes
+          {post.title} | {post.duration} minutes |{' '}
+          {new Date(post.createdAt).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })}
         </Text>
         <InstrumentBadgeWrap
           instruments={post.instruments as PopularInstrument[]}
         />
-        <Text m="1rem 0">{post.notes}</Text>
-        <Flex direction="row">
-          <Badge colorScheme="green"> Audio or Video, recorded take here</Badge>
+        <Flex m="1rem 0" maxH="10rem" overflow="auto">
+          <div
+            dangerouslySetInnerHTML={{
+              __html: post.notes || '',
+            }}
+            className="tiptap"
+          />
         </Flex>
-        <Flex mt="1rem" align="center">
+        {post.media && (
+          <Flex direction="row" h="3rem">
+            <AudioDisplay url={post.media.url} context="Post" />
+          </Flex>
+        )}
+        <Flex mt="1rem" align="center" justifyContent="space-between">
           <ViewAllLikes gasUps={gasUpsList} />
+          {/* <Flex>
+            <IconButton
+              variant={isLiked ? 'solid' : 'ghost'}
+              aria-label="Gas Up"
+              onClick={handleGasUp}
+              icon={<FaGasPump />}
+            />
+            <IconButton
+              variant="ghost"
+              aria-label="Comment"
+              icon={<ChatIcon />}
+              onClick={toggleCommentBox}
+            />
+          </Flex> */}
         </Flex>
       </CardBody>
 

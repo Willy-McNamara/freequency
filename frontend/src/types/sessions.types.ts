@@ -12,6 +12,12 @@ export type FrontendSessionDto = {
   musicianProfilePictureUrl: string;
   gasUps: GasUpDto[];
   comments: CommentDto[];
+  media: FrontendMedia;
+};
+
+export type FrontendMedia = {
+  url: string;
+  type: string;
 };
 
 export type GasUpDto = {

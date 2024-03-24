@@ -14,7 +14,7 @@ const Login = () => {
       direction="column"
       align="center"
       justifyContent="center"
-      bgColor="#f7f7e9"
+      bgColor="#f3fbe9" //#f7f7e9
       minHeight="100vh"
     >
       <Logo />

@@ -1,3 +1,4 @@
+import { FrontendMedia, MediaItem } from 'src/media/media.dto';
 export declare class CreateSessionDto {
     title: string;
     notes: string;
@@ -33,6 +34,7 @@ export declare class FrontendSessionDto {
     musicianProfilePictureUrl: string;
     gasUps: GasUpDto[];
     comments: CommentDto[];
+    media: FrontendMedia | null;
 }
 export declare class GasUpDto {
     id: number;
@@ -56,3 +58,14 @@ export declare class NewCommentDto {
     musicianId: number;
     sessionId: number;
 }
+export type AudioPayload = {
+    size: number;
+    type: string;
+    checksum: string;
+    musicianId: number;
+};
+export type CreateSessionResponse = {
+    newSession: FrontendSessionDto;
+    newMedia: MediaItem;
+    signedUrl: string;
+};

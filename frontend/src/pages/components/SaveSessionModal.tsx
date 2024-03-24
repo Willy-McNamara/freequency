@@ -30,13 +30,17 @@ import { useOutletContext } from 'react-router';
 import { RenderPayloadDTO } from '../../types/app.types';
 import InstrumentBadgeWrapEditable from './InstrumentBadgeWrapEditable';
 import { PopularInstrument } from '../../types/instruments.types';
+import AudioDisplay from './AudioDisplay';
+import { computeSHA256 } from '../../utils/checksum';
 
 interface Props {
-  notesRef: React.RefObject<any>;
   durationRef: React.RefObject<any>;
+  tipTapRef: React.RefObject<any>;
+  url: string;
+  blob: Blob | null;
 }
 
-const SaveSessionModal = ({ notesRef, durationRef }: Props) => {
+const SaveSessionModal = ({ durationRef, url, blob, tipTapRef }: Props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const sessionTitleRef = useRef(null);
   const [hasTitle, setHasTitle] = useState(true);
@@ -44,7 +48,6 @@ const SaveSessionModal = ({ notesRef, durationRef }: Props) => {
   const [isPublic, setIsPublic] = useBoolean(true);
   const toast = useToast();
   const toastId = 'active';
-  let [notes, setNotes] = useState('');
 
   const loaderData = useOutletContext() as RenderPayloadDTO;
 
@@ -66,14 +69,6 @@ const SaveSessionModal = ({ notesRef, durationRef }: Props) => {
     const convertTimeStringToMinutes = (timeString: string): number => {
       const [hours, minutes, seconds] = timeString.split(':').map(Number);
 
-      console.log(
-        'logging time string, and destructured values :',
-        timeString,
-        hours,
-        minutes,
-        seconds,
-      );
-
       const totalMinutes = hours * 60 + minutes + Math.floor(seconds / 60);
 
       return totalMinutes;
@@ -84,20 +79,19 @@ const SaveSessionModal = ({ notesRef, durationRef }: Props) => {
     setMinutes(minutes);
   };
 
-  let handleInputChange = (e: { target: { value: any } }) => {
-    let inputValue = e.target.value;
-    setNotes(inputValue);
+  const testFunc = () => {
+    console.log(
+      'logging tipTapRef in SavSessionModal onClick :',
+      tipTapRef.current,
+      tipTapRef.current?.textContent,
+    );
   };
 
   return (
     <>
       <Button
         onClick={() => {
-          if (!notesRef.current.value) {
-            setNotes('no notes for session...');
-          } else {
-            setNotes(notesRef.current.value);
-          }
+          testFunc();
           updatePracticeTime();
           onOpen();
         }}
@@ -124,10 +118,24 @@ const SaveSessionModal = ({ notesRef, durationRef }: Props) => {
                 placeholder="Title your session..."
               />
             </FormControl>
+            <Flex mt={4} p="0 1rem 0 1rem" maxH="10rem" overflow="auto">
+              <div
+                dangerouslySetInnerHTML={{
+                  __html:
+                    tipTapRef.current?.textContent !==
+                    '<p>Take notes about your session here...</p>'
+                      ? tipTapRef.current?.textContent
+                      : 'No notes for this session!',
+                }}
+                className="tiptap"
+              />
+            </Flex>
 
-            <FormControl mt={4}>
-              <Textarea value={notes} onChange={handleInputChange} size="md" />
-            </FormControl>
+            {url.length !== 0 && (
+              <Flex align="center" m="1rem">
+                <AudioDisplay url={url} context="SaveSessionModal" />
+              </Flex>
+            )}
             <Stack align="center" justify="center" mt={3}>
               {!isEmpty && (
                 <InstrumentBadgeWrapEditable
@@ -172,7 +180,7 @@ const SaveSessionModal = ({ notesRef, durationRef }: Props) => {
           <ModalFooter justifyContent="center">
             <Button
               colorScheme="green"
-              onClick={() => {
+              onClick={async () => {
                 if (sessionTitleRef.current.value.length === 0) {
                   setHasTitle(false);
                   return;
@@ -180,14 +188,29 @@ const SaveSessionModal = ({ notesRef, durationRef }: Props) => {
                   setHasTitle(true);
                 }
 
+                // conditional upon url '' / there being a blob
+                if (!blob) return;
+
+                const file = new File([blob], sessionTitleRef.current.value, {
+                  type: 'audio/webm;codecs=opus',
+                });
+
+                const audioPayload = {
+                  fileSize: file.size, // file.size
+                  fileType: 'audio/webm;codecs=opus', // file.type
+                  checksum: await computeSHA256(file),
+                };
+
                 const newSessionPayload = {
                   title: sessionTitleRef.current.value,
-                  notes: notes,
+                  notes: tipTapRef.current?.textContent,
                   instruments: instruments,
                   duration: minutes,
                   isPublic: isPublic,
+                  audioPayload: audioPayload,
                 };
-
+                let mediaId: number;
+                let sessionId: number;
                 // create an axios post request to save the session
                 const saveSession = axios
                   .post(
@@ -195,10 +218,27 @@ const SaveSessionModal = ({ notesRef, durationRef }: Props) => {
                     newSessionPayload,
                   )
                   .then((res) => {
-                    console.log(
-                      'logging response from save session modal :',
-                      res,
+                    mediaId = res.data.newMedia.id;
+                    sessionId = res.data.newSession.id;
+                    const url = res.data.signedUrl;
+                    return axios.put(url, file, {
+                      headers: {
+                        'Content-Type': file.type,
+                      },
+                    });
+                  })
+                  .then((s3Res) => {
+                    // post confirmation of success to api to link media and session
+                    return axios.post(
+                      'http://localhost:3000/sessions/confirmMedia',
+                      {
+                        mediaId: mediaId,
+                        sessionId: sessionId,
+                      },
                     );
+                  })
+                  .then((res) => {
+                    // refresh or redirect to feed with a refresh to see the new post?
                     onClose();
                     return Promise.resolve(res);
                   })

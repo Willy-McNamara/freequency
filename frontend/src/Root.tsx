@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Link, Outlet, useLoaderData, useNavigate } from 'react-router-dom';
-import { Flex, Box, Heading, Icon } from '@chakra-ui/react';
+import { Flex, Box, Image } from '@chakra-ui/react';
 import { TbHandRock } from 'react-icons/tb';
 import { CgProfile } from 'react-icons/cg';
 import { PiMusicNotesFill } from 'react-icons/pi';

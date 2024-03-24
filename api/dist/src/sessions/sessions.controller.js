@@ -11,14 +11,22 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SessionsController = void 0;
 const common_1 = require("@nestjs/common");
 const sessions_service_1 = require("./sessions.service");
 const jwt_guard_1 = require("../auth/jwt.guard");
+const s3_service_1 = require("../s3/s3.service");
+const crypto_1 = __importDefault(require("crypto"));
+const media_service_1 = require("../media/media.service");
 let SessionsController = class SessionsController {
-    constructor(sessionsService) {
+    constructor(sessionsService, s3service, mediaService) {
         this.sessionsService = sessionsService;
+        this.s3service = s3service;
+        this.mediaService = mediaService;
     }
     async getSessionsOnRender() {
         return this.sessionsService.getFiveSessions();
@@ -27,7 +35,16 @@ let SessionsController = class SessionsController {
         return this.sessionsService.getSessionsChunk(body.cursor);
     }
     async createSession(body, req) {
-        const newSession = {
+        const audioPayload = {
+            size: body.audioPayload.fileSize,
+            type: body.audioPayload.fileType,
+            checksum: body.audioPayload.checksum,
+            musicianId: req.user.id,
+        };
+        const generateFileName = (bytes = 32) => crypto_1.default.randomBytes(bytes).toString('hex');
+        const fileName = generateFileName();
+        const url = await this.s3service.getSignedURL(audioPayload, fileName);
+        const createSession = {
             title: body.title,
             notes: body.notes,
             instruments: body.instruments,
@@ -35,7 +52,12 @@ let SessionsController = class SessionsController {
             isPublic: body.isPublic,
             musicianId: req.user.id,
         };
-        return this.sessionsService.createSession(newSession);
+        const newSession = await this.sessionsService.createSession(createSession);
+        const newMedia = await this.mediaService.addMediaItem(fileName, newSession.musicianId, 'audio', newSession.id);
+        return { newSession, newMedia, signedUrl: url };
+    }
+    async confirmMedia(body) {
+        return this.mediaService.connectMediaToSession(body.mediaId, body.sessionId);
     }
     async addComment(body, req) {
         console.log('req.user.id:', req.user.id);
@@ -83,6 +105,14 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], SessionsController.prototype, "createSession", null);
 __decorate([
+    (0, common_1.Post)('confirmMedia'),
+    (0, common_1.UseGuards)(jwt_guard_1.JwtAuthGuard),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], SessionsController.prototype, "confirmMedia", null);
+__decorate([
     (0, common_1.Post)('addComment'),
     (0, common_1.UseGuards)(jwt_guard_1.JwtAuthGuard),
     __param(0, (0, common_1.Body)()),
@@ -102,6 +132,8 @@ __decorate([
 ], SessionsController.prototype, "addGasUp", null);
 exports.SessionsController = SessionsController = __decorate([
     (0, common_1.Controller)('sessions'),
-    __metadata("design:paramtypes", [sessions_service_1.SessionsService])
+    __metadata("design:paramtypes", [sessions_service_1.SessionsService,
+        s3_service_1.S3Service,
+        media_service_1.MediaService])
 ], SessionsController);
 //# sourceMappingURL=sessions.controller.js.map

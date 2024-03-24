@@ -23,6 +23,7 @@ model Session {
   musician     Musician     @relation(fields: [musicianId], references: [id])
   gasUps       GasUp[]
   comments     Comment[]
+  media        Media?
 }
 
 model Musician {
@@ -38,17 +39,27 @@ model Musician {
   totalSessions       Int         @default(0)
   totalPracticeMinutes Int         @default(0)
   totalGasUpsGiven         Int         @default(0)
-  totalGasUpsRecieved         Int         @default(0)
+  totalGasUpsReceived         Int         @default(0)
   longestStreak       Int         @default(0)
   currentStreak       Int         @default(0)
   createdAt           DateTime    @default(now())
   gasUps              GasUp[]
   comments            Comment[]
   sessions            Session[]
+  media               Media[]
 
   @@index([id, email])
 }
 
+model Media {
+  id         Int      @id @default(autoincrement())
+  musicianId Int
+  url        String
+  type       String
+  musician   Musician  @relation(fields: [musicianId], references: [id])
+  session    Session?  @relation(fields: [sessionId], references: [id])
+  sessionId  Int?      @unique
+}
 
 model GasUp {
   id         Int      @id @default(autoincrement())
@@ -61,7 +72,7 @@ model GasUp {
 model Comment {
   id        Int      @id @default(autoincrement())
   text      String
-  createdAt  DateTime @default(now())
+  createdAt DateTime  @default(now())
   musicianId Int
   sessionId  Int
   musician  Musician @relation(fields: [musicianId], references: [id])

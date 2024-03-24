@@ -23,6 +23,7 @@ const core_1 = require("@nestjs/core");
 const unauthorized_exception_filter_1 = require("./filters/unauthorized-exception.filter");
 const jwt_strategy_1 = require("./auth/jwt.strategy");
 const jwt_1 = require("@nestjs/jwt");
+const s3_service_1 = require("./s3/s3.service");
 let AppModule = class AppModule {
     configure(consumer) {
         consumer.apply(logger_middleware_1.LoggerMiddleware).forRoutes('*');
@@ -51,6 +52,7 @@ exports.AppModule = AppModule = __decorate([
             sessions_service_1.SessionsService,
             jwt_strategy_1.JwtStrategy,
             jwt_1.JwtService,
+            s3_service_1.S3Service,
             {
                 provide: core_1.APP_FILTER,
                 useClass: unauthorized_exception_filter_1.UnauthorizedExceptionFilter,

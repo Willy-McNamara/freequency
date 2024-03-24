@@ -8,16 +8,26 @@ import {
   NewGasUpDto,
   GasUpDto,
   FrontendSessionDto,
+  AudioPayload,
+  CreateSessionResponse,
 } from './dto/session.dto';
 import { JwtAuthGuard } from '../auth/jwt.guard';
 import {
   FrontendCommentDto,
   FrontendGasUpDto,
 } from 'src/musicians/dto/musician.dto';
+import { S3Service } from 'src/s3/s3.service';
+import crypto from 'crypto';
+import { MediaService } from 'src/media/media.service';
+import { FrontendMedia } from 'src/media/media.dto';
 
 @Controller('sessions')
 export class SessionsController {
-  constructor(private readonly sessionsService: SessionsService) {}
+  constructor(
+    private readonly sessionsService: SessionsService,
+    private readonly s3service: S3Service,
+    private readonly mediaService: MediaService,
+  ) {}
 
   @Get()
   async getSessionsOnRender(): Promise<SessionDto[]> {
@@ -35,8 +45,21 @@ export class SessionsController {
   async createSession(
     @Body() body: any,
     @Req() req: any,
-  ): Promise<FrontendSessionDto> {
-    const newSession: CreateSessionDto = {
+  ): Promise<CreateSessionResponse> {
+    const audioPayload = {
+      size: body.audioPayload.fileSize, // file.size
+      type: body.audioPayload.fileType, // file.type
+      checksum: body.audioPayload.checksum,
+      musicianId: req.user.id,
+    };
+
+    // this logic is in the contorller so it can feed into both getSignedURL and createSession
+    const generateFileName = (bytes = 32) =>
+      crypto.randomBytes(bytes).toString('hex');
+    const fileName = generateFileName();
+    const url = await this.s3service.getSignedURL(audioPayload, fileName);
+
+    const createSession: CreateSessionDto = {
       title: body.title,
       notes: body.notes,
       instruments: body.instruments,
@@ -44,7 +67,26 @@ export class SessionsController {
       isPublic: body.isPublic,
       musicianId: req.user.id,
     };
-    return this.sessionsService.createSession(newSession);
+    const newSession: FrontendSessionDto =
+      await this.sessionsService.createSession(createSession);
+
+    const newMedia = await this.mediaService.addMediaItem(
+      fileName,
+      newSession.musicianId,
+      'audio',
+      newSession.id,
+    );
+
+    return { newSession, newMedia, signedUrl: url };
+  }
+
+  @Post('confirmMedia')
+  @UseGuards(JwtAuthGuard)
+  async confirmMedia(@Body() body: any): Promise<FrontendMedia> {
+    return this.mediaService.connectMediaToSession(
+      body.mediaId,
+      body.sessionId,
+    );
   }
 
   @Post('addComment')

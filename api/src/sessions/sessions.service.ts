@@ -56,6 +56,12 @@ export class SessionsService {
             profilePictureUrl: true,
           },
         },
+        media: {
+          select: {
+            url: true,
+            type: true,
+          },
+        },
       },
     });
 
@@ -75,6 +81,7 @@ export class SessionsService {
         musicianProfilePictureUrl: session.musician.profilePictureUrl,
         gasUps: session.gasUps,
         comments: session.comments,
+        media: session.media ? session.media : null,
       }),
     );
 
@@ -121,6 +128,12 @@ export class SessionsService {
             profilePictureUrl: true,
           },
         },
+        media: {
+          select: {
+            url: true,
+            type: true,
+          },
+        },
       },
     });
 
@@ -139,6 +152,7 @@ export class SessionsService {
       musicianProfilePictureUrl: session.musician.profilePictureUrl,
       gasUps: session.gasUps,
       comments: session.comments,
+      media: session.media ? session.media : null,
     }));
 
     return frontendSessions;
@@ -187,6 +201,7 @@ export class SessionsService {
           musicianProfilePictureUrl: createdSession.musician.profilePictureUrl,
           gasUps: [],
           comments: [],
+          media: null,
         };
 
         await prisma.musician.update({
@@ -297,7 +312,7 @@ export class SessionsService {
           data: {
             // Update fields as needed
             // Assuming you want to increment the totalGasUps field
-            totalGasUpsRecieved: {
+            totalGasUpsReceived: {
               increment: 1,
             },
           },

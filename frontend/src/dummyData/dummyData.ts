@@ -8,7 +8,7 @@ type Member = {
   memberTotalSessions: number;
   memberTotalPracticeMinutes: number;
   memberTotalGasUpsGiven: number;
-  memberTotalGasUpsRecieved: number;
+  memberTotalGasUpsReceived: number;
   memberLongestStreak: number;
   memberCurrentStreak: number;
 };
@@ -23,7 +23,7 @@ const dummyMemberOne: Member = {
   memberTotalSessions: 8,
   memberTotalPracticeMinutes: 100,
   memberTotalGasUpsGiven: 3,
-  memberTotalGasUpsRecieved: 4,
+  memberTotalGasUpsReceived: 4,
   memberLongestStreak: 4,
   memberCurrentStreak: 2,
 };

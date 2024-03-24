@@ -24,7 +24,7 @@ export declare class MusicianDto {
     totalSessions: number;
     totalPracticeMinutes: number;
     totalGasUpsGiven: number;
-    totalGasUpsRecieved: number;
+    totalGasUpsReceived: number;
     longestStreak: number;
     currentStreak: number;
     createdAt: Date;
@@ -40,7 +40,7 @@ export declare class MusicianFrontendDTO {
     totalSessions: number;
     totalPracticeMinutes: number;
     totalGasUpsGiven: number;
-    totalGasUpsRecieved: number;
+    totalGasUpsReceived: number;
     longestStreak: number;
     currentStreak: number;
     createdAt: Date;
