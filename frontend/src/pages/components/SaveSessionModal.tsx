@@ -34,13 +34,13 @@ import AudioDisplay from './AudioDisplay';
 import { computeSHA256 } from '../../utils/checksum';
 
 interface Props {
-  notesRef: React.RefObject<any>;
   durationRef: React.RefObject<any>;
+  tipTapRef: React.RefObject<any>;
   url: string;
   blob: Blob | null;
 }
 
-const SaveSessionModal = ({ notesRef, durationRef, url, blob }: Props) => {
+const SaveSessionModal = ({ durationRef, url, blob, tipTapRef }: Props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const sessionTitleRef = useRef(null);
   const [hasTitle, setHasTitle] = useState(true);
@@ -48,7 +48,6 @@ const SaveSessionModal = ({ notesRef, durationRef, url, blob }: Props) => {
   const [isPublic, setIsPublic] = useBoolean(true);
   const toast = useToast();
   const toastId = 'active';
-  let [notes, setNotes] = useState('');
 
   const loaderData = useOutletContext() as RenderPayloadDTO;
 
@@ -80,20 +79,19 @@ const SaveSessionModal = ({ notesRef, durationRef, url, blob }: Props) => {
     setMinutes(minutes);
   };
 
-  let handleInputChange = (e: { target: { value: any } }) => {
-    let inputValue = e.target.value;
-    setNotes(inputValue);
+  const testFunc = () => {
+    console.log(
+      'logging tipTapRef in SavSessionModal onClick :',
+      tipTapRef.current,
+      tipTapRef.current?.textContent,
+    );
   };
 
   return (
     <>
       <Button
         onClick={() => {
-          if (!notesRef.current.value) {
-            setNotes('no notes for session...');
-          } else {
-            setNotes(notesRef.current.value);
-          }
+          testFunc();
           updatePracticeTime();
           onOpen();
         }}
@@ -120,10 +118,19 @@ const SaveSessionModal = ({ notesRef, durationRef, url, blob }: Props) => {
                 placeholder="Title your session..."
               />
             </FormControl>
+            <Flex mt={4} p="0 1rem 0 1rem" maxH="10rem" overflow="auto">
+              <div
+                dangerouslySetInnerHTML={{
+                  __html:
+                    tipTapRef.current?.textContent !==
+                    '<p>Take notes about your session here...</p>'
+                      ? tipTapRef.current?.textContent
+                      : 'No notes for this session!',
+                }}
+                className="tiptap"
+              />
+            </Flex>
 
-            <FormControl mt={4}>
-              <Textarea value={notes} onChange={handleInputChange} size="md" />
-            </FormControl>
             {url.length !== 0 && (
               <Flex align="center" m="1rem">
                 <AudioDisplay url={url} context="SaveSessionModal" />
@@ -196,7 +203,7 @@ const SaveSessionModal = ({ notesRef, durationRef, url, blob }: Props) => {
 
                 const newSessionPayload = {
                   title: sessionTitleRef.current.value,
-                  notes: notes,
+                  notes: tipTapRef.current?.textContent,
                   instruments: instruments,
                   duration: minutes,
                   isPublic: isPublic,

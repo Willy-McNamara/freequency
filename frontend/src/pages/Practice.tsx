@@ -5,9 +5,9 @@ import DurationTimer from './components/DurationTimer';
 import AudioDisplay from './components/AudioDisplay';
 import RecordAudio from './components/RecordAudio';
 // import Editor from './components/Editor';
+import TipTap from './components/TipTap';
 
 const Practice = () => {
-  const notesRef = useRef(null);
   const durationRef = useRef(null);
 
   const [isActive, setIsActive] = useState<boolean>(false);
@@ -17,6 +17,8 @@ const Practice = () => {
   const [url, setUrl] = useState<string>('');
   const [blob, setBlob] = useState<Blob | null>(null);
   //const [file, setFile] = useState<File | null>(null);
+
+  const tiptapRef = useRef(null);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -87,13 +89,8 @@ const Practice = () => {
         <DurationTimer time={time} durationRef={durationRef} />
       </Heading>
       <Text>didn’t use timer? you can edit this number when you save.</Text>
-      <Textarea
-        ref={notesRef}
-        m="3rem 3rem 1rem 3rem"
-        bg="white"
-        placeholder="Take notes about your session here..."
-      />
-      <Flex direction="column" align="center">
+      <TipTap tiptapRef={tiptapRef} />
+      <Flex direction="column" align="center" mt="1rem">
         <Text fontSize="md">optionally tap mic to capture an audio take!</Text>
         <Text fontSize="sm" as="i">
           {'(takes will be trimmed to 12 seconds)'}
@@ -111,10 +108,10 @@ const Practice = () => {
         </Box>
       </Flex>
       <SaveSessionModal
-        notesRef={notesRef}
         durationRef={durationRef}
         url={url}
         blob={blob}
+        tipTapRef={tiptapRef}
       />
     </Flex>
   );

@@ -1,13 +1,15 @@
-.wrapper {
-  padding: 2rem 3rem;
+.tiptap {
+  > * + * {
+    margin-top: 0.75em;
+    width: 35rem;
+  }
+
+  ul,
+  ol {
+    padding: 0 1rem;
+  }
 }
 
-.label {
-  font-size: 1rem;
-  font-weight: 500;
-}
-
-.editor {
-  margin-top: 1rem;
-  height: 500px;
+.tiptapTextArea {
+  width: 35rem;
 }
