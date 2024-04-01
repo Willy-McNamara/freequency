@@ -6,6 +6,7 @@ import Root from './Root';
 import Profile from './pages/Profile';
 import Practice from './pages/Practice';
 import Login from './pages/Login';
+import { ErrorBoundary } from './ErrorBoundary';
 
 const router = createBrowserRouter([
   {
@@ -24,6 +25,7 @@ const router = createBrowserRouter([
       }
       return payload.data;
     },
+    errorElement: <ErrorBoundary />,
     children: [
       {
         path: '',

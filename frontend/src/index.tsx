@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import router from './routes';
 import { RouterProvider, Route } from 'react-router-dom';
 import { ChakraProvider } from '@chakra-ui/react';
+import { ErrorBoundary } from './ErrorBoundary';
 
 const rootElement = document.getElementById('root');
 

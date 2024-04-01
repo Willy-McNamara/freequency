@@ -32,7 +32,6 @@ let SessionsController = class SessionsController {
         return this.sessionsService.getFiveSessions();
     }
     async getNextChunk(body) {
-        throw new Error('Not implemented');
         return this.sessionsService.getSessionsChunk(body.cursor);
     }
     async createSession(body, req) {

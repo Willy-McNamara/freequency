@@ -32,6 +32,7 @@ import InstrumentBadgeWrapEditable from './InstrumentBadgeWrapEditable';
 import { PopularInstrument } from '../../types/instruments.types';
 import AudioDisplay from './AudioDisplay';
 import { computeSHA256 } from '../../utils/checksum';
+import DOMPurify from 'dompurify';
 
 interface Props {
   durationRef: React.RefObject<any>;
@@ -122,9 +123,9 @@ const SaveSessionModal = ({ durationRef, url, blob, tipTapRef }: Props) => {
               <div
                 dangerouslySetInnerHTML={{
                   __html:
-                    tipTapRef.current?.textContent !==
+                    DOMPurify.sanitize(tipTapRef.current?.textContent) !==
                     '<p>Take notes about your session here...</p>'
-                      ? tipTapRef.current?.textContent
+                      ? DOMPurify.sanitize(tipTapRef.current?.textContent)
                       : 'No notes for this session!',
                 }}
                 className="tiptap"
@@ -203,7 +204,7 @@ const SaveSessionModal = ({ durationRef, url, blob, tipTapRef }: Props) => {
 
                 const newSessionPayload = {
                   title: sessionTitleRef.current.value,
-                  notes: tipTapRef.current?.textContent,
+                  notes: DOMPurify.sanitize(tipTapRef.current?.textContent),
                   instruments: instruments,
                   duration: minutes,
                   isPublic: isPublic,
