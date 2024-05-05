@@ -10,12 +10,14 @@ import { join } from 'path';
 import { MusiciansService } from './musicians/musicians.service';
 import { SessionsService } from './sessions/sessions.service';
 import { AuthModule } from './auth/auth.module';
-import { APP_FILTER } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { UnauthorizedExceptionFilter } from './filters/unauthorized-exception.filter';
 import { JwtStrategy } from './auth/jwt.strategy';
 import { JwtService, JwtModule } from '@nestjs/jwt';
 import { S3 } from '@aws-sdk/client-s3';
 import { S3Service } from './s3/s3.service';
+import { AllExceptionsFilter } from './filters/all-exceptions.filter';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -30,6 +32,12 @@ import { S3Service } from './s3/s3.service';
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '5m' },
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 10,
+      },
+    ]),
   ],
   controllers: [AppController],
   providers: [
@@ -41,7 +49,15 @@ import { S3Service } from './s3/s3.service';
     S3Service,
     {
       provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    },
+    {
+      provide: APP_FILTER,
       useClass: UnauthorizedExceptionFilter,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
   ],
 })

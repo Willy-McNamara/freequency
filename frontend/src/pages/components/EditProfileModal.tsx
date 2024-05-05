@@ -23,6 +23,7 @@ import { FaRegEdit } from 'react-icons/fa';
 import InstrumentBadgeWrapEditable from './InstrumentBadgeWrapEditable';
 import { PopularInstrument } from '../../types/instruments.types';
 import axios from 'axios';
+import DOMPurify from 'dompurify';
 
 interface Props {
   displayName: string;
@@ -51,9 +52,10 @@ const EditProfileModal = ({ displayName, initialInstruments, bio }: Props) => {
 
   const handleClose = () => {
     const updateProfilePayload = {
-      updatedDisplayName: displayNameRef?.current?.textContent || displayName,
+      updatedDisplayName:
+        DOMPurify.sanitize(displayNameRef?.current?.textContent) || displayName,
       updatedInstruments: (instruments as string[]) || [],
-      updatedBio: bioRef?.current?.textContent || bio,
+      updatedBio: DOMPurify.sanitize(bioRef?.current?.textContent) || bio,
     };
 
     // const examplePromise = new Promise((resolve, reject) => {

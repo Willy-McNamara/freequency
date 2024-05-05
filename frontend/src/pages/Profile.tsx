@@ -23,6 +23,7 @@ import { RenderPayloadDTO } from '../types/app.types';
 import { MusicianFrontendDTO } from '../types/musicians.types';
 import Footer from './components/Footer';
 import InstrumentBadgeStack from './components/InstrumentBadgeStack';
+import ErrorBoundary from '../ErrorBoundary';
 import EditProfileModal from './components/EditProfileModal';
 
 const Profile = () => {
@@ -34,11 +35,13 @@ const Profile = () => {
     <Flex direction="column" align="center" maxW="35rem">
       <Footer />
       <Flex direction="column" align="center" p="1.5rem">
-        <EditProfileModal
-          displayName={musician.displayName}
-          initialInstruments={musician.instruments}
-          bio={musician.bio}
-        />
+        <ErrorBoundary>
+          <EditProfileModal
+            displayName={musician.displayName}
+            initialInstruments={musician.instruments}
+            bio={musician.bio}
+          />
+        </ErrorBoundary>
         <Flex direction="row" alignItems="center" m="1.5rem">
           <Avatar
             size="xl"

@@ -8,6 +8,7 @@ import { RenderPayloadDTO } from './types/app.types';
 import PrivacyPolicy from './pages/components/PrivacyPolicy';
 import Footer from './pages/components/Footer';
 import Menu from './pages/components/Menu';
+import ErrorBoundary from './ErrorBoundary';
 
 const Root = () => {
   /*
@@ -30,16 +31,18 @@ const Root = () => {
     return <></>;
   } else {
     return (
-      <Flex
-        direction="column"
-        align="center"
-        bgColor="#f7f7e9"
-        minHeight="100vh"
-      >
-        <Menu />
-        <Box m="1rem"></Box>
-        <Outlet context={initPayload} />
-      </Flex>
+      <ErrorBoundary>
+        <Flex
+          direction="column"
+          align="center"
+          bgColor="#f7f7e9"
+          minHeight="100vh"
+        >
+          <Menu />
+          <Box m="1rem"></Box>
+          <Outlet context={initPayload} />
+        </Flex>
+      </ErrorBoundary>
     );
   }
 };
