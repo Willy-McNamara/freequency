@@ -43,7 +43,6 @@ const EditProfileModal = ({ displayName, initialInstruments, bio }: Props) => {
   const toastId = 'active';
 
   const toggleInstrument = (instrument: string) => {
-    throw Error('somethin went wrong dood');
     if (instruments.includes(instrument)) {
       setInstruments(instruments.filter((item) => item !== instrument));
     } else {
