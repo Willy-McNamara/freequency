@@ -25,6 +25,7 @@ const jwt_strategy_1 = require("./auth/jwt.strategy");
 const jwt_1 = require("@nestjs/jwt");
 const s3_service_1 = require("./s3/s3.service");
 const all_exceptions_filter_1 = require("./filters/all-exceptions.filter");
+const throttler_1 = require("@nestjs/throttler");
 let AppModule = class AppModule {
     configure(consumer) {
         consumer.apply(logger_middleware_1.LoggerMiddleware).forRoutes('*');
@@ -45,6 +46,12 @@ exports.AppModule = AppModule = __decorate([
                 secret: process.env.JWT_SECRET,
                 signOptions: { expiresIn: '5m' },
             }),
+            throttler_1.ThrottlerModule.forRoot([
+                {
+                    ttl: 60000,
+                    limit: 10,
+                },
+            ]),
         ],
         controllers: [app_controller_1.AppController],
         providers: [
@@ -61,6 +68,10 @@ exports.AppModule = AppModule = __decorate([
             {
                 provide: core_1.APP_FILTER,
                 useClass: unauthorized_exception_filter_1.UnauthorizedExceptionFilter,
+            },
+            {
+                provide: core_1.APP_GUARD,
+                useClass: throttler_1.ThrottlerGuard,
             },
         ],
     })
