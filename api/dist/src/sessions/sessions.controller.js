@@ -60,23 +60,19 @@ let SessionsController = class SessionsController {
         return this.mediaService.connectMediaToSession(body.mediaId, body.sessionId);
     }
     async addComment(body, req) {
-        console.log('req.user.id:', req.user.id);
         const newComment = {
             text: body.text,
             musicianId: req.user.id,
             sessionId: body.sessionId,
         };
-        console.log('addComment route hit. logging body:', newComment);
         return this.sessionsService.addComment(newComment);
     }
     async addGasUp(body, req) {
-        console.log('req.user.id:', req.user.id);
         const newGasUp = {
             gasserId: req.user.id,
             musicianId: body.musicianId,
             sessionId: body.sessionId,
         };
-        console.log('addGasUp route hit. logging body:', newGasUp);
         return this.sessionsService.addGasUp(newGasUp);
     }
 };

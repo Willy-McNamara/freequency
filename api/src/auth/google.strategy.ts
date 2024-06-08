@@ -14,22 +14,12 @@ export class GoogleAuthStrategy extends PassportStrategy(Strategy) {
     super({
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: 'http://localhost:3000/auth/google/callback',
+      callbackURL: `${process.env.BACKEND_URL}/auth/google/callback`,
       scope: ['email', 'profile'],
     });
   }
 
   async validate(accessToken: string, refreshToken: string, profile: any) {
-    console.log(
-      'validate func from googleAuthStrategy',
-      profile.id,
-      profile.emails[0].value,
-      profile.displayName,
-      profile.name.givenName,
-      profile.name.familyName,
-      accessToken,
-    );
-
     const musicianData = await this.musiciansService.findOrCreateMusician({
       googleId: profile.id,
       displayName: profile.displayName,
@@ -44,7 +34,6 @@ export class GoogleAuthStrategy extends PassportStrategy(Strategy) {
         ? profile.photos[0].value
         : null,
     });
-    console.log('logging profile returned from googleAuthStrategy', profile);
 
     const jwtPayload = {
       id: musicianData.id,
@@ -57,9 +46,6 @@ export class GoogleAuthStrategy extends PassportStrategy(Strategy) {
       secret: process.env.JWT_SECRET,
     });
 
-    console.log(
-      'validate fun hit for googleAuthStrategy -==-===========================-==-===========================',
-    );
     return {
       id: profile.id,
       email: profile.email,

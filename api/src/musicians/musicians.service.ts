@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   CreateMusicianDto,
@@ -114,10 +114,8 @@ export class MusiciansService {
         where: { email },
       });
       if (musician) {
-        console.log('found musician!', musician);
         return this.formatMusicianForJwt(musician);
       } else {
-        console.log('new user! creating musician with this info:', loginInfo);
         // create and return
         return this.formatMusicianForJwt(await this.createMusician(loginInfo));
       }
@@ -152,7 +150,6 @@ export class MusiciansService {
 
       const formattedUpdatedMusician: MusicianFrontendDTO =
         this.formatMusicianForFrontend(updatedMusician);
-      console.log('musician successfully updated!', formattedUpdatedMusician);
 
       return formattedUpdatedMusician;
     } catch (error) {

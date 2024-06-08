@@ -52,8 +52,6 @@ const Practice = () => {
     the start and end args to Blob.slice are in bytes, 200000 is ~12 seconds of audio.
     found this by trial and error, def room for improvement here!
     */
-    console.log('size of audio file:', blob.size);
-    console.log('type of blob:', blob.type);
     const newBlob: Blob = blob.slice(0, 200000);
     const url = URL.createObjectURL(newBlob);
     /*
@@ -74,7 +72,6 @@ const Practice = () => {
     setUrl('');
   };
 
-  console.log('logging url:', url);
   return (
     <Flex direction="column" align="center" mt="6rem">
       <Button

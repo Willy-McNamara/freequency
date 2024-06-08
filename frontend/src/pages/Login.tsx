@@ -6,8 +6,7 @@ import Footer from './components/Footer';
 
 const Login = () => {
   const handleGoogleButtonClick = () => {
-    console.log('Google button clicked');
-    window.location.href = 'http://localhost:3000/auth/login';
+    window.location.href = `/auth/login`;
   };
   return (
     <Flex

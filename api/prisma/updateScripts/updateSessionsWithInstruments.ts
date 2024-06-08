@@ -16,7 +16,6 @@ async function updateSessions() {
         instruments: [],
       },
     });
-    console.log('Sessions updated successfully.');
   } catch (error) {
     console.error('Error updating sessions:', error);
   } finally {

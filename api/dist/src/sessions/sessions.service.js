@@ -229,13 +229,11 @@ let SessionsService = class SessionsService {
                     musicianDisplayName: createdComment.musician.displayName,
                     musicianProfilePhotoUrl: createdComment.musician.profilePictureUrl,
                 };
-                console.log('comment created! here is comment:', commentDto);
                 return commentDto;
             });
             return createdComment;
         }
         catch (error) {
-            console.log('error adding comment:', error);
             throw new Error(`Failed to add comment: ${error.message}`);
         }
     }
