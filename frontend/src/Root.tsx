@@ -21,11 +21,9 @@ const Root = () => {
 
   useEffect(() => {
     if (typeof initPayload === 'string') {
-      console.log('should navigate to login');
       navigate('/login');
     }
   }, []);
-  console.log('log loader data in Root :', initPayload);
 
   if (typeof initPayload === 'string') {
     return <></>;

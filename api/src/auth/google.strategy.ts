@@ -4,6 +4,7 @@ import { Profile, Strategy } from 'passport-google-oauth20';
 import * as jwt from 'jsonwebtoken';
 import { JwtService } from '@nestjs/jwt';
 import { MusiciansService } from '../musicians/musicians.service';
+import 'dotenv/config';
 
 @Injectable()
 export class GoogleAuthStrategy extends PassportStrategy(Strategy) {
