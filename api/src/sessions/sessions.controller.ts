@@ -95,13 +95,11 @@ export class SessionsController {
     @Body() body: any,
     @Req() req: any,
   ): Promise<FrontendCommentDto> {
-    console.log('req.user.id:', req.user.id);
     const newComment: NewCommentDto = {
       text: body.text,
       musicianId: req.user.id,
       sessionId: body.sessionId,
     };
-    console.log('addComment route hit. logging body:', newComment);
     return this.sessionsService.addComment(newComment);
   }
 
@@ -111,13 +109,11 @@ export class SessionsController {
     @Body() body: any,
     @Req() req: any,
   ): Promise<FrontendGasUpDto> {
-    console.log('req.user.id:', req.user.id);
     const newGasUp: NewGasUpDto = {
       gasserId: req.user.id, // the one doing the gassing up
       musicianId: body.musicianId, // the one getting gassed up
       sessionId: body.sessionId,
     };
-    console.log('addGasUp route hit. logging body:', newGasUp);
     return this.sessionsService.addGasUp(newGasUp);
   }
 }

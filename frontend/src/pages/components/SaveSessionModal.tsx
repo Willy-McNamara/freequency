@@ -80,19 +80,10 @@ const SaveSessionModal = ({ durationRef, url, blob, tipTapRef }: Props) => {
     setMinutes(minutes);
   };
 
-  const testFunc = () => {
-    console.log(
-      'logging tipTapRef in SavSessionModal onClick :',
-      tipTapRef.current,
-      tipTapRef.current?.textContent,
-    );
-  };
-
   return (
     <>
       <Button
         onClick={() => {
-          testFunc();
           updatePracticeTime();
           onOpen();
         }}
@@ -214,10 +205,7 @@ const SaveSessionModal = ({ durationRef, url, blob, tipTapRef }: Props) => {
                 let sessionId: number;
                 // create an axios post request to save the session
                 const saveSession = axios
-                  .post(
-                    'http://localhost:3000/sessions/newSession',
-                    newSessionPayload,
-                  )
+                  .post(`/sessions/newSession`, newSessionPayload)
                   .then((res) => {
                     mediaId = res.data.newMedia.id;
                     sessionId = res.data.newSession.id;
@@ -230,13 +218,10 @@ const SaveSessionModal = ({ durationRef, url, blob, tipTapRef }: Props) => {
                   })
                   .then((s3Res) => {
                     // post confirmation of success to api to link media and session
-                    return axios.post(
-                      'http://localhost:3000/sessions/confirmMedia',
-                      {
-                        mediaId: mediaId,
-                        sessionId: sessionId,
-                      },
-                    );
+                    return axios.post(`/sessions/confirmMedia`, {
+                      mediaId: mediaId,
+                      sessionId: sessionId,
+                    });
                   })
                   .then((res) => {
                     // refresh or redirect to feed with a refresh to see the new post?
@@ -244,7 +229,6 @@ const SaveSessionModal = ({ durationRef, url, blob, tipTapRef }: Props) => {
                     return Promise.resolve(res);
                   })
                   .catch((err) => {
-                    console.log('logging error from save session modal :', err);
                     return Promise.reject(err);
                   });
 

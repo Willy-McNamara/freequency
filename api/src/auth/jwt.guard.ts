@@ -3,6 +3,7 @@ import {
   CanActivate,
   ExecutionContext,
   UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Observable } from 'rxjs';
@@ -17,11 +18,10 @@ export class JwtAuthGuard extends AuthGuard('jwt') implements CanActivate {
 
   handleRequest(err: any, user: any): any {
     if (process.env.DEBUG === 'TRUE') {
-      console.log('logging debug TRUE');
+      Logger.log('DEBUG MODE: jwt.guard.ts handleRequest');
       return { id: 4 };
     }
     if (err || !user) {
-      console.log('error', err);
       throw new UnauthorizedException('Invalid token');
     }
     return user;

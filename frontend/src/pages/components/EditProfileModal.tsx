@@ -64,18 +64,14 @@ const EditProfileModal = ({ displayName, initialInstruments, bio }: Props) => {
     //     onClose();
     //   }, 5000);
     // });
-
-    console.log('updateProfilePayload:', updateProfilePayload);
     const updateProfile = axios
-      .post('http://localhost:3000/musicians/update', updateProfilePayload)
+      .post(`/musicians/update`, updateProfilePayload)
       .then((res) => {
-        console.log('res from update musician:', res);
         onClose();
         window.location.reload();
         return Promise.resolve(res);
       })
       .catch((err) => {
-        console.log('err from update musician:', err);
         return Promise.reject(err);
       });
 

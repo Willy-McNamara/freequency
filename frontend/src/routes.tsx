@@ -13,13 +13,9 @@ const router = createBrowserRouter([
     path: '/',
     element: <Root />,
     loader: async ({ request }) => {
-      const payload = await axios
-        .get('http://localhost:3000/initialRender')
-        .catch((err) => {
-          console.log('error in root loader :', err);
-          return 'error - navigate to login';
-        });
-      console.log('logging payload from root loader :', payload);
+      const payload = await axios.get(`/initialRender`).catch((err) => {
+        return 'error - navigate to login';
+      });
       if (typeof payload === 'string') {
         return payload;
       }

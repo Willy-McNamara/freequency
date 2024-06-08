@@ -25,7 +25,6 @@ let AppController = class AppController {
         this.sessionsService = sessionsService;
     }
     async initialRender(req) {
-        console.log('logging req.user in initialRender, this is the return of jwtGuard', req.user);
         const musicianData = await this.musiciansService.getMusicianById(req.user.id);
         const sessionsData = await this.sessionsService.getFiveSessions();
         const combinedData = this.appService.formatRenderPayload(musicianData, sessionsData);

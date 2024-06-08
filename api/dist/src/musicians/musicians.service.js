@@ -99,11 +99,9 @@ let MusiciansService = class MusiciansService {
                 where: { email },
             });
             if (musician) {
-                console.log('found musician!', musician);
                 return this.formatMusicianForJwt(musician);
             }
             else {
-                console.log('new user! creating musician with this info:', loginInfo);
                 return this.formatMusicianForJwt(await this.createMusician(loginInfo));
             }
         }
@@ -129,7 +127,6 @@ let MusiciansService = class MusiciansService {
                 },
             });
             const formattedUpdatedMusician = this.formatMusicianForFrontend(updatedMusician);
-            console.log('musician successfully updated!', formattedUpdatedMusician);
             return formattedUpdatedMusician;
         }
         catch (error) {

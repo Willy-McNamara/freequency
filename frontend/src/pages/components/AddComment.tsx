@@ -33,19 +33,15 @@ const AddComment = ({ handleNewComment, sessionId }: AddCommentProps) => {
       sessionId,
     };
 
-    console.log('newComment:', newComment); // success
-
     // Disable the component and mock the post request using setTimeout
     setProcessing(true);
     setTimeout(() => {
-      console.log(`Post request sent with text: ${text}`);
       // Reset the disabled state after the mock request is complete
       setProcessing(false);
 
       axios
         .post('/sessions/addComment', newComment)
         .then((response) => {
-          console.log('response:', response);
           // this would be in the .then of the actual post request
           handleNewComment(response.data);
         })

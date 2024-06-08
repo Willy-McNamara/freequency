@@ -30,7 +30,6 @@ let MusiciansController = class MusiciansController {
             updatedBio: body.updatedBio,
             updatedInstruments: body.updatedInstruments,
         };
-        console.log('updateMusicianDto', updateMusicianDto);
         return this.musiciansService.updateMusician(updateMusicianDto);
     }
 };

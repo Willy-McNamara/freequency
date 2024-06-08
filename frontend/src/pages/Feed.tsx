@@ -26,17 +26,12 @@ const Feed = () => {
     if (isLoading) return;
 
     setIsLoading(true);
-    console.log(
-      'about to POST nextChunk, here is cursor:',
-      posts[posts.length - 1].id,
-    );
 
     axios
-      .post(`http://localhost:3000/sessions/nextChunk`, {
+      .post(`/sessions/nextChunk`, {
         cursor: posts[posts.length - 1].id,
       })
       .then((res) => {
-        console.log('response from nextChunk:', res.data);
         if (res.data.length === 0) {
           setEndOfFeed(true);
         } else {
@@ -48,27 +43,19 @@ const Feed = () => {
   }, [isLoading]);
 
   useEffect(() => {
-    console.log('useEffect triggered');
     const observer = new IntersectionObserver((entries) => {
       const target = entries[0];
       if (target.isIntersecting) {
-        console.log('intersection callback triggered, target isIntersecting');
         fetchData();
       }
     });
 
     if (loaderRef.current) {
-      console.log('useEffect sets observer on loaderRef.current');
       observer.observe(loaderRef.current);
     }
 
     return () => {
-      console.log(
-        'useEffect cleanup running, her is loaderRef.current',
-        loaderRef.current,
-      );
       if (loaderRef.current) {
-        console.log('useEffect unobservers loaderRef');
         observer.unobserve(loaderRef.current);
       }
     };
@@ -77,7 +64,6 @@ const Feed = () => {
   return (
     <Flex direction="column" align="center">
       {posts.map((post: FrontendSessionDto) => {
-        console.log('post in feed:', post);
         return (
           <Post post={post} key={post.id} musicianId={initRender.musician.id} />
         );

@@ -54,12 +54,10 @@ const Post = ({ post, musicianId }: props) => {
   const subComments: CommentDto[] | null = true ? commentList?.slice(-2) : null;
 
   const toggleCommentBox = () => {
-    console.log('comment box clicked');
     setIsOpen.toggle();
   };
 
   const handleGasUp = () => {
-    console.log('gas up clicked');
     // don't let somebody re-gas a post
     if (isLiked) return;
 
@@ -73,12 +71,10 @@ const Post = ({ post, musicianId }: props) => {
     axios
       .post('/sessions/addGasUp', newGasUp)
       .then((res) => {
-        console.log('res from gasUp post:', res);
         setIsLiked.on();
         setGasUpsList([...gasUpsList, res.data]);
       })
       .catch((error) => {
-        console.error('Error trying to add gasUp:', error);
         setIsLiked.off();
       });
   };

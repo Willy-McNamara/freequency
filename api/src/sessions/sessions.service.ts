@@ -261,13 +261,11 @@ export class SessionsService {
           musicianDisplayName: createdComment.musician.displayName, // seeing lint here, i think it's the IDE not recognizing the most recent migration..
           musicianProfilePhotoUrl: createdComment.musician.profilePictureUrl,
         };
-        console.log('comment created! here is comment:', commentDto);
         return commentDto;
       });
       return createdComment;
     } catch (error) {
       // Handle any errors during creation
-      console.log('error adding comment:', error);
       throw new Error(`Failed to add comment: ${error.message}`);
     }
   }
