@@ -32,8 +32,6 @@ export class S3Service {
       return 'File type not accepted';
     }
 
-    console.log('audioPayload:', audioPayload);
-
     const putObjectCommand = new PutObjectCommand({
       Bucket: process.env.AWS_S3_BUCKET_NAME!,
       Key: fileName,
