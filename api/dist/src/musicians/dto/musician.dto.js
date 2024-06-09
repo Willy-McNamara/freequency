@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.FrontendCommentDto = exports.CommentDto = exports.CreatedCommentDto = exports.CreatedGasUpDto = exports.GasUpDto = exports.SessionDto = exports.MusicianUpdateDto = exports.MusicianFrontendDTO = exports.MusicianDto = exports.MusicianJwtDto = exports.CreateMusicianDto = void 0;
+exports.CommentDto = exports.CreatedCommentDto = exports.CreatedGasUpDto = exports.GasUpDto = exports.SessionDto = exports.MusicianUpdateDto = exports.MusicianFrontendDTO = exports.MusicianDto = exports.MusicianJwtDto = exports.CreateMusicianDto = void 0;
 class CreateMusicianDto {
 }
 exports.CreateMusicianDto = CreateMusicianDto;
@@ -31,7 +31,4 @@ exports.CreatedCommentDto = CreatedCommentDto;
 class CommentDto {
 }
 exports.CommentDto = CommentDto;
-class FrontendCommentDto {
-}
-exports.FrontendCommentDto = FrontendCommentDto;
 //# sourceMappingURL=musician.dto.js.map

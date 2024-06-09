@@ -220,7 +220,6 @@ let SessionsService = class SessionsService {
                         },
                     },
                 });
-                console.log('logging createdComment: ', createdComment);
                 return createdComment;
             });
             return createdComment;
@@ -267,7 +266,6 @@ let SessionsService = class SessionsService {
                         },
                     },
                 });
-                console.log('logging createdGasUp: ', createdGasUp);
                 return createdGasUp;
             });
             return createdGasUp;

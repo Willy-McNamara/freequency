@@ -27,6 +27,7 @@ import axios from 'axios';
 import InstrumentBadgeWrap from './InstrumentBadgeWrap';
 import { PopularInstrument } from '../../types/instruments.types';
 import AudioDisplay from './AudioDisplay';
+import { useNavigate } from 'react-router';
 
 type props = {
   post: FrontendSessionDto;
@@ -34,6 +35,7 @@ type props = {
 };
 
 const Post = ({ post, musicianId }: props) => {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useBoolean(false);
   // if the user has already liked this post, set state true
   const [isLiked, setIsLiked] = useBoolean(
@@ -75,6 +77,10 @@ const Post = ({ post, musicianId }: props) => {
         setGasUpsList([...gasUpsList, res.data]);
       })
       .catch((error) => {
+        if (error.response.status === 401) {
+          // Redirect to login if unauthorized
+          navigate('/login');
+        }
         setIsLiked.off();
       });
   };

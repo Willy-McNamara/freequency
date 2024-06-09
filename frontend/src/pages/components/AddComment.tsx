@@ -15,6 +15,7 @@ import {
   AddCommentDto,
 } from '../../types/sessions.types';
 import axios from 'axios';
+import { useNavigate } from 'react-router';
 
 interface AddCommentProps {
   handleNewComment: (newComment: CommentDto) => void;
@@ -22,6 +23,8 @@ interface AddCommentProps {
 }
 
 const AddComment = ({ handleNewComment, sessionId }: AddCommentProps) => {
+  const navigate = useNavigate();
+
   const textareaRef = useRef(null);
   const [isProcessing, setProcessing] = useState(false);
 
@@ -46,6 +49,10 @@ const AddComment = ({ handleNewComment, sessionId }: AddCommentProps) => {
           handleNewComment(response.data);
         })
         .catch((error) => {
+          if (error.response.status === 401) {
+            // Redirect to login if unauthorized
+            navigate('/login');
+          }
           console.error('Error:', error);
         });
     }, 1000); // Mocking a 1-second delay

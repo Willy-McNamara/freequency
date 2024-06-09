@@ -96,12 +96,3 @@ export declare class CommentDto {
     musicianId: number;
     sessionId: number;
 }
-export declare class FrontendCommentDto {
-    id: number;
-    text: string;
-    createdAt: Date;
-    musicianId: number;
-    sessionId: number;
-    musicianProfilePhotoUrl: string;
-    musicianDisplayName: string;
-}

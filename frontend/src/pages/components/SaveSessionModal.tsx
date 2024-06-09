@@ -26,7 +26,7 @@ import {
   useBoolean,
 } from '@chakra-ui/react';
 import axios from 'axios';
-import { useOutletContext } from 'react-router';
+import { useNavigate, useOutletContext } from 'react-router';
 import { RenderPayloadDTO } from '../../types/app.types';
 import InstrumentBadgeWrapEditable from './InstrumentBadgeWrapEditable';
 import { PopularInstrument } from '../../types/instruments.types';
@@ -42,6 +42,7 @@ interface Props {
 }
 
 const SaveSessionModal = ({ durationRef, url, blob, tipTapRef }: Props) => {
+  const navigate = useNavigate();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const sessionTitleRef = useRef(null);
   const [hasTitle, setHasTitle] = useState(true);
@@ -229,6 +230,10 @@ const SaveSessionModal = ({ durationRef, url, blob, tipTapRef }: Props) => {
                     return Promise.resolve(res);
                   })
                   .catch((err) => {
+                    if (err.response.status === 401) {
+                      // Redirect to login if unauthorized
+                      navigate('/login');
+                    }
                     return Promise.reject(err);
                   });
 
