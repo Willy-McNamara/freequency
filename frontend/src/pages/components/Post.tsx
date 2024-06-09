@@ -79,8 +79,6 @@ const Post = ({ post, musicianId }: props) => {
       });
   };
 
-  const likes = ['user1', 'user2', 'user3', 'user4', 'user5'];
-
   if (!post.isPublic) {
     return;
   }

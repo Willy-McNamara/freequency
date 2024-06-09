@@ -13,8 +13,8 @@ import {
 } from './dto/session.dto';
 import { JwtAuthGuard } from '../auth/jwt.guard';
 import {
-  FrontendCommentDto,
-  FrontendGasUpDto,
+  CreatedCommentDto,
+  CreatedGasUpDto,
 } from 'src/musicians/dto/musician.dto';
 import { S3Service } from 'src/s3/s3.service';
 import crypto from 'crypto';
@@ -94,7 +94,7 @@ export class SessionsController {
   async addComment(
     @Body() body: any,
     @Req() req: any,
-  ): Promise<FrontendCommentDto> {
+  ): Promise<CreatedCommentDto> {
     const newComment: NewCommentDto = {
       text: body.text,
       musicianId: req.user.id,
@@ -105,10 +105,7 @@ export class SessionsController {
 
   @Post('addGasUp')
   @UseGuards(JwtAuthGuard)
-  async addGasUp(
-    @Body() body: any,
-    @Req() req: any,
-  ): Promise<FrontendGasUpDto> {
+  async addGasUp(@Body() body: any, @Req() req: any): Promise<CreatedGasUpDto> {
     const newGasUp: NewGasUpDto = {
       gasserId: req.user.id, // the one doing the gassing up
       musicianId: body.musicianId, // the one getting gassed up

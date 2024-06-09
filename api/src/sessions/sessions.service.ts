@@ -11,8 +11,8 @@ import {
 } from './dto/session.dto';
 import { v4 as uuidv4 } from 'uuid';
 import {
-  FrontendCommentDto,
-  FrontendGasUpDto,
+  CreatedCommentDto,
+  CreatedGasUpDto,
 } from 'src/musicians/dto/musician.dto';
 import { Prisma } from '@prisma/client';
 
@@ -225,7 +225,7 @@ export class SessionsService {
     }
   }
 
-  async addComment(newComment: NewCommentDto): Promise<FrontendCommentDto> {
+  async addComment(newComment: NewCommentDto): Promise<CreatedCommentDto> {
     const prisma = this.prisma;
 
     try {
@@ -251,17 +251,7 @@ export class SessionsService {
           },
         });
 
-        // Map the created comment to the CommentDto
-        const commentDto: FrontendCommentDto = {
-          id: createdComment.id,
-          text: createdComment.text,
-          createdAt: createdComment.createdAt,
-          musicianId: createdComment.musicianId,
-          sessionId: createdComment.sessionId,
-          musicianDisplayName: createdComment.musician.displayName, // seeing lint here, i think it's the IDE not recognizing the most recent migration..
-          musicianProfilePhotoUrl: createdComment.musician.profilePictureUrl,
-        };
-        return commentDto;
+        return createdComment;
       });
       return createdComment;
     } catch (error) {
@@ -270,7 +260,7 @@ export class SessionsService {
     }
   }
 
-  async addGasUp(newGasUp: NewGasUpDto): Promise<FrontendGasUpDto> {
+  async addGasUp(newGasUp: NewGasUpDto): Promise<CreatedGasUpDto> {
     const prisma = this.prisma;
 
     try {
@@ -316,17 +306,7 @@ export class SessionsService {
           },
         });
 
-        //format FrontendGasUpDto
-        const innerCreatedGasUp: FrontendGasUpDto = {
-          id: createdGasUp.id,
-          musicianId: createdGasUp.musicianId,
-          sessionId: createdGasUp.sessionId,
-          musicianProfilePhotoUrl: createdGasUp.musician.profilePictureUrl,
-          musicianDisplayName: createdGasUp.musician.displayName,
-        };
-
-        // update gas recievers stats
-        return innerCreatedGasUp;
+        return createdGasUp;
       });
       return createdGasUp;
     } catch (error) {
