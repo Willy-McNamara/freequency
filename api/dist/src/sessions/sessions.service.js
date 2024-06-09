@@ -220,16 +220,8 @@ let SessionsService = class SessionsService {
                         },
                     },
                 });
-                const commentDto = {
-                    id: createdComment.id,
-                    text: createdComment.text,
-                    createdAt: createdComment.createdAt,
-                    musicianId: createdComment.musicianId,
-                    sessionId: createdComment.sessionId,
-                    musicianDisplayName: createdComment.musician.displayName,
-                    musicianProfilePhotoUrl: createdComment.musician.profilePictureUrl,
-                };
-                return commentDto;
+                console.log('logging createdComment: ', createdComment);
+                return createdComment;
             });
             return createdComment;
         }
@@ -275,14 +267,8 @@ let SessionsService = class SessionsService {
                         },
                     },
                 });
-                const innerCreatedGasUp = {
-                    id: createdGasUp.id,
-                    musicianId: createdGasUp.musicianId,
-                    sessionId: createdGasUp.sessionId,
-                    musicianProfilePhotoUrl: createdGasUp.musician.profilePictureUrl,
-                    musicianDisplayName: createdGasUp.musician.displayName,
-                };
-                return innerCreatedGasUp;
+                console.log('logging createdGasUp: ', createdGasUp);
+                return createdGasUp;
             });
             return createdGasUp;
         }

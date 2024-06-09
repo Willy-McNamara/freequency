@@ -69,12 +69,25 @@ export declare class GasUpDto {
     musicianId: number;
     sessionId: number;
 }
-export declare class FrontendGasUpDto {
+export declare class CreatedGasUpDto {
+    musician: {
+        displayName: string;
+        profilePictureUrl: string;
+    };
     id: number;
     musicianId: number;
     sessionId: number;
-    musicianProfilePhotoUrl: string;
-    musicianDisplayName: string;
+}
+export declare class CreatedCommentDto {
+    id: number;
+    text: string;
+    createdAt: Date;
+    musicianId: number;
+    sessionId: number;
+    musician: {
+        displayName: string;
+        profilePictureUrl: string;
+    };
 }
 export declare class CommentDto {
     id: number;

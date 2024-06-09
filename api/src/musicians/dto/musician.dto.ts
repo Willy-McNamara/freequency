@@ -77,12 +77,26 @@ export class GasUpDto {
   sessionId: number;
 }
 
-export class FrontendGasUpDto {
+export class CreatedGasUpDto {
+  musician: {
+    displayName: string;
+    profilePictureUrl: string;
+  };
   id: number;
   musicianId: number;
   sessionId: number;
-  musicianProfilePhotoUrl: string; // New field
-  musicianDisplayName: string; // New field
+}
+
+export class CreatedCommentDto {
+  id: number;
+  text: string;
+  createdAt: Date;
+  musicianId: number;
+  sessionId: number;
+  musician: {
+    displayName: string;
+    profilePictureUrl: string;
+  };
 }
 
 export class CommentDto {
@@ -91,14 +105,4 @@ export class CommentDto {
   createdAt: Date;
   musicianId: number;
   sessionId: number;
-}
-
-export class FrontendCommentDto {
-  id: number;
-  text: string;
-  createdAt: Date;
-  musicianId: number;
-  sessionId: number;
-  musicianProfilePhotoUrl: string; // New field
-  musicianDisplayName: string;
 }
