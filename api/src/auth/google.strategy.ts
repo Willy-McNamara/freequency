@@ -43,7 +43,7 @@ export class GoogleAuthStrategy extends PassportStrategy(Strategy) {
     };
 
     const jwtToken = this.jwtService.sign(jwtPayload, {
-      expiresIn: '5m',
+      expiresIn: '90m',
       secret: process.env.JWT_SECRET,
     });
 

@@ -24,6 +24,7 @@ import InstrumentBadgeWrapEditable from './InstrumentBadgeWrapEditable';
 import { PopularInstrument } from '../../types/instruments.types';
 import axios from 'axios';
 import DOMPurify from 'dompurify';
+import { useNavigate } from 'react-router';
 
 interface Props {
   displayName: string;
@@ -32,6 +33,7 @@ interface Props {
 }
 
 const EditProfileModal = ({ displayName, initialInstruments, bio }: Props) => {
+  const navigate = useNavigate();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const [instruments, setInstruments] = useState<string[]>(initialInstruments);
@@ -72,6 +74,10 @@ const EditProfileModal = ({ displayName, initialInstruments, bio }: Props) => {
         return Promise.resolve(res);
       })
       .catch((err) => {
+        if (err.response.status === 401) {
+          // Redirect to login if unauthorized
+          navigate('/login');
+        }
         return Promise.reject(err);
       });
 

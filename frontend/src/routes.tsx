@@ -14,6 +14,7 @@ const router = createBrowserRouter([
     element: <Root />,
     loader: async ({ request }) => {
       const payload = await axios.get(`/initialRender`).catch((err) => {
+        // should probably navigate to login here
         return 'error - navigate to login';
       });
       if (typeof payload === 'string') {

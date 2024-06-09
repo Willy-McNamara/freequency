@@ -9,13 +9,15 @@ import {
   SkeletonText,
   Spinner,
 } from '@chakra-ui/react';
-import { useOutletContext } from 'react-router';
+import { useNavigate, useOutletContext } from 'react-router';
 import { RenderPayloadDTO } from '../types/app.types';
 import { FrontendSessionDto } from '../types/sessions.types';
 import axios from 'axios';
 
 const Feed = () => {
   const initRender = useOutletContext() as RenderPayloadDTO;
+
+  const navigate = useNavigate();
 
   const [posts, setPosts] = useState(initRender.feed);
   const [isLoading, setIsLoading] = useState(false);
@@ -39,7 +41,13 @@ const Feed = () => {
           setIsLoading(false);
         }
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        if (err.response.status === 401) {
+          // Redirect to login if unauthorized
+          navigate('/login');
+        }
+        console.log(err);
+      });
   }, [isLoading]);
 
   useEffect(() => {
