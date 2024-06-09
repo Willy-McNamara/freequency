@@ -181,61 +181,87 @@ const SaveSessionModal = ({ durationRef, url, blob, tipTapRef }: Props) => {
                   setHasTitle(true);
                 }
 
+                let saveSession: Promise<any>;
+
                 // conditional upon url '' / there being a blob
-                if (!blob) return;
+                // for scenarios where a user saves a session with no audio
+                if (!blob) {
+                  const newSessionPayload = {
+                    title: sessionTitleRef.current.value,
+                    notes: DOMPurify.sanitize(tipTapRef.current?.textContent),
+                    instruments: instruments,
+                    duration: minutes,
+                    isPublic: isPublic,
+                  };
 
-                const file = new File([blob], sessionTitleRef.current.value, {
-                  type: 'audio/webm;codecs=opus',
-                });
-
-                const audioPayload = {
-                  fileSize: file.size, // file.size
-                  fileType: 'audio/webm;codecs=opus', // file.type
-                  checksum: await computeSHA256(file),
-                };
-
-                const newSessionPayload = {
-                  title: sessionTitleRef.current.value,
-                  notes: DOMPurify.sanitize(tipTapRef.current?.textContent),
-                  instruments: instruments,
-                  duration: minutes,
-                  isPublic: isPublic,
-                  audioPayload: audioPayload,
-                };
-                let mediaId: number;
-                let sessionId: number;
-                // create an axios post request to save the session
-                const saveSession = axios
-                  .post(`/sessions/newSession`, newSessionPayload)
-                  .then((res) => {
-                    mediaId = res.data.newMedia.id;
-                    sessionId = res.data.newSession.id;
-                    const url = res.data.signedUrl;
-                    return axios.put(url, file, {
-                      headers: {
-                        'Content-Type': file.type,
-                      },
+                  saveSession = axios
+                    .post(`/sessions/newSessionWithoutAudio`, newSessionPayload)
+                    .then((res) => {
+                      // refresh or redirect to feed with a refresh to see the new post?
+                      onClose();
+                      return Promise.resolve(res);
+                    })
+                    .catch((err) => {
+                      if (err.response.status === 401) {
+                        // Redirect to login if unauthorized
+                        navigate('/login');
+                      }
+                      return Promise.reject(err);
                     });
-                  })
-                  .then((s3Res) => {
-                    // post confirmation of success to api to link media and session
-                    return axios.post(`/sessions/confirmMedia`, {
-                      mediaId: mediaId,
-                      sessionId: sessionId,
-                    });
-                  })
-                  .then((res) => {
-                    // refresh or redirect to feed with a refresh to see the new post?
-                    onClose();
-                    return Promise.resolve(res);
-                  })
-                  .catch((err) => {
-                    if (err.response.status === 401) {
-                      // Redirect to login if unauthorized
-                      navigate('/login');
-                    }
-                    return Promise.reject(err);
+                } else {
+                  const file = new File([blob], sessionTitleRef.current.value, {
+                    type: 'audio/webm;codecs=opus',
                   });
+
+                  const audioPayload = {
+                    fileSize: file.size, // file.size
+                    fileType: 'audio/webm;codecs=opus', // file.type
+                    checksum: await computeSHA256(file),
+                  };
+
+                  const newSessionPayload = {
+                    title: sessionTitleRef.current.value,
+                    notes: DOMPurify.sanitize(tipTapRef.current?.textContent),
+                    instruments: instruments,
+                    duration: minutes,
+                    isPublic: isPublic,
+                    audioPayload: audioPayload,
+                  };
+                  let mediaId: number;
+                  let sessionId: number;
+                  // create an axios post request to save the session
+                  saveSession = axios
+                    .post(`/sessions/newSessionWithAudio`, newSessionPayload)
+                    .then((res) => {
+                      mediaId = res.data.newMedia.id;
+                      sessionId = res.data.newSession.id;
+                      const url = res.data.signedUrl;
+                      return axios.put(url, file, {
+                        headers: {
+                          'Content-Type': file.type,
+                        },
+                      });
+                    })
+                    .then((s3Res) => {
+                      // post confirmation of success to api to link media and session
+                      return axios.post(`/sessions/confirmMedia`, {
+                        mediaId: mediaId,
+                        sessionId: sessionId,
+                      });
+                    })
+                    .then((res) => {
+                      // refresh or redirect to feed with a refresh to see the new post?
+                      onClose();
+                      return Promise.resolve(res);
+                    })
+                    .catch((err) => {
+                      if (err.response.status === 401) {
+                        // Redirect to login if unauthorized
+                        navigate('/login');
+                      }
+                      return Promise.reject(err);
+                    });
+                }
 
                 // placeholder for async api call...
                 // const examplePromise = new Promise((resolve, reject) => {

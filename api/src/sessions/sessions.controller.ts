@@ -40,9 +40,29 @@ export class SessionsController {
     return this.sessionsService.getSessionsChunk(body.cursor);
   }
 
-  @Post('newSession')
+  @Post('newSessionWithoutAudio')
   @UseGuards(JwtAuthGuard)
-  async createSession(
+  async createSessionWithoutAudio(
+    @Body() body: any,
+    @Req() req: any,
+  ): Promise<FrontendSessionDto> {
+    const createSession: CreateSessionDto = {
+      title: body.title,
+      notes: body.notes,
+      instruments: body.instruments,
+      duration: body.duration,
+      isPublic: body.isPublic,
+      musicianId: req.user.id,
+    };
+    const newSession: FrontendSessionDto =
+      await this.sessionsService.createSession(createSession);
+
+    return newSession;
+  }
+
+  @Post('newSessionWithAudio')
+  @UseGuards(JwtAuthGuard)
+  async createSessionWithAudio(
     @Body() body: any,
     @Req() req: any,
   ): Promise<CreateSessionResponse> {

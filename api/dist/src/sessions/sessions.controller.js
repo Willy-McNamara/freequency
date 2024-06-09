@@ -34,7 +34,19 @@ let SessionsController = class SessionsController {
     async getNextChunk(body) {
         return this.sessionsService.getSessionsChunk(body.cursor);
     }
-    async createSession(body, req) {
+    async createSessionWithoutAudio(body, req) {
+        const createSession = {
+            title: body.title,
+            notes: body.notes,
+            instruments: body.instruments,
+            duration: body.duration,
+            isPublic: body.isPublic,
+            musicianId: req.user.id,
+        };
+        const newSession = await this.sessionsService.createSession(createSession);
+        return newSession;
+    }
+    async createSessionWithAudio(body, req) {
         const audioPayload = {
             size: body.audioPayload.fileSize,
             type: body.audioPayload.fileType,
@@ -92,14 +104,23 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], SessionsController.prototype, "getNextChunk", null);
 __decorate([
-    (0, common_1.Post)('newSession'),
+    (0, common_1.Post)('newSessionWithoutAudio'),
     (0, common_1.UseGuards)(jwt_guard_1.JwtAuthGuard),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
-], SessionsController.prototype, "createSession", null);
+], SessionsController.prototype, "createSessionWithoutAudio", null);
+__decorate([
+    (0, common_1.Post)('newSessionWithAudio'),
+    (0, common_1.UseGuards)(jwt_guard_1.JwtAuthGuard),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], SessionsController.prototype, "createSessionWithAudio", null);
 __decorate([
     (0, common_1.Post)('confirmMedia'),
     (0, common_1.UseGuards)(jwt_guard_1.JwtAuthGuard),

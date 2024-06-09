@@ -44,7 +44,7 @@ exports.AppModule = AppModule = __decorate([
             auth_module_1.AuthModule,
             jwt_1.JwtModule.register({
                 secret: process.env.JWT_SECRET,
-                signOptions: { expiresIn: '5m' },
+                signOptions: { expiresIn: '90m' },
             }),
             throttler_1.ThrottlerModule.forRoot([
                 {
