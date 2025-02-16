@@ -36,7 +36,8 @@ COPY --from=backend-build /app/api/dist /app/api/dist
 COPY --from=frontend-build /app/frontend/dist /app/frontend/dist
 
 # Copy database seed file to a known location
-COPY db-backup/db_backup_6_29_24.sql /docker-entrypoint-initdb.d/seed.sql
+# swithing to RDS, so commenting out this step (for local db hosting)
+# COPY db-backup/db_backup_6_29_24.sql /docker-entrypoint-initdb.d/seed.sql
 
 # Copy Prisma schema and entrypoint script
 COPY api/prisma /app/api
