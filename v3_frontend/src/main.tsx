@@ -2,6 +2,12 @@ import "./index.css";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router";
 import App from "./App";
+import Feed from "./pages/Feed";
+import Practice from "./pages/Practice";
+import TaskLibrary from "./pages/TaskLibrary";
+import Growth from "./pages/Growth";
+import Profile from "./pages/Profile";
+import ErrorBoundaryWrapper from "./ErrorBoundary.tsx";
 
 const root = document.getElementById("root");
 
@@ -11,14 +17,18 @@ if (!root) {
 
 ReactDOM.createRoot(root).render(
   <BrowserRouter>
-    <Routes>
-      <Route path="/" element={<App />}>
-        <Route index element={<div>Feed</div>} />
-        <Route path="/practice" element={<div>Practice</div>} />
-        <Route path="/taskLibrary" element={<div>Task Library</div>} />
-        <Route path="/growth" element={<div>Growth / Stats</div>} />
-        <Route path="/profile" element={<div>Profile</div>} />
-      </Route>
-    </Routes>
+    <ErrorBoundaryWrapper>
+      <Routes>
+        <Route path="/" element={<App />}>
+          <Route index element={<Feed />} />
+          <Route path="/practice" element={<Practice />} />
+          <Route path="/task-library" element={<TaskLibrary />} />
+          <Route path="/growth" element={<Growth />} />
+          <Route path="/profile" element={<Profile />} />
+          {/* Fallback for unknown routes */}
+          <Route path="*" element={<h1>Page Not Found</h1>} />
+        </Route>
+      </Routes>
+    </ErrorBoundaryWrapper>
   </BrowserRouter>
 );

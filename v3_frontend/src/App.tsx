@@ -17,7 +17,7 @@ function App() {
           <NavLink to="/practice">Practice</NavLink>
         </div>
         <div>
-          <NavLink to="/taskLibrary">Task Library</NavLink>
+          <NavLink to="/task-library">Task Library</NavLink>
         </div>
         <div>
           <NavLink to="/growth">Growth / Stats</NavLink>
