@@ -20,30 +20,30 @@ import { JwtAuthGuard } from '../auth/jwt.guard';
 export class MusiciansController {
   constructor(private readonly musiciansService: MusiciansService) {}
 
-  @Get()
-  async getMusicianById(@Param('id') id: string): Promise<MusicianFrontendDTO> {
-    return this.musiciansService.getMusicianById(Number(id));
-  }
-
-  // @Post()
-  // async createMusician(
-  //   @Body() createMusicianDto: CreateMusicianDto
-  // ): Promise<MusicianDto> {
-  //   return this.musiciansService.createMusician(createMusicianDto);
+  // @Get()
+  // async getMusicianById(@Param('id') id: string): Promise<MusicianFrontendDTO> {
+  //   return this.musiciansService.getMusicianById(Number(id));
   // }
 
-  @Post('update')
-  @UseGuards(JwtAuthGuard)
-  async updateMusician(
-    @Body() body: any,
-    @Req() req: any,
-  ): Promise<MusicianFrontendDTO> {
-    const updateMusicianDto: MusicianUpdateDto = {
-      id: req.user.id,
-      updatedDisplayName: body.updatedDisplayName,
-      updatedBio: body.updatedBio,
-      updatedInstruments: body.updatedInstruments,
-    };
-    return this.musiciansService.updateMusician(updateMusicianDto);
-  }
+  // // @Post()
+  // // async createMusician(
+  // //   @Body() createMusicianDto: CreateMusicianDto
+  // // ): Promise<MusicianDto> {
+  // //   return this.musiciansService.createMusician(createMusicianDto);
+  // // }
+
+  // @Post('update')
+  // @UseGuards(JwtAuthGuard)
+  // async updateMusician(
+  //   @Body() body: any,
+  //   @Req() req: any,
+  // ): Promise<MusicianFrontendDTO> {
+  //   const updateMusicianDto: MusicianUpdateDto = {
+  //     id: req.user.id,
+  //     updatedDisplayName: body.updatedDisplayName,
+  //     updatedBio: body.updatedBio,
+  //     updatedInstruments: body.updatedInstruments,
+  //   };
+  //   return this.musiciansService.updateMusician(updateMusicianDto);
+  // }
 }

@@ -25,7 +25,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
     SessionsModule,
     MusiciansModule,
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '../../../frontend/dist'),
+      rootPath: join(__dirname, '../../../v3_frontend/dist'),
     }),
     AuthModule,
     JwtModule.register({
