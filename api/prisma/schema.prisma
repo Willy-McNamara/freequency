@@ -25,8 +25,7 @@ model Session {
   comments     Comment[]
   media        Media[]
   tags         Tag[] @relation("SessionTags")
-  taskDefinitions   TaskDefinition[]
-  tasksInUse           TasksInUse[]
+  tasksInUse           TaskInUse[]
 }
 
 model TaskDefinition {
@@ -42,8 +41,7 @@ model TaskDefinition {
   parentTaskId     Int?
   parentTask       TaskDefinition? @relation("TaskHierarchy", fields: [parentTaskId], references: [id])
   subTasks         TaskDefinition[] @relation("TaskHierarchy")
-
-  taskDefinition    TaskDefinition  @relation(fields: [parentTaskId], references: [id])
+  tasksInUse       TaskInUse[]
 }
 
 model TaskInUse {
@@ -80,7 +78,8 @@ model Musician  {
   familyName          String
   email               String      @unique
   bio                 String?     @db.VarChar(300)
-  instruments         Tag[]
+  instruments         Tag[]@relation("MusicianTags")
+
   avatarUrl   String?
   totalSessions       Int         @default(0)
   totalPracticeMinutes Int         @default(0)
@@ -91,6 +90,8 @@ model Musician  {
   comments            Comment[]
   sessions            Session[]
   media               Media[]
+  taskDefinitions     TaskDefinition[]
+  tasksInUse          TaskInUse[]
 
   @@index([id, email])
 }
@@ -129,6 +130,7 @@ model Tag {
   color     String?  // optional, for UI
   createdAt DateTime @default(now())
 
-  sessions  Session[] @relation("SessionTags", references: [id])
-  tasks     TaskInUse[] @relation("TaskTags", references: [id])
+  sessions  Session[] @relation("SessionTags")
+  tasks     TaskInUse[] @relation("TaskTags")
+  musicians Musician[] @relation("MusicianTags")
 }
