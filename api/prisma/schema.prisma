@@ -1,14 +1,19 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+import { config } from 'dotenv';
+config({ path: '.env.local' });
+
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL_RDS")
+  url      = env("DATABASE_URL_V3")
 }
+
 
 model Session {
   id           Int          @id @default(autoincrement())
@@ -17,16 +22,59 @@ model Session {
   instruments  String[]
   duration     Int
   isPublic     Boolean
-  takeId       String
   createdAt    DateTime     @default(now())
   musicianId   Int
   musician     Musician     @relation(fields: [musicianId], references: [id])
   gasUps       GasUp[]
   comments     Comment[]
-  media        Media?
+  media        Media[]
+  tags         Tag[] @relation("SessionTags")
+  tasksInUse           TaskInUse[]
 }
 
-model Musician {
+model TaskDefinition {
+  id           Int          @id @default(autoincrement())
+  title        String
+  musicianId   Int
+  musician     Musician     @relation(fields: [musicianId], references: [id])
+  createdAt    DateTime     @default(now())
+  description        String
+  checklist        String[]
+  savedCount    Int
+  usedCount      Int
+  parentTaskId     Int?
+  parentTask       TaskDefinition? @relation("TaskHierarchy", fields: [parentTaskId], references: [id])
+  subTasks         TaskDefinition[] @relation("TaskHierarchy")
+  tasksInUse       TaskInUse[]
+}
+
+model TaskInUse {
+  id                   Int              @id @default(autoincrement())
+  createdAt            DateTime         @default(now())
+  duration             Int
+  notes                String
+  isSessionTask        Boolean
+  checklistCompletions String[]
+
+  // these task def properties are optional to allow for SessionTask functionality (these wont have a task def, they simply exist to track non-task practice time in a way that is easy to aggregate alongside task time)
+  taskDefinitionId     Int?
+  taskDefinition       TaskDefinition?   @relation(fields: [taskDefinitionId], references: [id])
+
+  musicianId           Int
+  musician             Musician         @relation(fields: [musicianId], references: [id])
+
+  sessionId            Int
+  session              Session          @relation(fields: [sessionId], references: [id])
+
+  tags                 Tag[] @relation("TaskTags")
+
+  @@index([taskDefinitionId])
+  @@index([musicianId])
+  @@index([sessionId])
+}
+
+
+model Musician  {
   id                  Int         @id @default(autoincrement())
   googleId            String?
   displayName            String      @unique
@@ -34,19 +82,20 @@ model Musician {
   familyName          String
   email               String      @unique
   bio                 String?     @db.VarChar(300)
-  instruments         String[]
-  profilePictureUrl   String?
+  instruments         Tag[]@relation("MusicianTags")
+
+  avatarUrl   String?
   totalSessions       Int         @default(0)
   totalPracticeMinutes Int         @default(0)
   totalGasUpsGiven         Int         @default(0)
   totalGasUpsReceived         Int         @default(0)
-  longestStreak       Int         @default(0)
-  currentStreak       Int         @default(0)
   createdAt           DateTime    @default(now())
   gasUps              GasUp[]
   comments            Comment[]
   sessions            Session[]
   media               Media[]
+  taskDefinitions     TaskDefinition[]
+  tasksInUse          TaskInUse[]
 
   @@index([id, email])
 }
@@ -58,7 +107,7 @@ model Media {
   type       String
   musician   Musician  @relation(fields: [musicianId], references: [id])
   session    Session?  @relation(fields: [sessionId], references: [id])
-  sessionId  Int?      @unique
+  sessionId  Int?
 }
 
 model GasUp {
@@ -77,4 +126,15 @@ model Comment {
   sessionId  Int
   musician  Musician @relation(fields: [musicianId], references: [id])
   session   Session  @relation(fields: [sessionId], references: [id])
+}
+
+model Tag {
+  id        Int      @id @default(autoincrement())
+  label     String   @unique
+  color     String?  // optional, for UI
+  createdAt DateTime @default(now())
+
+  sessions  Session[] @relation("SessionTags")
+  tasks     TaskInUse[] @relation("TaskTags")
+  musicians Musician[] @relation("MusicianTags")
 }

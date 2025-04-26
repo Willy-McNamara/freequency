@@ -29,108 +29,108 @@ export class SessionsController {
     private readonly mediaService: MediaService,
   ) {}
 
-  @Get()
-  async getSessionsOnRender(): Promise<SessionDto[]> {
-    return this.sessionsService.getFiveSessions();
-  }
+  // @Get()
+  // async getSessionsOnRender(): Promise<SessionDto[]> {
+  //   return this.sessionsService.getFiveSessions();
+  // }
 
-  @Post('nextChunk')
-  @UseGuards(JwtAuthGuard)
-  async getNextChunk(@Body() body: any): Promise<SessionDto[]> {
-    return this.sessionsService.getSessionsChunk(body.cursor);
-  }
+  // @Post('nextChunk')
+  // @UseGuards(JwtAuthGuard)
+  // async getNextChunk(@Body() body: any): Promise<SessionDto[]> {
+  //   return this.sessionsService.getSessionsChunk(body.cursor);
+  // }
 
-  @Post('newSessionWithoutAudio')
-  @UseGuards(JwtAuthGuard)
-  async createSessionWithoutAudio(
-    @Body() body: any,
-    @Req() req: any,
-  ): Promise<FrontendSessionDto> {
-    const createSession: CreateSessionDto = {
-      title: body.title,
-      notes: body.notes,
-      instruments: body.instruments,
-      duration: body.duration,
-      isPublic: body.isPublic,
-      musicianId: req.user.id,
-    };
-    const newSession: FrontendSessionDto =
-      await this.sessionsService.createSession(createSession);
+  // @Post('newSessionWithoutAudio')
+  // @UseGuards(JwtAuthGuard)
+  // async createSessionWithoutAudio(
+  //   @Body() body: any,
+  //   @Req() req: any,
+  // ): Promise<FrontendSessionDto> {
+  //   const createSession: CreateSessionDto = {
+  //     title: body.title,
+  //     notes: body.notes,
+  //     instruments: body.instruments,
+  //     duration: body.duration,
+  //     isPublic: body.isPublic,
+  //     musicianId: req.user.id,
+  //   };
+  //   const newSession: FrontendSessionDto =
+  //     await this.sessionsService.createSession(createSession);
 
-    return newSession;
-  }
+  //   return newSession;
+  // }
 
-  @Post('newSessionWithAudio')
-  @UseGuards(JwtAuthGuard)
-  async createSessionWithAudio(
-    @Body() body: any,
-    @Req() req: any,
-  ): Promise<CreateSessionResponse> {
-    const audioPayload = {
-      size: body.audioPayload.fileSize, // file.size
-      type: body.audioPayload.fileType, // file.type
-      checksum: body.audioPayload.checksum,
-      musicianId: req.user.id,
-    };
+  // @Post('newSessionWithAudio')
+  // @UseGuards(JwtAuthGuard)
+  // async createSessionWithAudio(
+  //   @Body() body: any,
+  //   @Req() req: any,
+  // ): Promise<CreateSessionResponse> {
+  //   const audioPayload = {
+  //     size: body.audioPayload.fileSize, // file.size
+  //     type: body.audioPayload.fileType, // file.type
+  //     checksum: body.audioPayload.checksum,
+  //     musicianId: req.user.id,
+  //   };
 
-    // this logic is in the contorller so it can feed into both getSignedURL and createSession
-    const generateFileName = (bytes = 32) =>
-      crypto.randomBytes(bytes).toString('hex');
-    const fileName = generateFileName();
-    const url = await this.s3service.getSignedURL(audioPayload, fileName);
+  //   // this logic is in the contorller so it can feed into both getSignedURL and createSession
+  //   const generateFileName = (bytes = 32) =>
+  //     crypto.randomBytes(bytes).toString('hex');
+  //   const fileName = generateFileName();
+  //   const url = await this.s3service.getSignedURL(audioPayload, fileName);
 
-    const createSession: CreateSessionDto = {
-      title: body.title,
-      notes: body.notes,
-      instruments: body.instruments,
-      duration: body.duration,
-      isPublic: body.isPublic,
-      musicianId: req.user.id,
-    };
-    const newSession: FrontendSessionDto =
-      await this.sessionsService.createSession(createSession);
+  //   const createSession: CreateSessionDto = {
+  //     title: body.title,
+  //     notes: body.notes,
+  //     instruments: body.instruments,
+  //     duration: body.duration,
+  //     isPublic: body.isPublic,
+  //     musicianId: req.user.id,
+  //   };
+  //   const newSession: FrontendSessionDto =
+  //     await this.sessionsService.createSession(createSession);
 
-    const newMedia = await this.mediaService.addMediaItem(
-      fileName,
-      newSession.musicianId,
-      'audio',
-      newSession.id,
-    );
+  //   const newMedia = await this.mediaService.addMediaItem(
+  //     fileName,
+  //     newSession.musicianId,
+  //     'audio',
+  //     newSession.id,
+  //   );
 
-    return { newSession, newMedia, signedUrl: url };
-  }
+  //   return { newSession, newMedia, signedUrl: url };
+  // }
 
-  @Post('confirmMedia')
-  @UseGuards(JwtAuthGuard)
-  async confirmMedia(@Body() body: any): Promise<FrontendMedia> {
-    return this.mediaService.connectMediaToSession(
-      body.mediaId,
-      body.sessionId,
-    );
-  }
+  // @Post('confirmMedia')
+  // @UseGuards(JwtAuthGuard)
+  // async confirmMedia(@Body() body: any): Promise<FrontendMedia> {
+  //   return this.mediaService.connectMediaToSession(
+  //     body.mediaId,
+  //     body.sessionId,
+  //   );
+  // }
 
-  @Post('addComment')
-  @UseGuards(JwtAuthGuard)
-  async addComment(
-    @Body() body: any,
-    @Req() req: any,
-  ): Promise<CreatedCommentDto> {
-    const newComment: NewCommentDto = {
-      text: body.text,
-      musicianId: req.user.id,
-      sessionId: body.sessionId,
-    };
-    return this.sessionsService.addComment(newComment);
-  }
+  // @Post('addComment')
+  // @UseGuards(JwtAuthGuard)
+  // async addComment(
+  //   @Body() body: any,
+  //   @Req() req: any,
+  // ): Promise<CreatedCommentDto> {
+  //   const newComment: NewCommentDto = {
+  //     text: body.text,
+  //     musicianId: req.user.id,
+  //     sessionId: body.sessionId,
+  //   };
+  //   return this.sessionsService.addComment(newComment);
+  // }
 
-  @Post('addGasUp')
-  @UseGuards(JwtAuthGuard)
-  async addGasUp(@Body() body: any, @Req() req: any): Promise<CreatedGasUpDto> {
-    const newGasUp: NewGasUpDto = {
-      gasserId: req.user.id, // the one doing the gassing up
-      musicianId: body.musicianId, // the one getting gassed up
-      sessionId: body.sessionId,
-    };
-    return this.sessionsService.addGasUp(newGasUp);
-  }
+  // @Post('addGasUp')
+  // @UseGuards(JwtAuthGuard)
+  // async addGasUp(@Body() body: any, @Req() req: any): Promise<CreatedGasUpDto> {
+  //   const newGasUp: NewGasUpDto = {
+  //     gasserId: req.user.id, // the one doing the gassing up
+  //     musicianId: body.musicianId, // the one getting gassed up
+  //     sessionId: body.sessionId,
+  //   };
+  //   return this.sessionsService.addGasUp(newGasUp);
+  // }
 }

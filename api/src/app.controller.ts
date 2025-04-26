@@ -12,19 +12,19 @@ export class AppController {
     private readonly sessionsService: SessionsService,
   ) {}
 
-  @Get('/initialRender')
-  @UseGuards(JwtAuthGuard)
-  async initialRender(@Req() req: any): Promise<any> {
-    // switch req.user.id to a number (4 for root) when commenting out the jwtGuard
-    const musicianData = await this.musiciansService.getMusicianById(
-      req.user.id,
-    );
-    const sessionsData = await this.sessionsService.getFiveSessions();
-    const combinedData = this.appService.formatRenderPayload(
-      musicianData,
-      sessionsData,
-    );
+  // @Get('/initialRender')
+  // @UseGuards(JwtAuthGuard)
+  // async initialRender(@Req() req: any): Promise<any> {
+  //   // switch req.user.id to a number (4 for root) when commenting out the jwtGuard
+  //   const musicianData = await this.musiciansService.getMusicianById(
+  //     req.user.id,
+  //   );
+  //   const sessionsData = await this.sessionsService.getFiveSessions();
+  //   const combinedData = this.appService.formatRenderPayload(
+  //     musicianData,
+  //     sessionsData,
+  //   );
 
-    return combinedData;
-  }
+  //   return combinedData;
+  // }
 }
