@@ -13,34 +13,35 @@ import { format } from 'path';
 export class MusiciansService {
   constructor(private prisma: PrismaService) {}
 
-  // async getMusicianById(id: number): Promise<MusicianFrontendDTO | null> {
-  //   const prisma = this.prisma;
+  async getMusicianById(id: number): Promise<MusicianFrontendDTO | null> {
+    const prisma = this.prisma;
 
-  //   // Use prisma musician query to get a musician by ID from the database
-  //   const musician = await prisma.musician.findUnique({
-  //     where: { id },
-  //   });
+    // Use prisma musician query to get a musician by ID from the database
+    const musician = await prisma.musician.findUnique({
+      where: { id },
+      include: {
+        instruments: true,
+      },
+    });
 
-  //   if (!musician) {
-  //     return null; // Return null if musician is not found
-  //   }
+    if (!musician) {
+      return null; // Return null if musician is not found
+    }
 
-  //   // Map and return DTO
-  //   return {
-  //     id: musician.id,
-  //     displayName: musician.displayName,
-  //     bio: musician.bio ? musician.bio : '',
-  //     instruments: musician.instruments,
-  //     profilePictureUrl: musician.profilePictureUrl,
-  //     totalSessions: musician.totalSessions,
-  //     totalPracticeMinutes: musician.totalPracticeMinutes,
-  //     totalGasUpsGiven: musician.totalGasUpsGiven,
-  //     totalGasUpsReceived: musician.totalGasUpsReceived,
-  //     longestStreak: musician.longestStreak,
-  //     currentStreak: musician.currentStreak,
-  //     createdAt: musician.createdAt,
-  //   };
-  // }
+    // Map and return DTO
+    return {
+      id: musician.id,
+      displayName: musician.displayName,
+      bio: musician.bio ? musician.bio : '',
+      instruments: musician.instruments,
+      profilePictureUrl: musician.avatarUrl,
+      totalSessions: musician.totalSessions,
+      totalPracticeMinutes: musician.totalPracticeMinutes,
+      totalGasUpsGiven: musician.totalGasUpsGiven,
+      totalGasUpsReceived: musician.totalGasUpsReceived,
+      createdAt: musician.createdAt,
+    };
+  }
 
   // async createMusician(
   //   createMusicianDto: CreateMusicianDto,

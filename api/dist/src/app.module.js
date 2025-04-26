@@ -39,7 +39,7 @@ exports.AppModule = AppModule = __decorate([
             sessions_module_1.SessionsModule,
             musicians_module_1.MusiciansModule,
             serve_static_1.ServeStaticModule.forRoot({
-                rootPath: (0, path_1.join)(__dirname, '../../../frontend/dist'),
+                rootPath: (0, path_1.join)(__dirname, '../../../v3_frontend/dist'),
             }),
             auth_module_1.AuthModule,
             jwt_1.JwtModule.register({

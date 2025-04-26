@@ -20,38 +20,38 @@ export class GoogleAuthStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(accessToken: string, refreshToken: string, profile: any) {
-    const musicianData = await this.musiciansService.findOrCreateMusician({
-      googleId: profile.id,
-      displayName: profile.displayName,
-      givenName: profile.name.givenName
-        ? profile.name.givenName
-        : 'noGivenName',
-      familyName: profile.name.familyName
-        ? profile.name.familyName
-        : 'noFamilyName',
-      email: profile.emails[0].value,
-      profilePictureUrl: profile.photos[0].value
-        ? profile.photos[0].value
-        : null,
-    });
+  // async validate(accessToken: string, refreshToken: string, profile: any) {
+  //   const musicianData = await this.musiciansService.findOrCreateMusician({
+  //     googleId: profile.id,
+  //     displayName: profile.displayName,
+  //     givenName: profile.name.givenName
+  //       ? profile.name.givenName
+  //       : 'noGivenName',
+  //     familyName: profile.name.familyName
+  //       ? profile.name.familyName
+  //       : 'noFamilyName',
+  //     email: profile.emails[0].value,
+  //     profilePictureUrl: profile.photos[0].value
+  //       ? profile.photos[0].value
+  //       : null,
+  //   });
 
-    const jwtPayload = {
-      id: musicianData.id,
-      email: musicianData.email,
-      name: musicianData.displayName,
-    };
+  //   const jwtPayload = {
+  //     id: musicianData.id,
+  //     email: musicianData.email,
+  //     name: musicianData.displayName,
+  //   };
 
-    const jwtToken = this.jwtService.sign(jwtPayload, {
-      expiresIn: '90m',
-      secret: process.env.JWT_SECRET,
-    });
+  //   const jwtToken = this.jwtService.sign(jwtPayload, {
+  //     expiresIn: '90m',
+  //     secret: process.env.JWT_SECRET,
+  //   });
 
-    return {
-      id: profile.id,
-      email: profile.email,
-      name: profile.name,
-      token: jwtToken,
-    };
-  }
+  //   return {
+  //     id: profile.id,
+  //     email: profile.email,
+  //     name: profile.name,
+  //     token: jwtToken,
+  //   };
+  // }
 }
