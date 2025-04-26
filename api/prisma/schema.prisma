@@ -15,7 +15,7 @@ model Session {
   id           Int          @id @default(autoincrement())
   title        String
   notes        String
-  instruments  String[]
+  instruments  Tag[] @relation("SessionInstruments")
   duration     Int
   isPublic     Boolean
   createdAt    DateTime     @default(now())
@@ -133,4 +133,5 @@ model Tag {
   sessions  Session[] @relation("SessionTags")
   tasks     TaskInUse[] @relation("TaskTags")
   musicians Musician[] @relation("MusicianTags")
+  sessionInstruments Session[] @relation("SessionInstruments")
 }

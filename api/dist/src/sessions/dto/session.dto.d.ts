@@ -27,7 +27,6 @@ export declare class FrontendSessionDto {
     instruments: string[];
     duration: number;
     isPublic: boolean;
-    takeId: string;
     createdAt: Date;
     musicianId: number;
     musicianDisplayname: string;
@@ -36,6 +35,41 @@ export declare class FrontendSessionDto {
     comments: CommentDto[];
     media: FrontendMedia | null;
 }
+export type TagDTO = {
+    id: number;
+    label: string;
+    color?: string | null;
+};
+export type NewFrontendSessionDTO = {
+    id: number;
+    title: string;
+    notes: string;
+    instruments: TagDTO[];
+    duration: number;
+    isPublic: boolean;
+    createdAt: string;
+    musician: {
+        displayName: string;
+        avatarUrl: string | null;
+    };
+    media: {
+        url: string;
+        type: string;
+    }[];
+    tags: TagDTO[];
+    gasUps: {
+        musician: {
+            displayName: string;
+            avatarUrl: string | null;
+        };
+    }[];
+    comments: {
+        musician: {
+            displayName: string;
+            avatarUrl: string | null;
+        };
+    }[];
+};
 export declare class GasUpDto {
     id: number;
     musicianId: number;
