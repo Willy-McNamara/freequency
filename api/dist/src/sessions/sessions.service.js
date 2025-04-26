@@ -16,6 +16,89 @@ let SessionsService = class SessionsService {
     constructor(prisma) {
         this.prisma = prisma;
     }
+    async getFiveSessions() {
+        const prisma = this.prisma;
+        const take = 5;
+        const sessions = await prisma.session.findMany({
+            take: take,
+            orderBy: { id: 'desc' },
+            include: {
+                gasUps: {
+                    include: {
+                        musician: {
+                            select: {
+                                displayName: true,
+                                avatarUrl: true,
+                            },
+                        },
+                    },
+                },
+                comments: {
+                    include: {
+                        musician: {
+                            select: {
+                                displayName: true,
+                                avatarUrl: true,
+                            },
+                        },
+                    },
+                },
+                musician: {
+                    select: {
+                        displayName: true,
+                        avatarUrl: true,
+                    },
+                },
+                media: {
+                    select: {
+                        url: true,
+                        type: true,
+                    },
+                },
+                tags: {
+                    select: {
+                        id: true,
+                        label: true,
+                        color: true,
+                    },
+                },
+                instruments: {
+                    select: {
+                        id: true,
+                        label: true,
+                        color: true,
+                    },
+                },
+            },
+        });
+        const frontendSessionDto = sessions.map((session) => ({
+            id: session.id,
+            title: session.title,
+            notes: session.notes,
+            instruments: session.instruments.map((tag) => ({
+                id: tag.id,
+                label: tag.label,
+                color: tag.color,
+            })),
+            duration: session.duration,
+            isPublic: session.isPublic,
+            createdAt: session.createdAt.toISOString(),
+            musicianId: session.musicianId,
+            musician: {
+                displayName: session.musician.displayName,
+                avatarUrl: session.musician.avatarUrl,
+            },
+            tags: session.tags.map((tag) => ({
+                id: tag.id,
+                label: tag.label,
+                color: tag.color,
+            })),
+            gasUps: session.gasUps,
+            comments: session.comments,
+            media: session.media ?? null,
+        }));
+        return frontendSessionDto;
+    }
 };
 exports.SessionsService = SessionsService;
 exports.SessionsService = SessionsService = __decorate([

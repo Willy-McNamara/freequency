@@ -6,6 +6,7 @@ import {
   FrontendSessionDto,
   GasUpDto,
   NewCommentDto,
+  NewFrontendSessionDTO,
   NewGasUpDto,
   SessionDto,
 } from './dto/session.dto';
@@ -20,73 +21,97 @@ import { Prisma } from '@prisma/client';
 export class SessionsService {
   constructor(private prisma: PrismaService) {}
 
-  // async getFiveSessions(): Promise<FrontendSessionDto[]> {
-  //   const prisma = this.prisma;
+  async getFiveSessions(): Promise<NewFrontendSessionDTO[]> {
+    const prisma = this.prisma;
 
-  //   const take = 5;
+    const take = 5;
 
-  //   // Query all sessions from the database, includes musician.displayName, and displayName + photo for gasUps and comments
-  //   const sessions = await prisma.session.findMany({
-  //     take: take,
-  //     orderBy: { id: 'desc' },
-  //     include: {
-  //       gasUps: {
-  //         include: {
-  //           musician: {
-  //             select: {
-  //               displayName: true,
-  //               profilePictureUrl: true,
-  //             },
-  //           },
-  //         },
-  //       },
-  //       comments: {
-  //         include: {
-  //           musician: {
-  //             select: {
-  //               displayName: true,
-  //               profilePictureUrl: true,
-  //             },
-  //           },
-  //         },
-  //       },
-  //       musician: {
-  //         select: {
-  //           displayName: true,
-  //           profilePictureUrl: true,
-  //         },
-  //       },
-  //       media: {
-  //         select: {
-  //           url: true,
-  //           type: true,
-  //         },
-  //       },
-  //     },
-  //   });
+    // Query all sessions from the database, includes musician.displayName, and displayName + photo for gasUps and comments
+    const sessions = await prisma.session.findMany({
+      take: take,
+      orderBy: { id: 'desc' },
+      include: {
+        gasUps: {
+          include: {
+            musician: {
+              select: {
+                displayName: true,
+                avatarUrl: true,
+              },
+            },
+          },
+        },
+        comments: {
+          include: {
+            musician: {
+              select: {
+                displayName: true,
+                avatarUrl: true,
+              },
+            },
+          },
+        },
+        musician: {
+          select: {
+            displayName: true,
+            avatarUrl: true,
+          },
+        },
+        media: {
+          select: {
+            url: true,
+            type: true,
+          },
+        },
+        tags: {
+          select: {
+            id: true,
+            label: true,
+            color: true,
+          },
+        },
+        instruments: {
+          select: {
+            id: true,
+            label: true,
+            color: true,
+          },
+        },
+      },
+    });
 
-  //   // Map the database sessions to SessionWithDetailsDto objects
-  //   const frontendSessionDto: FrontendSessionDto[] = sessions.map(
-  //     (session) => ({
-  //       id: session.id,
-  //       title: session.title,
-  //       notes: session.notes,
-  //       instruments: session.instruments,
-  //       duration: session.duration,
-  //       isPublic: session.isPublic,
-  //       takeId: session.takeId,
-  //       createdAt: session.createdAt,
-  //       musicianId: session.musicianId,
-  //       musicianDisplayname: session.musician.displayName,
-  //       musicianProfilePictureUrl: session.musician.profilePictureUrl,
-  //       gasUps: session.gasUps,
-  //       comments: session.comments,
-  //       media: session.media ? session.media : null,
-  //     }),
-  //   );
+    // Map the database sessions to SessionWithDetailsDto objects
+    const frontendSessionDto: NewFrontendSessionDTO[] = sessions.map(
+      (session) => ({
+        id: session.id,
+        title: session.title,
+        notes: session.notes,
+        instruments: session.instruments.map((tag) => ({
+          id: tag.id,
+          label: tag.label,
+          color: tag.color,
+        })),
+        duration: session.duration,
+        isPublic: session.isPublic,
+        createdAt: session.createdAt.toISOString(), // Converts Date to ISO string
+        musicianId: session.musicianId,
+        musician: {
+          displayName: session.musician.displayName,
+          avatarUrl: session.musician.avatarUrl,
+        },
+        tags: session.tags.map((tag) => ({
+          id: tag.id,
+          label: tag.label,
+          color: tag.color,
+        })),
+        gasUps: session.gasUps,
+        comments: session.comments,
+        media: session.media ?? null,
+      }),
+    );
 
-  //   return frontendSessionDto;
-  // }
+    return frontendSessionDto;
+  }
 
   // async getSessionsChunk(cursorId?: number): Promise<FrontendSessionDto[]> {
   //   const prisma = this.prisma;

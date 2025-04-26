@@ -39,12 +39,14 @@ async function main() {
     data: {
       title: 'Morning Practice',
       notes: 'Worked on scales and arpeggios.',
-      instruments: ['Piano', 'Guitar'],
       duration: 60,
       isPublic: true,
       musicianId: musician.id,
       tags: {
         connect: [{ id: pianoTag.id }],
+      },
+      instruments: {
+        connect: [{ id: pianoTag.id }, { id: guitarTag.id }],
       },
     },
   });

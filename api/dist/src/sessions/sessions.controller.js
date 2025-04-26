@@ -20,8 +20,17 @@ let SessionsController = class SessionsController {
         this.s3service = s3service;
         this.mediaService = mediaService;
     }
+    async getSessionsOnRender() {
+        return this.sessionsService.getFiveSessions();
+    }
 };
 exports.SessionsController = SessionsController;
+__decorate([
+    (0, common_1.Get)(),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], SessionsController.prototype, "getSessionsOnRender", null);
 exports.SessionsController = SessionsController = __decorate([
     (0, common_1.Controller)('sessions'),
     __metadata("design:paramtypes", [sessions_service_1.SessionsService,

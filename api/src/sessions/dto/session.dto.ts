@@ -30,7 +30,6 @@ export class FrontendSessionDto {
   instruments: string[];
   duration: number;
   isPublic: boolean;
-  takeId: string;
   createdAt: Date;
   musicianId: number;
   musicianDisplayname: string;
@@ -39,6 +38,43 @@ export class FrontendSessionDto {
   comments: CommentDto[];
   media: FrontendMedia | null;
 }
+
+export type TagDTO = {
+  id: number;
+  label: string;
+  color?: string | null;
+};
+
+export type NewFrontendSessionDTO = {
+  id: number;
+  title: string;
+  notes: string;
+  instruments: TagDTO[];
+  duration: number;
+  isPublic: boolean;
+  createdAt: string; // or Date, depending if you serialize dates
+  musician: {
+    displayName: string;
+    avatarUrl: string | null;
+  };
+  media: {
+    url: string;
+    type: string;
+  }[];
+  tags: TagDTO[];
+  gasUps: {
+    musician: {
+      displayName: string;
+      avatarUrl: string | null;
+    };
+  }[];
+  comments: {
+    musician: {
+      displayName: string;
+      avatarUrl: string | null;
+    };
+  }[];
+};
 
 export class GasUpDto {
   id: number;

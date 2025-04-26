@@ -10,6 +10,7 @@ import {
   FrontendSessionDto,
   AudioPayload,
   CreateSessionResponse,
+  NewFrontendSessionDTO,
 } from './dto/session.dto';
 import { JwtAuthGuard } from '../auth/jwt.guard';
 import {
@@ -29,10 +30,10 @@ export class SessionsController {
     private readonly mediaService: MediaService,
   ) {}
 
-  // @Get()
-  // async getSessionsOnRender(): Promise<SessionDto[]> {
-  //   return this.sessionsService.getFiveSessions();
-  // }
+  @Get()
+  async getSessionsOnRender(): Promise<NewFrontendSessionDTO[]> {
+    return this.sessionsService.getFiveSessions();
+  }
 
   // @Post('nextChunk')
   // @UseGuards(JwtAuthGuard)
