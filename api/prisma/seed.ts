@@ -2,6 +2,144 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+async function main() {
+  // Create some Tags
+  const tags = await prisma.tag.createMany({
+    data: [
+      { label: 'Piano', color: '#FF5733' },
+      { label: 'Sight Reading', color: '#33FF57' },
+      { label: 'Scales', color: '#3357FF' },
+      { label: 'Guitar', color: '#FF33A8' },
+    ],
+  });
+
+  const allTags = await prisma.tag.findMany();
+
+  // Create Musicians
+  const musicians = await prisma.musician.createMany({
+    data: [
+      {
+        displayName: 'John Doe',
+        givenName: 'John',
+        familyName: 'Doe',
+        email: 'john@example.com',
+      },
+      {
+        displayName: 'Jane Smith',
+        givenName: 'Jane',
+        familyName: 'Smith',
+        email: 'jane@example.com',
+      },
+    ],
+  });
+
+  const allMusicians = await prisma.musician.findMany();
+
+  // Create Sessions
+  const sessions = await Promise.all(
+    allMusicians.map((musician) =>
+      prisma.session.create({
+        data: {
+          title: 'Practice Session',
+          notes: 'Worked on sight reading and scales.',
+          instruments: ['Piano', 'Guitar'],
+          duration: 90,
+          isPublic: true,
+          musicianId: musician.id,
+          tags: {
+            connect: allTags.map((tag) => ({ id: tag.id })),
+          },
+        },
+      }),
+    ),
+  );
+
+  // Create TaskDefinitions
+  const taskDefinitions = await Promise.all(
+    allMusicians.map((musician) =>
+      prisma.taskDefinition.create({
+        data: {
+          title: 'Daily Warmup',
+          musicianId: musician.id,
+          description: 'Finger exercises and scales',
+          checklist: ['Stretch', 'Major scales', 'Minor scales'],
+          savedCount: 10,
+          usedCount: 5,
+        },
+      }),
+    ),
+  );
+
+  // Create TasksInUse
+  await Promise.all(
+    sessions.map((session) =>
+      prisma.taskInUse.create({
+        data: {
+          duration: 45,
+          notes: 'Good progress today.',
+          isSessionTask: true,
+          checklistCompletions: ['Stretch', 'Major scales'],
+          sessionId: session.id,
+          musicianId: session.musicianId,
+          taskDefinitionId: taskDefinitions[0].id,
+          tags: {
+            connect: allTags.slice(0, 2).map((tag) => ({ id: tag.id })),
+          },
+        },
+      }),
+    ),
+  );
+
+  // Create Media
+  await Promise.all(
+    allMusicians.map((musician) =>
+      prisma.media.create({
+        data: {
+          musicianId: musician.id,
+          url: 'https://example.com/video.mp4',
+          type: 'video',
+        },
+      }),
+    ),
+  );
+
+  // Create GasUps
+  await Promise.all(
+    sessions.map((session) =>
+      prisma.gasUp.create({
+        data: {
+          musicianId: session.musicianId,
+          sessionId: session.id,
+        },
+      }),
+    ),
+  );
+
+  // Create Comments
+  await Promise.all(
+    sessions.map((session) =>
+      prisma.comment.create({
+        data: {
+          text: 'Awesome session!',
+          musicianId: session.musicianId,
+          sessionId: session.id,
+        },
+      }),
+    ),
+  );
+
+  console.log('Database seeded!');
+}
+
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
+
 // async function seedDatabase() {
 //   try {
 //     // Create musicians
