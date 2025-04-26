@@ -31,18 +31,22 @@ export declare class MusicianDto {
     comments?: CommentDto[];
     sessions?: SessionDto[];
 }
+export type TagDTO = {
+    id: number;
+    label: string;
+    color?: string | null;
+    createdAt: Date;
+};
 export declare class MusicianFrontendDTO {
     id: number;
     displayName: string;
     bio: string;
-    instruments: string[];
+    instruments: TagDTO[];
     profilePictureUrl: string | null;
     totalSessions: number;
     totalPracticeMinutes: number;
     totalGasUpsGiven: number;
     totalGasUpsReceived: number;
-    longestStreak: number;
-    currentStreak: number;
     createdAt: Date;
 }
 export declare class MusicianUpdateDto {

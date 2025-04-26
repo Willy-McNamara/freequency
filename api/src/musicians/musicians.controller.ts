@@ -20,10 +20,10 @@ import { JwtAuthGuard } from '../auth/jwt.guard';
 export class MusiciansController {
   constructor(private readonly musiciansService: MusiciansService) {}
 
-  // @Get()
-  // async getMusicianById(@Param('id') id: string): Promise<MusicianFrontendDTO> {
-  //   return this.musiciansService.getMusicianById(Number(id));
-  // }
+  @Get(':id')
+  async getMusicianById(@Param('id') id: string): Promise<MusicianFrontendDTO> {
+    return this.musiciansService.getMusicianById(Number(id));
+  }
 
   // // @Post()
   // // async createMusician(

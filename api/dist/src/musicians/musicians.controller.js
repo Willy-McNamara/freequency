@@ -15,7 +15,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MusiciansController = void 0;
 const common_1 = require("@nestjs/common");
 const musicians_service_1 = require("./musicians.service");
-const jwt_guard_1 = require("../auth/jwt.guard");
 let MusiciansController = class MusiciansController {
     constructor(musiciansService) {
         this.musiciansService = musiciansService;
@@ -23,33 +22,15 @@ let MusiciansController = class MusiciansController {
     async getMusicianById(id) {
         return this.musiciansService.getMusicianById(Number(id));
     }
-    async updateMusician(body, req) {
-        const updateMusicianDto = {
-            id: req.user.id,
-            updatedDisplayName: body.updatedDisplayName,
-            updatedBio: body.updatedBio,
-            updatedInstruments: body.updatedInstruments,
-        };
-        return this.musiciansService.updateMusician(updateMusicianDto);
-    }
 };
 exports.MusiciansController = MusiciansController;
 __decorate([
-    (0, common_1.Get)(),
+    (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], MusiciansController.prototype, "getMusicianById", null);
-__decorate([
-    (0, common_1.Post)('update'),
-    (0, common_1.UseGuards)(jwt_guard_1.JwtAuthGuard),
-    __param(0, (0, common_1.Body)()),
-    __param(1, (0, common_1.Req)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
-    __metadata("design:returntype", Promise)
-], MusiciansController.prototype, "updateMusician", null);
 exports.MusiciansController = MusiciansController = __decorate([
     (0, common_1.Controller)('musicians'),
     __metadata("design:paramtypes", [musicians_service_1.MusiciansService])

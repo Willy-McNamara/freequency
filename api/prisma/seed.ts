@@ -3,141 +3,117 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  // Create some Tags
-  const tags = await prisma.tag.createMany({
-    data: [
-      { label: 'Piano', color: '#FF5733' },
-      { label: 'Sight Reading', color: '#33FF57' },
-      { label: 'Scales', color: '#3357FF' },
-      { label: 'Guitar', color: '#FF33A8' },
-    ],
+  // Create Tags first (so we can assign them later)
+  const pianoTag = await prisma.tag.create({
+    data: { label: 'Piano', color: '#FFD700' },
+  });
+  const guitarTag = await prisma.tag.create({
+    data: { label: 'Guitar', color: '#ADFF2F' },
+  });
+  const drumsTag = await prisma.tag.create({
+    data: { label: 'Drums', color: '#FF4500' },
   });
 
-  const allTags = await prisma.tag.findMany();
-
-  // Create Musicians
-  const musicians = await prisma.musician.createMany({
-    data: [
-      {
-        displayName: 'John Doe',
-        givenName: 'John',
-        familyName: 'Doe',
-        email: 'john@example.com',
+  // Create a Musician
+  const musician = await prisma.musician.create({
+    data: {
+      googleId: 'fake-google-id-1',
+      displayName: 'John Doe',
+      givenName: 'John',
+      familyName: 'Doe',
+      email: 'john.doe@example.com',
+      bio: 'Passionate musician exploring jazz and classical.',
+      avatarUrl: 'https://via.placeholder.com/150',
+      totalSessions: 8,
+      totalPracticeMinutes: 450,
+      totalGasUpsGiven: 6,
+      totalGasUpsReceived: 7,
+      instruments: {
+        connect: [{ id: pianoTag.id }, { id: guitarTag.id }],
       },
-      {
-        displayName: 'Jane Smith',
-        givenName: 'Jane',
-        familyName: 'Smith',
-        email: 'jane@example.com',
-      },
-    ],
+    },
   });
 
-  const allMusicians = await prisma.musician.findMany();
+  // Create a Session
+  const session = await prisma.session.create({
+    data: {
+      title: 'Morning Practice',
+      notes: 'Worked on scales and arpeggios.',
+      instruments: ['Piano', 'Guitar'],
+      duration: 60,
+      isPublic: true,
+      musicianId: musician.id,
+      tags: {
+        connect: [{ id: pianoTag.id }],
+      },
+    },
+  });
 
-  // Create Sessions
-  const sessions = await Promise.all(
-    allMusicians.map((musician) =>
-      prisma.session.create({
-        data: {
-          title: 'Practice Session',
-          notes: 'Worked on sight reading and scales.',
-          instruments: ['Piano', 'Guitar'],
-          duration: 90,
-          isPublic: true,
-          musicianId: musician.id,
-          tags: {
-            connect: allTags.map((tag) => ({ id: tag.id })),
-          },
-        },
-      }),
-    ),
-  );
+  // Create a TaskDefinition
+  const taskDef = await prisma.taskDefinition.create({
+    data: {
+      title: 'Learn "Autumn Leaves"',
+      musicianId: musician.id,
+      description: 'Practice the song with different chord voicings.',
+      checklist: ['Learn melody', 'Learn chords', 'Practice improvisation'],
+      savedCount: 3,
+      usedCount: 2,
+    },
+  });
 
-  // Create TaskDefinitions
-  const taskDefinitions = await Promise.all(
-    allMusicians.map((musician) =>
-      prisma.taskDefinition.create({
-        data: {
-          title: 'Daily Warmup',
-          musicianId: musician.id,
-          description: 'Finger exercises and scales',
-          checklist: ['Stretch', 'Major scales', 'Minor scales'],
-          savedCount: 10,
-          usedCount: 5,
-        },
-      }),
-    ),
-  );
+  // Create a TaskInUse
+  await prisma.taskInUse.create({
+    data: {
+      duration: 30,
+      notes: 'Good progress on the melody today.',
+      isSessionTask: true,
+      checklistCompletions: ['Learn melody'],
+      taskDefinitionId: taskDef.id,
+      musicianId: musician.id,
+      sessionId: session.id,
+      tags: {
+        connect: [{ id: guitarTag.id }],
+      },
+    },
+  });
 
-  // Create TasksInUse
-  await Promise.all(
-    sessions.map((session) =>
-      prisma.taskInUse.create({
-        data: {
-          duration: 45,
-          notes: 'Good progress today.',
-          isSessionTask: true,
-          checklistCompletions: ['Stretch', 'Major scales'],
-          sessionId: session.id,
-          musicianId: session.musicianId,
-          taskDefinitionId: taskDefinitions[0].id,
-          tags: {
-            connect: allTags.slice(0, 2).map((tag) => ({ id: tag.id })),
-          },
-        },
-      }),
-    ),
-  );
+  // Create some Media
+  await prisma.media.create({
+    data: {
+      musicianId: musician.id,
+      url: 'https://via.placeholder.com/600',
+      type: 'image',
+      sessionId: session.id,
+    },
+  });
 
-  // Create Media
-  await Promise.all(
-    allMusicians.map((musician) =>
-      prisma.media.create({
-        data: {
-          musicianId: musician.id,
-          url: 'https://example.com/video.mp4',
-          type: 'video',
-        },
-      }),
-    ),
-  );
+  // Create a Comment
+  await prisma.comment.create({
+    data: {
+      text: 'Awesome practice session!',
+      musicianId: musician.id,
+      sessionId: session.id,
+    },
+  });
 
-  // Create GasUps
-  await Promise.all(
-    sessions.map((session) =>
-      prisma.gasUp.create({
-        data: {
-          musicianId: session.musicianId,
-          sessionId: session.id,
-        },
-      }),
-    ),
-  );
-
-  // Create Comments
-  await Promise.all(
-    sessions.map((session) =>
-      prisma.comment.create({
-        data: {
-          text: 'Awesome session!',
-          musicianId: session.musicianId,
-          sessionId: session.id,
-        },
-      }),
-    ),
-  );
-
-  console.log('Database seeded!');
+  // Create a GasUp
+  await prisma.gasUp.create({
+    data: {
+      musicianId: musician.id,
+      sessionId: session.id,
+    },
+  });
 }
 
 main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
+  .then(async () => {
+    console.log('Database seeded 🌱');
     await prisma.$disconnect();
+  })
+  .catch(async (e) => {
+    console.error(e);
+    await prisma.$disconnect();
+    process.exit(1);
   });
 
 // async function seedDatabase() {

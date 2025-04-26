@@ -34,19 +34,24 @@ export class MusicianDto {
   sessions?: SessionDto[];
 }
 
+export type TagDTO = {
+  id: number;
+  label: string;
+  color?: string | null;
+  createdAt: Date;
+};
+
 // remove password, sessions, comments for frontend
 export class MusicianFrontendDTO {
   id: number;
   displayName: string;
   bio: string;
-  instruments: string[];
+  instruments: TagDTO[];
   profilePictureUrl: string | null;
   totalSessions: number;
   totalPracticeMinutes: number;
   totalGasUpsGiven: number;
   totalGasUpsReceived: number;
-  longestStreak: number;
-  currentStreak: number;
   createdAt: Date;
 }
 
