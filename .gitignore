@@ -4,3 +4,4 @@
 .env.local
 /db-backup
 *.sql
+node_modules/

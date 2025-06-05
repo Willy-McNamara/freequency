@@ -1,3 +1,4 @@
+import "./globals.css";
 import "./index.css";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router";
