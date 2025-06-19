@@ -1,16 +1,11 @@
 import React from "react";
+import { RichTextEditor } from "@/components/rich-text";
 
 const Practice: React.FC = () => {
-  const data = ["Item 1", "Item 2", "Item 3", "Item 4", "Item 5"];
-
   return (
-    <div>
+    <div className="w-[100vh]">
       <h1>Practice</h1>
-      <ul>
-        {data.map((item, index) => (
-          <li key={index}>{item}</li>
-        ))}
-      </ul>
+      <RichTextEditor />
     </div>
   );
 };
