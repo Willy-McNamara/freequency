@@ -43,7 +43,7 @@ export default function Profile() {
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        const response = await fetch("http://localhost:3000/musicians/1");
+        const response = await fetch("http://localhost:3000/musicians/3");
         const profileData = await response.json();
         console.log(profileData);
         // setData(profileData);
