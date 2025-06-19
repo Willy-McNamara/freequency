@@ -3,6 +3,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 async function main() {
+    await prisma.gasUp.deleteMany();
+    await prisma.comment.deleteMany();
+    await prisma.media.deleteMany();
+    await prisma.taskInUse.deleteMany();
+    await prisma.taskDefinition.deleteMany();
+    await prisma.session.deleteMany();
+    await prisma.musician.deleteMany();
+    await prisma.tag.deleteMany();
     const pianoTag = await prisma.tag.create({
         data: { label: 'Piano', color: '#FFD700' },
     });
@@ -88,6 +96,84 @@ async function main() {
         data: {
             musicianId: musician.id,
             sessionId: session.id,
+        },
+    });
+    const musician2 = await prisma.musician.create({
+        data: {
+            googleId: 'fake-google-id-2',
+            displayName: 'Jane Smith',
+            givenName: 'Jane',
+            familyName: 'Smith',
+            email: 'jane.smith@example.com',
+            bio: 'Loves rock and pop.',
+            avatarUrl: 'https://via.placeholder.com/150/0000FF/808080',
+            totalSessions: 5,
+            totalPracticeMinutes: 300,
+            totalGasUpsGiven: 3,
+            totalGasUpsReceived: 4,
+            instruments: {
+                connect: [{ id: pianoTag.id }, { id: drumsTag.id }],
+            },
+        },
+    });
+    const session2 = await prisma.session.create({
+        data: {
+            title: 'Evening Jam',
+            notes: 'Practiced new jazz standards.',
+            duration: 45,
+            isPublic: false,
+            musicianId: musician2.id,
+            tags: {
+                connect: [{ id: guitarTag.id }],
+            },
+            instruments: {
+                connect: [{ id: guitarTag.id }, { id: drumsTag.id }],
+            },
+        },
+    });
+    const taskDef2 = await prisma.taskDefinition.create({
+        data: {
+            title: 'Master "Blue Bossa"',
+            musicianId: musician2.id,
+            description: 'Work on improvisation and comping.',
+            checklist: ['Learn melody', 'Practice comping', 'Solo over changes'],
+            savedCount: 2,
+            usedCount: 1,
+        },
+    });
+    await prisma.taskInUse.create({
+        data: {
+            duration: 25,
+            notes: 'Solid comping today.',
+            isSessionTask: true,
+            checklistCompletions: ['Practice comping'],
+            taskDefinitionId: taskDef2.id,
+            musicianId: musician2.id,
+            sessionId: session2.id,
+            tags: {
+                connect: [{ id: drumsTag.id }],
+            },
+        },
+    });
+    await prisma.media.create({
+        data: {
+            musicianId: musician2.id,
+            url: 'https://via.placeholder.com/600/0000FF/808080',
+            type: 'image',
+            sessionId: session2.id,
+        },
+    });
+    await prisma.comment.create({
+        data: {
+            text: 'Great groove!',
+            musicianId: musician2.id,
+            sessionId: session2.id,
+        },
+    });
+    await prisma.gasUp.create({
+        data: {
+            musicianId: musician2.id,
+            sessionId: session2.id,
         },
     });
 }

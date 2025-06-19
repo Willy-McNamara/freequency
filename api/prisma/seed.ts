@@ -3,6 +3,15 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
+  await prisma.gasUp.deleteMany();
+  await prisma.comment.deleteMany();
+  await prisma.media.deleteMany();
+  await prisma.taskInUse.deleteMany();
+  await prisma.taskDefinition.deleteMany();
+  await prisma.session.deleteMany();
+  await prisma.musician.deleteMany();
+  await prisma.tag.deleteMany();
+
   // Create Tags first (so we can assign them later)
   const pianoTag = await prisma.tag.create({
     data: { label: 'Piano', color: '#FFD700' },
@@ -105,6 +114,98 @@ async function main() {
       sessionId: session.id,
     },
   });
+
+  // New Musician
+  const musician2 = await prisma.musician.create({
+    data: {
+      googleId: 'fake-google-id-2',
+      displayName: 'Jane Smith',
+      givenName: 'Jane',
+      familyName: 'Smith',
+      email: 'jane.smith@example.com',
+      bio: 'Loves rock and pop.',
+      avatarUrl: 'https://via.placeholder.com/150/0000FF/808080',
+      totalSessions: 5,
+      totalPracticeMinutes: 300,
+      totalGasUpsGiven: 3,
+      totalGasUpsReceived: 4,
+      instruments: {
+        connect: [{ id: pianoTag.id }, { id: drumsTag.id }],
+      },
+    },
+  });
+
+  // Create a Session for the new musician
+  const session2 = await prisma.session.create({
+    data: {
+      title: 'Evening Jam',
+      notes: 'Practiced new jazz standards.',
+      duration: 45,
+      isPublic: false,
+      musicianId: musician2.id,
+      tags: {
+        connect: [{ id: guitarTag.id }],
+      },
+      instruments: {
+        connect: [{ id: guitarTag.id }, { id: drumsTag.id }],
+      },
+    },
+  });
+
+  // Create a TaskDefinition for the new musician
+  const taskDef2 = await prisma.taskDefinition.create({
+    data: {
+      title: 'Master "Blue Bossa"',
+      musicianId: musician2.id,
+      description: 'Work on improvisation and comping.',
+      checklist: ['Learn melody', 'Practice comping', 'Solo over changes'],
+      savedCount: 2,
+      usedCount: 1,
+    },
+  });
+
+  // Create a TaskInUse for the new musician/session/task
+  await prisma.taskInUse.create({
+    data: {
+      duration: 25,
+      notes: 'Solid comping today.',
+      isSessionTask: true,
+      checklistCompletions: ['Practice comping'],
+      taskDefinitionId: taskDef2.id,
+      musicianId: musician2.id,
+      sessionId: session2.id,
+      tags: {
+        connect: [{ id: drumsTag.id }],
+      },
+    },
+  });
+
+  // Create some Media for the new session
+  await prisma.media.create({
+    data: {
+      musicianId: musician2.id,
+      url: 'https://via.placeholder.com/600/0000FF/808080',
+      type: 'image',
+      sessionId: session2.id,
+    },
+  });
+
+  // Create a Comment for the new session
+  await prisma.comment.create({
+    data: {
+      text: 'Great groove!',
+      musicianId: musician2.id,
+      sessionId: session2.id,
+    },
+  });
+
+  // Create a GasUp for the new session
+  await prisma.gasUp.create({
+    data: {
+      musicianId: musician2.id,
+      sessionId: session2.id,
+    },
+  });
 }
 
 main()
@@ -117,118 +218,3 @@ main()
     await prisma.$disconnect();
     process.exit(1);
   });
-
-// async function seedDatabase() {
-//   try {
-//     // Create musicians
-//     const musician1 = await prisma.musician.create({
-//       data: {
-//         googleId: 'google_id_1',
-//         username: 'user1',
-//         email: 'user1@example.com',
-//         password: 'password1',
-//         totalSessions: 1,
-//         totalPracticeMinutes: 60,
-//         totalGasUps: 0,
-//         longestStreak: 1,
-//         currentStreak: 1,
-//       },
-//     });
-
-//     const musician2 = await prisma.musician.create({
-//       data: {
-//         googleId: 'google_id_2',
-//         username: 'user2',
-//         email: 'user2@example.com',
-//         password: 'password2',
-//         totalSessions: 1,
-//         totalPracticeMinutes: 75,
-//         totalGasUps: 0,
-//         longestStreak: 1,
-//         currentStreak: 1,
-//       },
-//     });
-
-//     // Create sessions
-//     const session1 = await prisma.session.create({
-//       data: {
-//         title: 'Session 1',
-//         notes: 'This is session 1',
-//         duration: 60,
-//         isPublic: true,
-//         takeId: 'take_1',
-//         musicianId: musician1.id,
-//       },
-//     });
-
-//     const session2 = await prisma.session.create({
-//       data: {
-//         title: 'Session 2',
-//         notes: 'This is session 2',
-//         duration: 45,
-//         isPublic: false,
-//         takeId: 'take_2',
-//         musicianId: musician2.id,
-//       },
-//     });
-
-//     const session3 = await prisma.session.create({
-//       data: {
-//         title: 'Session 3',
-//         notes: 'This is session 3',
-//         duration: 30,
-//         isPublic: false,
-//         takeId: 'take_3',
-//         musicianId: musician2.id,
-//       },
-//     });
-
-//     // Create gas-ups
-//     await prisma.gasUp.create({
-//       data: {
-//         musicianId: musician2.id,
-//         sessionId: session1.id,
-//       },
-//     });
-
-//     await prisma.gasUp.create({
-//       data: {
-//         musicianId: musician1.id,
-//         sessionId: session2.id,
-//       },
-//     });
-
-//     // Create comments
-//     await prisma.comment.create({
-//       data: {
-//         text: 'Great session!',
-//         musicianId: musician1.id,
-//         sessionId: session1.id,
-//       },
-//     });
-
-//     await prisma.comment.create({
-//       data: {
-//         text: 'Keep it up!',
-//         musicianId: musician2.id,
-//         sessionId: session2.id,
-//       },
-//     });
-
-//     await prisma.comment.create({
-//       data: {
-//         text: `Let's gooo!`,
-//         musicianId: musician2.id,
-//         sessionId: session3.id,
-//       },
-//     });
-
-//     console.log('Database seeded successfully!');
-//   } catch (error) {
-//     console.error('Error seeding database:', error);
-//   } finally {
-//     await prisma.$disconnect();
-//   }
-// }
-
-// seedDatabase();
