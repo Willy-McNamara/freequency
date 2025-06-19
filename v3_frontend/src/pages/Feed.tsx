@@ -64,7 +64,8 @@ const Feed = () => {
         ))}
       </div>
       {/* Here we'll need a flex container for the feed posts */}
-      <div className="flex flex-col items-start gap-2.5 mb-2">
+      <div className="flex flex-col items-start gap-12 mb-2">
+        {/* At some point this will need to be scrollable, may make a separate Feed container to house logic, replacing that div */}
         {posts.map((post) => (
           <FeedPost postData={post} />
         ))}

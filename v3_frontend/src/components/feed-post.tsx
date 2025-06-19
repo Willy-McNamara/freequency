@@ -35,11 +35,13 @@ export const FeedPost = ({ postData }): JSX.Element => {
   ];
 
   return (
-    <>
+    <div>
       <div className="flex flex-col items-start gap-2.5 mb-2">
         <div className="flex items-center w-full">
           <Avatar className="h-10 w-10 bg-slate-200 rounded-[20px]">
-            <AvatarFallback className="font-p text-slate-900">U</AvatarFallback>
+            <AvatarFallback className="font-p text-slate-900">
+              {postData.musician.displayName[0]}
+            </AvatarFallback>
           </Avatar>
 
           <span className="ml-[11px] font-large text-black">
@@ -92,6 +94,6 @@ export const FeedPost = ({ postData }): JSX.Element => {
           </div>
         ))}
       </div>
-    </>
+    </div>
   );
 };
