@@ -41,7 +41,7 @@ const Feed = () => {
   }, []);
 
   return (
-    <div>
+    <div className="flex flex-col w-full justify-start">
       {/* Search Bar */}
       <div className="flex w-full min-w-[236px] max-w-md items-center gap-2 px-2 py-1.5 bg-gray-200 rounded-md mb-4 mx-auto">
         <SearchIcon className="w-4 h-4 text-slate-900" />
@@ -63,76 +63,12 @@ const Feed = () => {
           </Button>
         ))}
       </div>
-      {/* Here we'll need a flex container foer the feed posts */}
-      <FeedPost />
-      <ul>
-        {posts.map((post, index) => (
-          <li key={index}>
-            <p>Session ID: {post.id}</p>
-            <p>Title: {post.title}</p>
-            <p>Notes: {post.notes}</p>
-            <p>
-              Instruments:{" "}
-              {post.instruments
-                .map((instrument) => instrument.label)
-                .join(", ")}
-            </p>
-            <p>Duration: {post.duration} minutes</p>
-            <p>Is Public: {post.isPublic ? "Yes" : "No"}</p>
-            <p>Created At: {new Date(post.createdAt).toLocaleString()}</p>
-            <p>Musician: {post.musicianDisplayname}</p>
-            <p>
-              Profile Picture:{" "}
-              <img
-                src={post.musicianProfilePictureUrl}
-                alt="Profile"
-                width="50"
-              />
-            </p>
-
-            {/* GasUps */}
-            <p>
-              Gas Ups Given:{" "}
-              {post.gasUps.filter((gasUp) => gasUp.type === "give").length}
-            </p>
-            <p>
-              Gas Ups Received:{" "}
-              {post.gasUps.filter((gasUp) => gasUp.type === "receive").length}
-            </p>
-
-            {/* Comments */}
-            <p>Comments:</p>
-            <ul>
-              {post.comments.map((comment, commentIndex) => (
-                <li key={commentIndex}>{comment.text}</li>
-              ))}
-            </ul>
-
-            {/* Tags */}
-            <p>Tags: {post.tags.map((tag) => tag.label).join(", ")}</p>
-
-            {/* Media */}
-            <p>Media:</p>
-            <ul>
-              {post.media.map((mediaItem, mediaIndex) => (
-                <li key={mediaIndex}>
-                  <p>Type: {mediaItem.type}</p>
-                  <p>
-                    URL:{" "}
-                    <a
-                      href={mediaItem.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      View Media
-                    </a>
-                  </p>
-                </li>
-              ))}
-            </ul>
-          </li>
+      {/* Here we'll need a flex container for the feed posts */}
+      <div className="flex flex-col items-start gap-2.5 mb-2">
+        {posts.map((post) => (
+          <FeedPost postData={post} />
         ))}
-      </ul>
+      </div>
     </div>
   );
 };

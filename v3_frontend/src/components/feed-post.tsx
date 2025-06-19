@@ -3,36 +3,33 @@ import { Avatar, AvatarFallback } from "./avatar";
 import { Badge } from "./badge";
 import { MessageSquareIcon, ThumbsUpIcon } from "lucide-react";
 
-export const FeedPost = (): JSX.Element => {
+export const FeedPost = ({ postData }): JSX.Element => {
   // Mock data ahead of passing in actual post data
 
-  // User data
-  const userData = {
-    initials: "DN",
-    displayName: "Display Name",
-    tags: [
-      { name: "piano", active: true },
-      { name: "jazz", active: false },
-    ],
-  };
+  console.log(postData);
+
+  // breaking out the data like this is not necessary, this is a remnant of my fast development using Anima. Will want to circle back and clean this up.
 
   const sessionData = {
-    date: "January 1st, 2025",
-    title: "session title",
-    description:
-      "Description here. Lorem epsum lorem epsum blah blah blah blah blah blah balh Lorem epsum lorem epsum blah blah blah blah blah blah balh Lorem epsum lorem epsum blah blah blah blah blah blah balh",
+    date: new Intl.DateTimeFormat("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    }).format(new Date(postData.createdAt)),
+    title: postData.title,
+    description: postData.notes,
   };
 
   // Data for engagement metrics
   const engagementData = [
     {
       icon: <ThumbsUpIcon className="h-4 w-4" />,
-      count: 5,
+      count: postData.gasUps.length,
       label: "gas ups",
     },
     {
       icon: <MessageSquareIcon className="h-4 w-4" />,
-      count: 3,
+      count: postData.comments.length,
       label: "comments",
     },
   ];
@@ -42,28 +39,26 @@ export const FeedPost = (): JSX.Element => {
       <div className="flex flex-col items-start gap-2.5 mb-2">
         <div className="flex items-center w-full">
           <Avatar className="h-10 w-10 bg-slate-200 rounded-[20px]">
-            <AvatarFallback className="font-p text-slate-900">
-              {userData.initials}
-            </AvatarFallback>
+            <AvatarFallback className="font-p text-slate-900">U</AvatarFallback>
           </Avatar>
 
           <span className="ml-[11px] font-large text-black">
-            {userData.displayName}
+            {postData.musician.displayName}
           </span>
         </div>
 
         <div className="flex items-center gap-[17px]">
-          {userData.tags.map((tag, index) => (
+          {postData.tags.map((tag, index) => (
             <Badge
               key={index}
               className={`h-5 px-3 py-2 rounded-md ${
-                tag.active
+                tag.color
                   ? "bg-slate-700 text-slate-50"
                   : "bg-slate-200 text-[#0f172a]"
               }`}
               variant="outline"
             >
-              <span className="font-small">{tag.name}</span>
+              <span className="font-small">{tag.label}</span>
             </Badge>
           ))}
         </div>

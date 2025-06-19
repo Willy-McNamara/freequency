@@ -71,7 +71,7 @@ function App() {
           </NavLink>
         </nav>
       </HamburgerMenu>
-      <main className="p-4">
+      <main className="flex mt-8 p-4">
         <Outlet />
       </main>
     </>
