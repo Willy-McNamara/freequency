@@ -14,111 +14,9 @@ import {
 import { Plus } from "lucide-react";
 
 const TaskLibrary: React.FC = () => {
-  // Sample task data
-  const sampleTasks: Task[] = [
-    {
-      id: 1,
-      title: "Warmup Routine",
-      description:
-        "A comprehensive warmup routine focusing on major/minor scales and arpeggios. Perfect for daily practice sessions.",
-      instrument: "Guitar",
-      user: {
-        displayName: "John Doe",
-        avatarUrl: "https://via.placeholder.com/150/FF6B6B/FFFFFF?text=JD",
-      },
-      tags: [
-        { id: 1, label: "Warmup" },
-        { id: 2, label: "Scales" },
-        { id: 3, label: "Technique" },
-      ],
-      checklist: [
-        "C major scale - 2 octaves",
-        "G major scale - 2 octaves",
-        "A minor scale - 2 octaves",
-        "C major arpeggio - 2 octaves",
-        "G major arpeggio - 2 octaves",
-      ],
-      savedCount: 12,
-      usedCount: 5,
-    },
-    {
-      id: 2,
-      title: "Jazz Standards Practice",
-      description:
-        "Practice common jazz standards with focus on chord progressions and improvisation techniques.",
-      instrument: "Piano",
-      user: {
-        displayName: "Jane Smith",
-        avatarUrl: "https://via.placeholder.com/150/4ECDC4/FFFFFF?text=JS",
-      },
-      tags: [
-        { id: 4, label: "Jazz" },
-        { id: 5, label: "Improvisation" },
-        { id: 6, label: "Standards" },
-      ],
-      checklist: [
-        "Learn melody by ear",
-        "Practice chord voicings",
-        "Work on left hand comping",
-        "Improvise over changes",
-        "Record and review performance",
-      ],
-      savedCount: 8,
-      usedCount: 3,
-    },
-    {
-      id: 3,
-      title: "Drum Groove Practice",
-      description:
-        "Practice essential drum grooves and fills for rock and pop music.",
-      instrument: "Drums",
-      user: {
-        displayName: "Bob Johnson",
-        avatarUrl: "https://via.placeholder.com/150/45B7D1/FFFFFF?text=BJ",
-      },
-      tags: [
-        { id: 7, label: "Grooves" },
-        { id: 8, label: "Rock" },
-        { id: 9, label: "Fills" },
-      ],
-      checklist: [
-        "Basic rock beat - 4/4 time",
-        "Add hi-hat variations",
-        "Practice crash cymbal placement",
-        "Work on tom-tom fills",
-        "Play along with backing track",
-      ],
-      savedCount: 15,
-      usedCount: 7,
-    },
-    {
-      id: 4,
-      title: "Bass Line Construction",
-      description:
-        "Learn to construct walking bass lines and understand harmonic movement.",
-      instrument: "Bass",
-      user: {
-        displayName: "Alice Wilson",
-        avatarUrl: "https://via.placeholder.com/150/FF8A80/FFFFFF?text=AW",
-      },
-      tags: [
-        { id: 10, label: "Walking" },
-        { id: 11, label: "Harmony" },
-        { id: 12, label: "Theory" },
-      ],
-      checklist: [
-        "Study chord progressions",
-        "Practice root-fifth patterns",
-        "Add passing tones",
-        "Work on chromatic approaches",
-        "Play with jazz backing track",
-      ],
-      savedCount: 6,
-      usedCount: 2,
-    },
-  ];
-
-  const [tasks, setTasks] = useState<Task[]>(sampleTasks);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isModifyModalOpen, setIsModifyModalOpen] = useState(false);
   const [modifyTaskData, setModifyTaskData] = useState<
@@ -151,6 +49,31 @@ const TaskLibrary: React.FC = () => {
   // Get task ID from URL query parameter
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
 
+  // Fetch tasks from API
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await fetch("http://localhost:3000/tasks");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setTasks(data);
+      } catch (err) {
+        console.error("Error fetching tasks:", err);
+        setError(err instanceof Error ? err.message : "Failed to fetch tasks");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTasks();
+  }, []);
+
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const taskId = urlParams.get("task");
@@ -174,13 +97,83 @@ const TaskLibrary: React.FC = () => {
           : filter
       )
     );
-
-    // Here you would typically filter your task library based on the new filter state
-    console.log(`Task Library Filter ${filterType} changed:`, {
-      isSelected,
-      options,
-    });
   };
+
+  // Apply filters to tasks
+  const filteredTasks = tasks.filter((task) => {
+    // User filter
+    const userFilter = activeFilters.find((f) => f.type === "user");
+    if (userFilter?.isSelected && userFilter.options) {
+      const selectedUsers = userFilter.options
+        .filter((option) => option.checked)
+        .map((option) => option.label);
+      if (
+        selectedUsers.length > 0 &&
+        !selectedUsers.includes(task.user.displayName)
+      ) {
+        return false;
+      }
+    }
+
+    // Instrument filter
+    const instrumentFilter = activeFilters.find((f) => f.type === "instrument");
+    if (instrumentFilter?.isSelected && instrumentFilter.options) {
+      const selectedInstruments = instrumentFilter.options
+        .filter((option) => option.checked)
+        .map((option) => option.label);
+      if (
+        selectedInstruments.length > 0 &&
+        !selectedInstruments.includes(task.instrument)
+      ) {
+        return false;
+      }
+    }
+
+    // Saved filter (show only tasks with savedCount > 0)
+    const savedFilter = activeFilters.find((f) => f.type === "saved");
+    if (savedFilter?.isSelected && task.savedCount === 0) {
+      return false;
+    }
+
+    return true;
+  });
+
+  // Update filter options based on available data
+  useEffect(() => {
+    if (tasks.length > 0) {
+      // Get unique users from tasks
+      const uniqueUsers = [
+        ...new Set(tasks.map((task) => task.user.displayName)),
+      ];
+      const userOptions = uniqueUsers.map((user) => ({
+        id: user.toLowerCase().replace(/\s+/g, ""),
+        label: user,
+        checked: false,
+      }));
+
+      // Get unique instruments from tasks
+      const uniqueInstruments = [
+        ...new Set(tasks.map((task) => task.instrument)),
+      ];
+      const instrumentOptions = uniqueInstruments.map((instrument) => ({
+        id: instrument.toLowerCase(),
+        label: instrument,
+        checked: false,
+      }));
+
+      setActiveFilters((prev) =>
+        prev.map((filter) => {
+          if (filter.type === "user") {
+            return { ...filter, options: userOptions };
+          }
+          if (filter.type === "instrument") {
+            return { ...filter, options: instrumentOptions };
+          }
+          return filter;
+        })
+      );
+    }
+  }, [tasks]);
 
   const handleTaskClick = (taskId: number) => {
     console.log("Task clicked:", taskId);
@@ -201,77 +194,77 @@ const TaskLibrary: React.FC = () => {
     setSelectedTaskId(null);
   };
 
-  const handleCreateTask = (taskData: CreateTaskData) => {
-    // Create new task with generated ID and current user info
-    const newTask: Task = {
-      id: Math.max(...tasks.map((t) => t.id)) + 1, // Generate new ID
-      title: taskData.title,
-      description: taskData.description,
-      instrument: taskData.instrument,
-      user: {
-        displayName: "Current User", // This would come from auth context
-        avatarUrl: "https://via.placeholder.com/150/4ECDC4/FFFFFF?text=CU",
-      },
-      tags: taskData.tags.map((tag, index) => ({
-        id:
-          Math.max(...tasks.flatMap((t) => t.tags.map((tag) => tag.id))) +
-          index +
-          1,
-        label: tag,
-      })),
-      checklist: taskData.checklist,
-      savedCount: 0,
-      usedCount: 0,
-    };
+  const handleCreateTask = async (taskData: CreateTaskData) => {
+    try {
+      console.log("Creating new task:", taskData);
 
-    // Add to tasks list
-    setTasks((prev) => [newTask, ...prev]);
-    console.log("New task added to library:", newTask);
+      const response = await fetch("http://localhost:3000/tasks", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(taskData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const newTask = await response.json();
+
+      // Add the new task to the beginning of the list
+      setTasks((prev) => [newTask, ...prev]);
+
+      console.log("Task created successfully:", newTask);
+      setIsCreateModalOpen(false);
+    } catch (err) {
+      console.error("Error creating task:", err);
+      alert("Failed to create task. Please try again.");
+    }
   };
 
   const handleModifyTask = (task: Task) => {
-    console.log("handleModifyTask called with task:", task);
-    // Convert task to CreateTaskData format
-    const taskData: CreateTaskData = {
+    console.log("Modifying task:", task);
+    // Convert Task to CreateTaskData format
+    const modifyData: CreateTaskData = {
       title: task.title,
       description: task.description,
       instrument: task.instrument,
-      tags: task.tags.map((tag) => tag.label),
       checklist: task.checklist,
+      tags: task.tags.map((tag) => tag.label),
     };
-
-    console.log("Setting modify task data:", taskData);
-    setModifyTaskData(taskData);
+    setModifyTaskData(modifyData);
     setIsModifyModalOpen(true);
-    console.log("Modal should now be open");
   };
 
-  const handleModifySubmit = (taskData: CreateTaskData) => {
-    // Create new task from modified data
-    const newTask: Task = {
-      id: Math.max(...tasks.map((t) => t.id)) + 1, // Generate new ID
-      title: taskData.title,
-      description: taskData.description,
-      instrument: taskData.instrument,
-      user: {
-        displayName: "Current User", // This would come from auth context
-        avatarUrl: "https://via.placeholder.com/150/4ECDC4/FFFFFF?text=CU",
-      },
-      tags: taskData.tags.map((tag, index) => ({
-        id:
-          Math.max(...tasks.flatMap((t) => t.tags.map((tag) => tag.id))) +
-          index +
-          1,
-        label: tag,
-      })),
-      checklist: taskData.checklist,
-      savedCount: 0,
-      usedCount: 0,
-    };
+  const handleModifySubmit = async (taskData: CreateTaskData) => {
+    try {
+      console.log("Submitting modified task:", taskData);
 
-    // Add to tasks list
-    setTasks((prev) => [newTask, ...prev]);
-    console.log("Modified task added to library:", newTask);
+      const response = await fetch("http://localhost:3000/tasks", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(taskData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const newTask = await response.json();
+
+      // Add the new task to the beginning of the list
+      setTasks((prev) => [newTask, ...prev]);
+
+      console.log("Modified task created successfully:", newTask);
+      setIsModifyModalOpen(false);
+      setModifyTaskData(undefined);
+    } catch (err) {
+      console.error("Error creating modified task:", err);
+      alert("Failed to create modified task. Please try again.");
+    }
   };
 
   // Find the selected task
@@ -279,46 +272,113 @@ const TaskLibrary: React.FC = () => {
     ? tasks.find((task) => task.id === selectedTaskId)
     : null;
 
-  return (
-    <>
-      {/* Show detailed view if a task is selected */}
-      {selectedTask ? (
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading tasks...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <p className="text-destructive mb-4">Error: {error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show task detail if a task is selected
+  if (selectedTask) {
+    return (
+      <>
         <TaskDetail
           task={selectedTask}
           onBack={handleBackToLibrary}
           onModifyTask={handleModifyTask}
         />
-      ) : (
-        /* Show task library view */
-        <div className="flex flex-col w-full max-w-full min-w-[320px] px-4 sm:px-6 lg:px-8 mx-auto">
-          {/* Filter Bar and Create Button Row */}
-          <div className="flex items-center justify-between mb-6">
-            <FilterBar
-              filters={activeFilters}
-              onFilterChange={handleFilterChange}
-            />
-            <button
-              onClick={() => setIsCreateModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              Create Task
-            </button>
-          </div>
 
-          {/* Task Library Content */}
-          <div className="mt-6 space-y-3">
-            {tasks.map((task) => (
+        {/* Create Task Modal - Always rendered */}
+        <CreateTaskModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onSubmit={handleCreateTask}
+        />
+
+        {/* Modify Task Modal - Always rendered */}
+        <CreateTaskModal
+          isOpen={isModifyModalOpen}
+          onClose={() => {
+            setIsModifyModalOpen(false);
+            setModifyTaskData(undefined);
+          }}
+          onSubmit={handleModifySubmit}
+          initialData={modifyTaskData}
+        />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Task Library</h1>
+            <p className="text-muted-foreground mt-2">
+              Discover and save practice tasks from the community
+            </p>
+          </div>
+          <button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Create Task
+          </button>
+        </div>
+
+        {/* Filter Bar */}
+        <FilterBar
+          filters={activeFilters}
+          onFilterChange={handleFilterChange}
+          className="mb-6"
+        />
+
+        {/* Task List */}
+        <div className="space-y-4">
+          {filteredTasks.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">No tasks found.</p>
+            </div>
+          ) : (
+            filteredTasks.map((task) => (
               <TaskListItem
                 key={task.id}
                 task={task}
                 onTaskClick={handleTaskClick}
                 onViewDetails={handleViewDetails}
               />
-            ))}
-          </div>
+            ))
+          )}
         </div>
-      )}
+      </div>
 
       {/* Create Task Modal - Always rendered */}
       <CreateTaskModal
@@ -336,7 +396,6 @@ const TaskLibrary: React.FC = () => {
         }}
         onSubmit={handleModifySubmit}
         initialData={modifyTaskData}
-        isModifying={true}
       />
     </>
   );

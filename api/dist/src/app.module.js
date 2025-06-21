@@ -13,6 +13,7 @@ const app_service_1 = require("./app.service");
 const prisma_module_1 = require("./prisma/prisma.module");
 const sessions_module_1 = require("./sessions/sessions.module");
 const musicians_module_1 = require("./musicians/musicians.module");
+const tasks_module_1 = require("./tasks/tasks.module");
 const serve_static_1 = require("@nestjs/serve-static");
 const logger_middleware_1 = require("./logger.middleware");
 const path_1 = require("path");
@@ -38,6 +39,7 @@ exports.AppModule = AppModule = __decorate([
             prisma_module_1.PrismaModule,
             sessions_module_1.SessionsModule,
             musicians_module_1.MusiciansModule,
+            tasks_module_1.TasksModule,
             serve_static_1.ServeStaticModule.forRoot({
                 rootPath: (0, path_1.join)(__dirname, '../../../v3_frontend/dist'),
             }),
