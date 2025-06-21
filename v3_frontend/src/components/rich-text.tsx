@@ -9,17 +9,19 @@ import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { ParagraphNode, TextNode } from "lexical";
+import { OverflowNode } from "@lexical/overflow";
 
 import { ContentEditable } from "@/components/editor/editor-ui/content-editable";
 import { FontFormatToolbarPlugin } from "@/components/editor/plugins/toolbar/font-format-toolbar-plugin";
 import { ToolbarPlugin } from "@/components/editor/plugins/toolbar/toolbar-plugin";
 import { editorTheme } from "@/components/editor/themes/editor-theme";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { CharacterLimitPlugin } from "@lexical/react/LexicalCharacterLimitPlugin";
 
 const editorConfig: InitialConfigType = {
   namespace: "Editor",
   theme: editorTheme,
-  nodes: [HeadingNode, ParagraphNode, TextNode, QuoteNode],
+  nodes: [HeadingNode, ParagraphNode, TextNode, QuoteNode, OverflowNode],
   onError: (error: Error) => {
     console.error(error);
   },
@@ -41,7 +43,7 @@ export function RichTextEditor() {
   );
 }
 
-const placeholder = "Start typing...";
+const placeholder = "Add session notes here...";
 
 export function Plugins() {
   const [, setFloatingAnchorElem] = useState<HTMLDivElement | null>(null);
@@ -51,6 +53,8 @@ export function Plugins() {
       setFloatingAnchorElem(_floatingAnchorElem);
     }
   };
+
+  const CHAR_LIMIT = 500;
 
   return (
     <div className="relative">
@@ -73,13 +77,16 @@ export function Plugins() {
               <div className="" ref={onRef}>
                 <ContentEditable
                   placeholder={placeholder}
-                  className="ContentEditable__root relative block h-72 min-h-72 min-h-full overflow-auto px-8 py-4 focus:outline-none"
+                  className="ContentEditable__root relative block min-h-[2.5rem] text-left overflow-auto px-3 pt-2 focus:outline-none"
                 />
               </div>
             </div>
           }
           ErrorBoundary={LexicalErrorBoundary}
         />
+        <div className="absolute bottom-2 right-4 z-10 text-xs text-muted-foreground pointer-events-none select-none">
+          <CharacterLimitPlugin charset="UTF-16" maxLength={CHAR_LIMIT} />
+        </div>
         {/* rest of the plugins */}
       </div>
     </div>
