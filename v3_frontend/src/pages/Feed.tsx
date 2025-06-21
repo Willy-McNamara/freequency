@@ -90,7 +90,7 @@ const Feed = () => {
       {/* Filter Bar */}
       <FilterBar filters={activeFilters} onFilterChange={handleFilterChange} />
       {/* Here we'll need a flex container for the feed posts */}
-      <div className="flex flex-col items-start gap-12 mb-2">
+      <div className="flex flex-col items-start gap-12 mb-2 pt-8">
         {/* At some point this will need to be scrollable, may make a separate Feed container to house logic, replacing that div */}
         {posts.map((post) => (
           <FeedPost postData={post} />

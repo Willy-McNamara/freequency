@@ -127,7 +127,7 @@ export function FilterBar({
     : null;
 
   return (
-    <div className={cn("flex items-center gap-[11px] pb-8", className)}>
+    <div className={cn("flex items-center gap-[11px]", className)}>
       {filters.map((filter) => {
         const config = filterConfig[filter.type];
         return (

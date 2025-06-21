@@ -6,6 +6,7 @@ import {
   Piano,
   Drum,
   Music,
+  ArrowRight,
 } from "lucide-react";
 import { Badge } from "./badge";
 import { cn } from "../lib/utils";
@@ -24,6 +25,7 @@ export interface Task {
     label: string;
     color?: string;
   }[];
+  checklist: string[];
   savedCount: number;
   usedCount: number;
 }
@@ -32,6 +34,7 @@ export interface TaskListItemProps {
   task: Task;
   className?: string;
   onTaskClick?: (taskId: number) => void;
+  onViewDetails?: (taskId: number) => void;
 }
 
 const getInstrumentIcon = (instrument: string) => {
@@ -47,6 +50,7 @@ export function TaskListItem({
   task,
   className,
   onTaskClick,
+  onViewDetails,
 }: TaskListItemProps) {
   const [isExpanded, setIsExpanded] = React.useState(false);
   const InstrumentIcon = getInstrumentIcon(task.instrument);
@@ -54,6 +58,11 @@ export function TaskListItem({
   const handleTaskClick = () => {
     setIsExpanded(!isExpanded);
     onTaskClick?.(task.id);
+  };
+
+  const handleViewDetails = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onViewDetails?.(task.id);
   };
 
   return (
@@ -151,6 +160,17 @@ export function TaskListItem({
           <div className="flex gap-4 text-sm text-muted-foreground justify-start">
             <span>Saved {task.savedCount} times</span>
             <span>Used {task.usedCount} times</span>
+          </div>
+
+          {/* View Details Button */}
+          <div className="flex justify-end pt-2">
+            <button
+              onClick={handleViewDetails}
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+            >
+              View Details
+              <ArrowRight className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </div>
