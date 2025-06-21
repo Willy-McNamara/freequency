@@ -291,9 +291,12 @@ const TaskLibrary: React.FC = () => {
       ) : (
         /* Show task library view */
         <div className="flex flex-col w-full max-w-full min-w-[320px] px-4 sm:px-6 lg:px-8 mx-auto">
-          {/* Header with title and create button */}
+          {/* Filter Bar and Create Button Row */}
           <div className="flex items-center justify-between mb-6">
-            <h1>Task Library</h1>
+            <FilterBar
+              filters={activeFilters}
+              onFilterChange={handleFilterChange}
+            />
             <button
               onClick={() => setIsCreateModalOpen(true)}
               className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
@@ -302,12 +305,6 @@ const TaskLibrary: React.FC = () => {
               Create Task
             </button>
           </div>
-
-          {/* Filter Bar */}
-          <FilterBar
-            filters={activeFilters}
-            onFilterChange={handleFilterChange}
-          />
 
           {/* Task Library Content */}
           <div className="mt-6 space-y-3">
