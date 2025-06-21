@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { SessionsModule } from './sessions/sessions.module';
 import { MusiciansModule } from './musicians/musicians.module';
+import { TasksModule } from './tasks/tasks.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { LoggerMiddleware } from './logger.middleware';
 import { join } from 'path';
@@ -24,6 +25,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
     PrismaModule,
     SessionsModule,
     MusiciansModule,
+    TasksModule,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '../../../v3_frontend/dist'),
     }),
