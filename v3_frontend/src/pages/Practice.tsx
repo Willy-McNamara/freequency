@@ -3,6 +3,7 @@ import { RichTextEditor } from "@/components/rich-text";
 import { PracticeTaskList } from "@/components/practice-task-list";
 import { PracticeTagList } from "@/components/practice-tag-list";
 import { PracticeTimer, PracticeTimerRef } from "@/components/practice-timer";
+import { TagModal } from "@/components/TagModal";
 
 const getDefaultSessionTitle = () => {
   const days = [
@@ -27,12 +28,27 @@ const Practice: React.FC = () => {
   const [sessionTitle, setSessionTitle] = useState(getDefaultSessionTitle());
   const maxLength = 40;
 
+  // Tag state
+  const [tags, setTags] = useState([
+    { id: "tag1", label: "Warmup" },
+    { id: "tag2", label: "Scales" },
+    { id: "tag3", label: "Sight Reading" },
+  ]);
+  const [tagModalOpen, setTagModalOpen] = useState(false);
+
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value;
     // Only allow upper/lowercase letters and spaces
     value = value.replace(/[^a-zA-Z ]/g, "");
     if (value.length > maxLength) value = value.slice(0, maxLength);
     setSessionTitle(value);
+  };
+
+  const handleTagSelected = (tag: { id: number; label: string }) => {
+    // Prevent duplicates by label
+    if (!tags.some((t) => t.label === tag.label)) {
+      setTags((prev) => [...prev, { id: String(tag.id), label: tag.label }]);
+    }
   };
 
   return (
@@ -57,13 +73,11 @@ const Practice: React.FC = () => {
         onAddNew={() => alert("Add new task clicked!")}
         onEditTask={(id) => alert(`Edit task ${id}`)}
       />
-      <PracticeTagList
-        tags={[
-          { id: "tag1", label: "Warmup" },
-          { id: "tag2", label: "Scales" },
-          { id: "tag3", label: "Sight Reading" },
-        ]}
-        onAddTag={() => alert("Add tag clicked!")}
+      <PracticeTagList tags={tags} onAddTag={() => setTagModalOpen(true)} />
+      <TagModal
+        isOpen={tagModalOpen}
+        onClose={() => setTagModalOpen(false)}
+        onTagSelected={handleTagSelected}
       />
       <div className="flex justify-center mt-8">
         <button

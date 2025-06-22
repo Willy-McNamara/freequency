@@ -2,6 +2,7 @@ import * as React from "react";
 import { X, Plus, Trash2 } from "lucide-react";
 import { Badge } from "./badge";
 import { cn } from "../lib/utils";
+import { TagModal } from "./TagModal";
 
 export interface CreateTaskData {
   title: string;
@@ -36,9 +37,9 @@ export function CreateTaskModal({
     checklist: [],
   });
 
-  const [newTag, setNewTag] = React.useState("");
   const [newChecklistItem, setNewChecklistItem] = React.useState("");
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [tagModalOpen, setTagModalOpen] = React.useState(false);
 
   // Initialize form data when modal opens or initialData changes
   React.useEffect(() => {
@@ -60,13 +61,6 @@ export function CreateTaskModal({
     value: string | string[]
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const addTag = () => {
-    if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
-      handleInputChange("tags", [...formData.tags, newTag.trim()]);
-      setNewTag("");
-    }
   };
 
   const removeTag = (tagToRemove: string) => {
@@ -94,6 +88,12 @@ export function CreateTaskModal({
       "checklist",
       formData.checklist.filter((item) => item !== itemToRemove)
     );
+  };
+
+  const handleTagSelected = (tag: { id: number; label: string }) => {
+    if (!formData.tags.includes(tag.label)) {
+      handleInputChange("tags", [...formData.tags, tag.label]);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -146,9 +146,9 @@ export function CreateTaskModal({
       tags: [],
       checklist: [],
     });
-    setNewTag("");
     setNewChecklistItem("");
     setIsSubmitting(false);
+    setTagModalOpen(false);
     onClose();
   };
 
@@ -249,22 +249,17 @@ export function CreateTaskModal({
               Tags
             </label>
             <div className="flex gap-2 mb-3">
-              <input
-                type="text"
-                value={newTag}
-                onChange={(e) => setNewTag(e.target.value)}
-                onKeyPress={(e) =>
-                  e.key === "Enter" && (e.preventDefault(), addTag())
-                }
-                className="flex-1 px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-left"
-                placeholder="Add a tag"
-              />
               <button
                 type="button"
-                onClick={addTag}
-                className="px-3 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                onClick={() => setTagModalOpen(true)}
+                className="focus:outline-none"
               >
-                <Plus className="w-4 h-4" />
+                <Badge
+                  variant="secondary"
+                  className="mb-1 cursor-pointer select-none"
+                >
+                  + add
+                </Badge>
               </button>
             </div>
             {formData.tags.length > 0 && (
@@ -287,6 +282,11 @@ export function CreateTaskModal({
                 ))}
               </div>
             )}
+            <TagModal
+              isOpen={tagModalOpen}
+              onClose={() => setTagModalOpen(false)}
+              onTagSelected={handleTagSelected}
+            />
           </div>
 
           {/* Checklist */}

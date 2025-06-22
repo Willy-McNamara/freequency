@@ -2,6 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
+const MAX_LENGTH = 30;
+const sanitizeTagLabel = (label) => label
+    .toLowerCase()
+    .replace(/[^a-z0-9 _\-.,!?()'":;]/g, '')
+    .slice(0, MAX_LENGTH);
 async function main() {
     await prisma.gasUp.deleteMany();
     await prisma.comment.deleteMany();
@@ -37,30 +42,35 @@ async function main() {
     ];
     const instrumentTags = {};
     for (const label of instrumentLabels) {
-        instrumentTags[label] = await prisma.tag.upsert({
-            where: { label },
+        const sanitized = sanitizeTagLabel(label);
+        if (!sanitized)
+            continue;
+        instrumentTags[sanitized] = await prisma.tag.upsert({
+            where: { label: sanitized },
             update: {},
-            create: { label },
+            create: { label: sanitized },
         });
     }
-    const pianoTag = await prisma.tag.create({
-        data: { label: 'Piano', color: '#FFD700' },
-    });
-    const guitarTag = await prisma.tag.create({
-        data: { label: 'Guitar', color: '#ADFF2F' },
-    });
-    const drumsTag = await prisma.tag.create({
-        data: { label: 'Drums', color: '#FF4500' },
-    });
-    const bassTag = await prisma.tag.create({
-        data: { label: 'Bass', color: '#4169E1' },
-    });
-    const violinTag = await prisma.tag.create({
-        data: { label: 'Violin', color: '#8A2BE2' },
-    });
-    const saxophoneTag = await prisma.tag.create({
-        data: { label: 'Saxophone', color: '#FF6347' },
-    });
+    const requiredInstruments = [
+        'Piano',
+        'Guitar',
+        'Drums',
+        'Bass Guitar',
+        'Violin',
+        'Saxophone',
+    ];
+    const missing = requiredInstruments.filter((name) => !instrumentTags[sanitizeTagLabel(name)]);
+    if (missing.length > 0) {
+        console.error('Missing instrument tags after upsert:', missing);
+        console.error('Available instrumentTags keys:', Object.keys(instrumentTags));
+        throw new Error('One or more required instrument tags are missing after upsert.');
+    }
+    const pianoTag = instrumentTags[sanitizeTagLabel('Piano')];
+    const guitarTag = instrumentTags[sanitizeTagLabel('Guitar')];
+    const drumsTag = instrumentTags[sanitizeTagLabel('Drums')];
+    const bassTag = instrumentTags[sanitizeTagLabel('Bass Guitar')];
+    const violinTag = instrumentTags[sanitizeTagLabel('Violin')];
+    const saxophoneTag = instrumentTags[sanitizeTagLabel('Saxophone')];
     const musician1 = await prisma.musician.create({
         data: {
             googleId: 'fake-google-id-1',
