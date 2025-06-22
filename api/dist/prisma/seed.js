@@ -11,6 +11,38 @@ async function main() {
     await prisma.session.deleteMany();
     await prisma.musician.deleteMany();
     await prisma.tag.deleteMany();
+    const instrumentLabels = [
+        'Piano',
+        'Guitar',
+        'Listening',
+        'Violin',
+        'Drums',
+        'Flute',
+        'Clarinet',
+        'Saxophone',
+        'Trumpet',
+        'Trombone',
+        'Voice',
+        'Cello',
+        'Ukulele',
+        'Percussion',
+        'Double Bass',
+        'Bass Guitar',
+        'Oboe',
+        'Harp',
+        'Accordion',
+        'Banjo',
+        'DJing',
+        'Production',
+    ];
+    const instrumentTags = {};
+    for (const label of instrumentLabels) {
+        instrumentTags[label] = await prisma.tag.upsert({
+            where: { label },
+            update: {},
+            create: { label },
+        });
+    }
     const pianoTag = await prisma.tag.create({
         data: { label: 'Piano', color: '#FFD700' },
     });

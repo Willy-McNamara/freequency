@@ -177,4 +177,12 @@ export class MusiciansService {
 
   //   return musicianDto;
   // }
+
+  async getAllDisplayNames(): Promise<string[]> {
+    const musicians = await this.prisma.musician.findMany({
+      select: { displayName: true },
+      orderBy: { displayName: 'asc' },
+    });
+    return musicians.map((m) => m.displayName);
+  }
 }

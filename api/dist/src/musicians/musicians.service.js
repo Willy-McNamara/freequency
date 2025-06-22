@@ -40,6 +40,13 @@ let MusiciansService = class MusiciansService {
             createdAt: musician.createdAt,
         };
     }
+    async getAllDisplayNames() {
+        const musicians = await this.prisma.musician.findMany({
+            select: { displayName: true },
+            orderBy: { displayName: 'asc' },
+        });
+        return musicians.map((m) => m.displayName);
+    }
 };
 exports.MusiciansService = MusiciansService;
 exports.MusiciansService = MusiciansService = __decorate([

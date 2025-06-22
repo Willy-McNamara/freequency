@@ -17,19 +17,70 @@ import {
 } from 'src/musicians/dto/musician.dto';
 import { Prisma } from '@prisma/client';
 
+interface SessionFilters {
+  users: string[];
+  instruments: string[];
+  tags: string[];
+  saved: boolean;
+}
+
 @Injectable()
 export class SessionsService {
   constructor(private prisma: PrismaService) {}
 
-  async getFiveSessions(): Promise<NewFrontendSessionDTO[]> {
-    const prisma = this.prisma;
+  async getSessionsWithFilters(
+    filters: SessionFilters,
+    cursor?: string,
+  ): Promise<{ sessions: NewFrontendSessionDTO[]; nextCursor?: string }> {
+    const take = 10;
 
-    const take = 5;
+    // Build where conditions based on filters
+    const whereConditions: Prisma.SessionWhereInput = {};
 
-    // Query all sessions from the database, includes musician.displayName, and displayName + photo for gasUps and comments
-    const sessions = await prisma.session.findMany({
-      take: take,
+    // User filter
+    if (filters.users.length > 0) {
+      whereConditions.musician = {
+        displayName: {
+          in: filters.users,
+        },
+      };
+    }
+
+    // Instrument filter
+    if (filters.instruments.length > 0) {
+      whereConditions.instruments = {
+        some: {
+          label: {
+            in: filters.instruments,
+          },
+        },
+      };
+    }
+
+    // Tag filter
+    if (filters.tags.length > 0) {
+      whereConditions.tags = {
+        some: {
+          label: {
+            in: filters.tags,
+          },
+        },
+      };
+    }
+
+    // Saved filter (sessions with gasUps)
+    if (filters.saved) {
+      whereConditions.gasUps = {
+        some: {},
+      };
+    }
+
+    // Query sessions with filters and pagination
+    const sessions = await this.prisma.session.findMany({
+      take: take + 1, // Take one extra to check if there are more
+      cursor: cursor ? { id: parseInt(cursor) } : undefined,
       orderBy: { id: 'desc' },
+      where: whereConditions,
       include: {
         gasUps: {
           include: {
@@ -80,8 +131,15 @@ export class SessionsService {
       },
     });
 
-    // Map the database sessions to SessionWithDetailsDto objects
-    const frontendSessionDto: NewFrontendSessionDTO[] = sessions.map(
+    // Check if there are more sessions
+    const hasMore = sessions.length > take;
+    const sessionsToReturn = hasMore ? sessions.slice(0, take) : sessions;
+    const nextCursor = hasMore
+      ? sessionsToReturn[sessionsToReturn.length - 1].id.toString()
+      : undefined;
+
+    // Map the database sessions to NewFrontendSessionDTO objects
+    const frontendSessionDto: NewFrontendSessionDTO[] = sessionsToReturn.map(
       (session) => ({
         id: session.id,
         title: session.title,
@@ -93,7 +151,7 @@ export class SessionsService {
         })),
         duration: session.duration,
         isPublic: session.isPublic,
-        createdAt: session.createdAt.toISOString(), // Converts Date to ISO string
+        createdAt: session.createdAt.toISOString(),
         musicianId: session.musicianId,
         musician: {
           displayName: session.musician.displayName,
@@ -110,7 +168,20 @@ export class SessionsService {
       }),
     );
 
-    return frontendSessionDto;
+    return {
+      sessions: frontendSessionDto,
+      nextCursor,
+    };
+  }
+
+  async getFiveSessions(): Promise<NewFrontendSessionDTO[]> {
+    const result = await this.getSessionsWithFilters({
+      users: [],
+      instruments: [],
+      tags: [],
+      saved: false,
+    });
+    return result.sessions;
   }
 
   // async getSessionsChunk(cursorId?: number): Promise<FrontendSessionDto[]> {

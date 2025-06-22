@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { FeedPost } from "../components/feed-post";
 import {
   FilterBar,
@@ -7,43 +7,205 @@ import {
   FilterOption,
 } from "../components/filter-bar";
 
+interface Post {
+  id: number;
+  title: string;
+  notes: string;
+  createdAt: string;
+  musician: {
+    displayName: string;
+    avatarUrl: string | null;
+  };
+  instruments: Array<{
+    id: number;
+    label: string;
+    color: string | null;
+  }>;
+  tags: Array<{
+    id: number;
+    label: string;
+    color: string | null;
+  }>;
+  gasUps: Array<{
+    musician: {
+      displayName: string;
+      avatarUrl: string | null;
+    };
+  }>;
+  comments: Array<{
+    musician: {
+      displayName: string;
+      avatarUrl: string | null;
+    };
+  }>;
+}
+
 const Feed = () => {
-  const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [nextCursor, setNextCursor] = useState<string | undefined>(undefined);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const observer = useRef<IntersectionObserver | undefined>(undefined);
+  const isFetching = useRef(false);
+  const hasFetchedOnce = useRef(false);
+  const filtersInitialized = useRef(false);
+  const [allUsers, setAllUsers] = useState<string[]>([]);
+  const [allTags, setAllTags] = useState<string[]>([]);
+  const [allInstruments, setAllInstruments] = useState<string[]>([]);
+
   const [activeFilters, setActiveFilters] = useState<FilterState[]>([
     {
       type: "user",
       isSelected: false,
-      options: [
-        { id: "user1", label: "John Doe", checked: false },
-        { id: "user2", label: "Jane Smith", checked: false },
-      ],
+      options: [],
     },
     {
       type: "instrument",
       isSelected: false,
-      options: [
-        { id: "rock", label: "Rock", checked: false },
-        { id: "jazz", label: "Jazz", checked: false },
-      ],
-    },
-    {
-      type: "task",
-      isSelected: false,
-      options: [
-        { id: "favorites", label: "Favorites", checked: false },
-        { id: "recent", label: "Recent", checked: false },
-      ],
+      options: [],
     },
     {
       type: "tag",
       isSelected: false,
-      options: [
-        { id: "beginner", label: "Beginner", checked: false },
-        { id: "advanced", label: "Advanced", checked: false },
-      ],
+      options: [],
     },
     { type: "saved", isSelected: false },
   ]);
+
+  // Build query parameters from active filters
+  const buildQueryParams = useCallback(
+    (cursorOverride: string | null = null) => {
+      const params = new URLSearchParams();
+
+      const userFilter = activeFilters.find((f) => f.type === "user");
+      if (userFilter?.isSelected && userFilter.options) {
+        const selectedUsers = userFilter.options
+          .filter((option) => option.checked)
+          .map((option) => option.label);
+        if (selectedUsers.length > 0) {
+          params.append("users", selectedUsers.join(","));
+        }
+      }
+
+      const instrumentFilter = activeFilters.find(
+        (f) => f.type === "instrument"
+      );
+      if (instrumentFilter?.isSelected && instrumentFilter.options) {
+        const selectedInstruments = instrumentFilter.options
+          .filter((option) => option.checked)
+          .map((option) => option.label);
+        if (selectedInstruments.length > 0) {
+          params.append("instruments", selectedInstruments.join(","));
+        }
+      }
+
+      const tagFilter = activeFilters.find((f) => f.type === "tag");
+      if (tagFilter?.isSelected && tagFilter.options) {
+        const selectedTags = tagFilter.options
+          .filter((option) => option.checked)
+          .map((option) => option.label);
+        if (selectedTags.length > 0) {
+          params.append("tags", selectedTags.join(","));
+        }
+      }
+
+      const savedFilter = activeFilters.find((f) => f.type === "saved");
+      if (savedFilter?.isSelected) {
+        params.append("saved", "true");
+      }
+
+      if (cursorOverride) {
+        params.append("cursor", cursorOverride);
+      }
+
+      return params;
+    },
+    [activeFilters]
+  );
+
+  const fetchSessions = useCallback(
+    async (isInitial = false, cursorOverride: string | null = null) => {
+      // Prevent multiple simultaneous requests
+      if (isFetching.current) {
+        return;
+      }
+
+      try {
+        isFetching.current = true;
+
+        if (isInitial) {
+          setLoading(true);
+          setError(null);
+        } else {
+          setLoadingMore(true);
+        }
+
+        // For initial fetch (new filter), do not use any cursor
+        const params = buildQueryParams(cursorOverride);
+        const response = await fetch(
+          `http://localhost:3000/sessions?${params.toString()}`
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        // Handle both old format (array) and new format (object with sessions and nextCursor)
+        let sessions, nextCursorValue;
+        if (Array.isArray(result)) {
+          // Old format - just an array of sessions
+          sessions = result;
+          nextCursorValue = undefined; // No pagination in old format
+        } else {
+          // New format - object with sessions and nextCursor
+          sessions = result.sessions || [];
+          nextCursorValue = result.nextCursor;
+        }
+
+        if (isInitial) {
+          setPosts(sessions);
+          setNextCursor(nextCursorValue);
+          setHasMore(!!nextCursorValue);
+        } else {
+          setPosts((prev) => [...prev, ...sessions]);
+          setNextCursor(nextCursorValue);
+          setHasMore(!!nextCursorValue);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setError(
+          error instanceof Error ? error.message : "Failed to fetch posts"
+        );
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+        isFetching.current = false;
+      }
+    },
+    [buildQueryParams]
+  );
+
+  // Intersection Observer for infinite scroll
+  const lastPostElementRef = useCallback(
+    (node: HTMLDivElement) => {
+      if (loading || loadingMore || isFetching.current) return;
+
+      if (observer.current) observer.current.disconnect();
+
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          fetchSessions(false, nextCursor);
+        }
+      });
+
+      if (node) observer.current.observe(node);
+    },
+    [loading, loadingMore, hasMore, fetchSessions, nextCursor]
+  );
 
   const handleFilterChange = (
     filterType: FilterType,
@@ -51,50 +213,193 @@ const Feed = () => {
     options?: FilterOption[]
   ) => {
     setActiveFilters((prev) =>
-      prev.map((filter) =>
-        filter.type === filterType
-          ? { ...filter, isSelected, options: options || filter.options }
-          : filter
-      )
-    );
+      prev.map((filter) => {
+        if (filter.type === filterType) {
+          const updatedOptions = options || filter.options;
+          const hasSelectedOptions =
+            updatedOptions?.some((option) => option.checked) || false;
 
-    // Here you would typically filter your posts based on the new filter state
-    console.log(`Filter ${filterType} changed:`, { isSelected, options });
+          return {
+            ...filter,
+            isSelected: hasSelectedOptions,
+            options: updatedOptions,
+          };
+        }
+        return filter;
+      })
+    );
   };
 
+  // New useEffect to trigger fetch when filters change
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch("http://localhost:3000/sessions");
-        const result = await response.json();
-        setPosts(result);
-        console.log(result);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
+    // Only fetch if filters have been initialized and at least one filter is selected
+    if (
+      filtersInitialized.current &&
+      hasFetchedOnce.current &&
+      activeFilters.some(
+        (filter) =>
+          filter.isSelected &&
+          (filter.options ? filter.options.some((opt) => opt.checked) : true)
+      )
+    ) {
+      setPosts([]);
+      setNextCursor(undefined);
+      setHasMore(true);
+      fetchSessions(true, null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeFilters]);
 
-    fetchData();
+  // Fetch all users, instruments, and tags on mount
+  useEffect(() => {
+    fetch("http://localhost:3000/musicians/all-display-names")
+      .then((res) => res.json())
+      .then((data) => setAllUsers(data));
+    fetch("http://localhost:3000/instruments/all-labels")
+      .then((res) => res.json())
+      .then((data) => setAllInstruments(data));
+    fetch("http://localhost:3000/tags/all-labels")
+      .then((res) => res.json())
+      .then((data) => setAllTags(data));
   }, []);
+
+  // Update filter options based on available data
+  useEffect(() => {
+    // Use allUsers, allInstruments, allTags for filter options
+    if (
+      allUsers.length > 0 &&
+      allInstruments.length > 0 &&
+      allTags.length > 0
+    ) {
+      const userOptions = allUsers.map((user) => ({
+        id: user.toLowerCase().replace(/\s+/g, ""),
+        label: user,
+        checked:
+          activeFilters
+            .find((f) => f.type === "user")
+            ?.options?.some((opt) => opt.label === user && opt.checked) ||
+          false,
+      }));
+
+      const instrumentOptions = allInstruments.map((instrument) => ({
+        id: instrument.toLowerCase(),
+        label: instrument,
+        checked:
+          activeFilters
+            .find((f) => f.type === "instrument")
+            ?.options?.some((opt) => opt.label === instrument && opt.checked) ||
+          false,
+      }));
+
+      const tagOptions = allTags.map((tag) => ({
+        id: tag.toLowerCase().replace(/\s+/g, ""),
+        label: tag,
+        checked:
+          activeFilters
+            .find((f) => f.type === "tag")
+            ?.options?.some((opt) => opt.label === tag && opt.checked) || false,
+      }));
+
+      setActiveFilters((prev) =>
+        prev.map((filter) => {
+          if (filter.type === "user") {
+            return { ...filter, options: userOptions };
+          }
+          if (filter.type === "instrument") {
+            return { ...filter, options: instrumentOptions };
+          }
+          if (filter.type === "tag") {
+            return { ...filter, options: tagOptions };
+          }
+          return filter;
+        })
+      );
+    }
+  }, [allUsers, allInstruments, allTags]);
+
+  // Initial data fetch: only after all filter options are loaded
+  useEffect(() => {
+    if (
+      !hasFetchedOnce.current &&
+      allUsers.length > 0 &&
+      allInstruments.length > 0 &&
+      allTags.length > 0
+    ) {
+      fetchSessions(true);
+      hasFetchedOnce.current = true;
+      filtersInitialized.current = true;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allUsers, allInstruments, allTags]);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col w-full justify-start">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading posts...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col w-full justify-start">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <p className="text-destructive mb-4">Error: {error}</p>
+            <button
+              onClick={() => fetchSessions(true)}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col w-full justify-start">
-      {/* Search Bar, removing until I have more of a plan for implementing sticky search */}
-      {/* <div className="flex w-full min-w-[236px] max-w-md items-center gap-2 px-2 py-1.5 bg-gray-200 rounded-md mb-4 mx-auto">
-        <SearchIcon className="w-4 h-4 text-slate-900" />
-        <Input
-          className="border-0 bg-transparent p-0 h-auto shadow-none font-subtle text-slate-900 text-[length:var(--subtle-font-size)] tracking-[var(--subtle-letter-spacing)] leading-[var(--subtle-line-height)] placeholder:text-slate-900 focus-visible:ring-0 focus-visible:ring-offset-0"
-          placeholder="search sessions..."
-        />
-      </div> */}
       {/* Filter Bar */}
       <FilterBar filters={activeFilters} onFilterChange={handleFilterChange} />
-      {/* Here we'll need a flex container for the feed posts */}
+
+      {/* Feed Posts */}
       <div className="flex flex-col items-start gap-12 mb-2 pt-8">
-        {/* At some point this will need to be scrollable, may make a separate Feed container to house logic, replacing that div */}
-        {posts.map((post) => (
-          <FeedPost postData={post} />
-        ))}
+        {!posts || posts.length === 0 ? (
+          <div className="text-center py-12 w-full">
+            <p className="text-muted-foreground">
+              No posts found matching your filters.
+            </p>
+          </div>
+        ) : (
+          posts.map((post, index) => {
+            if (posts.length === index + 1) {
+              // Last element - attach ref for infinite scroll
+              return (
+                <div key={post.id || index} ref={lastPostElementRef}>
+                  <FeedPost postData={post} />
+                </div>
+              );
+            } else {
+              return <FeedPost key={post.id || index} postData={post} />;
+            }
+          })
+        )}
+
+        {/* Loading more indicator */}
+        {loadingMore && (
+          <div className="flex items-center justify-center w-full py-8">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+            <span className="ml-2 text-muted-foreground">
+              Loading more posts...
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

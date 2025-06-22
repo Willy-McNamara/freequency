@@ -91,11 +91,21 @@ const TaskLibrary: React.FC = () => {
     options?: FilterOption[]
   ) => {
     setActiveFilters((prev) =>
-      prev.map((filter) =>
-        filter.type === filterType
-          ? { ...filter, isSelected, options: options || filter.options }
-          : filter
-      )
+      prev.map((filter) => {
+        if (filter.type === filterType) {
+          const updatedOptions = options || filter.options;
+          // Check if any options are actually selected
+          const hasSelectedOptions =
+            updatedOptions?.some((option) => option.checked) || false;
+
+          return {
+            ...filter,
+            isSelected: hasSelectedOptions, // Only highlight if options are actually selected
+            options: updatedOptions,
+          };
+        }
+        return filter;
+      })
     );
   };
 

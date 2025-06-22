@@ -20,6 +20,11 @@ import { JwtAuthGuard } from '../auth/jwt.guard';
 export class MusiciansController {
   constructor(private readonly musiciansService: MusiciansService) {}
 
+  @Get('all-display-names')
+  async getAllDisplayNames(): Promise<string[]> {
+    return this.musiciansService.getAllDisplayNames();
+  }
+
   @Get(':id')
   async getMusicianById(@Param('id') id: string): Promise<MusicianFrontendDTO> {
     return this.musiciansService.getMusicianById(Number(id));

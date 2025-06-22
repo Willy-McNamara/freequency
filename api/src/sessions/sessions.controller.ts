@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Req, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Req,
+  UseGuards,
+  Query,
+} from '@nestjs/common';
 import { SessionsService } from './sessions.service';
 import {
   SessionDto,
@@ -31,8 +39,21 @@ export class SessionsController {
   ) {}
 
   @Get()
-  async getSessionsOnRender(): Promise<NewFrontendSessionDTO[]> {
-    return this.sessionsService.getFiveSessions();
+  async getSessionsOnRender(
+    @Query('cursor') cursor?: string,
+    @Query('users') users?: string,
+    @Query('instruments') instruments?: string,
+    @Query('tags') tags?: string,
+    @Query('saved') saved?: string,
+  ): Promise<{ sessions: NewFrontendSessionDTO[]; nextCursor?: string }> {
+    const filters = {
+      users: users ? users.split(',') : [],
+      instruments: instruments ? instruments.split(',') : [],
+      tags: tags ? tags.split(',') : [],
+      saved: saved === 'true',
+    };
+
+    return this.sessionsService.getSessionsWithFilters(filters, cursor);
   }
 
   // @Post('nextChunk')
