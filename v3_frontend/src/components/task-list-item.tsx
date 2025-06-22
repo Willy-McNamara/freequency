@@ -35,6 +35,8 @@ export interface TaskListItemProps {
   className?: string;
   onTaskClick?: (taskId: number) => void;
   onViewDetails?: (taskId: number) => void;
+  hasActiveSession?: boolean;
+  onUseInCurrentSession?: (task: Task) => void;
 }
 
 const getInstrumentIcon = (instrument: string) => {
@@ -51,6 +53,8 @@ export function TaskListItem({
   className,
   onTaskClick,
   onViewDetails,
+  hasActiveSession,
+  onUseInCurrentSession,
 }: TaskListItemProps) {
   const [isExpanded, setIsExpanded] = React.useState(false);
   const InstrumentIcon = getInstrumentIcon(task.instrument);
@@ -162,8 +166,8 @@ export function TaskListItem({
             <span>Used {task.usedCount} times</span>
           </div>
 
-          {/* View Details Button */}
-          <div className="flex justify-end pt-2">
+          {/* View Details and Use in Session Buttons */}
+          <div className="flex justify-end pt-2 gap-2">
             <button
               onClick={handleViewDetails}
               className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
@@ -171,6 +175,17 @@ export function TaskListItem({
               View Details
               <ArrowRight className="w-4 h-4" />
             </button>
+            {hasActiveSession && onUseInCurrentSession && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onUseInCurrentSession(task);
+                }}
+                className="flex items-center gap-2 px-3 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+              >
+                Use in current session
+              </button>
+            )}
           </div>
         </div>
       </div>

@@ -16,6 +16,8 @@ export interface TaskDetailProps {
   onBack: () => void;
   onModifyTask?: (task: Task) => void;
   className?: string;
+  hasActiveSession?: boolean;
+  onUseInCurrentSession?: (task: Task) => void;
 }
 
 export function TaskDetail({
@@ -23,6 +25,8 @@ export function TaskDetail({
   onBack,
   onModifyTask,
   className,
+  hasActiveSession,
+  onUseInCurrentSession,
 }: TaskDetailProps) {
   const [isSaved, setIsSaved] = React.useState(false);
 
@@ -166,9 +170,18 @@ export function TaskDetail({
 
       {/* Action Buttons */}
       <div className="flex gap-3">
-        <button className="flex-1 bg-primary text-primary-foreground px-4 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors">
-          Start Practice Session
-        </button>
+        {hasActiveSession && onUseInCurrentSession ? (
+          <button
+            className="flex-1 bg-primary text-primary-foreground px-4 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
+            onClick={() => onUseInCurrentSession(task)}
+          >
+            Use in current session
+          </button>
+        ) : (
+          <button className="flex-1 bg-primary text-primary-foreground px-4 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors">
+            Start Practice Session
+          </button>
+        )}
       </div>
     </div>
   );

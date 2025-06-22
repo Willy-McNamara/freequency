@@ -9,6 +9,7 @@ import TaskLibrary from "./pages/TaskLibrary";
 import Growth from "./pages/Growth";
 import Profile from "./pages/Profile";
 import ErrorBoundaryWrapper from "./ErrorBoundary.tsx";
+import { SessionProvider } from "./components/SessionContext";
 
 const root = document.getElementById("root");
 
@@ -19,17 +20,19 @@ if (!root) {
 ReactDOM.createRoot(root).render(
   <BrowserRouter>
     <ErrorBoundaryWrapper>
-      <Routes>
-        <Route path="/" element={<App />}>
-          <Route index element={<Feed />} />
-          <Route path="/practice" element={<Practice />} />
-          <Route path="/task-library" element={<TaskLibrary />} />
-          <Route path="/growth" element={<Growth />} />
-          <Route path="/profile" element={<Profile />} />
-          {/* Fallback for unknown routes */}
-          <Route path="*" element={<h1>Page Not Found</h1>} />
-        </Route>
-      </Routes>
+      <SessionProvider>
+        <Routes>
+          <Route path="/" element={<App />}>
+            <Route index element={<Feed />} />
+            <Route path="/practice" element={<Practice />} />
+            <Route path="/task-library" element={<TaskLibrary />} />
+            <Route path="/growth" element={<Growth />} />
+            <Route path="/profile" element={<Profile />} />
+            {/* Fallback for unknown routes */}
+            <Route path="*" element={<h1>Page Not Found</h1>} />
+          </Route>
+        </Routes>
+      </SessionProvider>
     </ErrorBoundaryWrapper>
   </BrowserRouter>
 );

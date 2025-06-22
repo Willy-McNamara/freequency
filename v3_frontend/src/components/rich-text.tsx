@@ -46,10 +46,11 @@ export function RichTextEditor() {
 const placeholder = "Add session notes here...";
 
 export function Plugins() {
-  const [, setFloatingAnchorElem] = useState<HTMLDivElement | null>(null);
+  const [floatingAnchorElem, setFloatingAnchorElem] =
+    useState<HTMLDivElement | null>(null);
 
   const onRef = (_floatingAnchorElem: HTMLDivElement) => {
-    if (_floatingAnchorElem !== null) {
+    if (_floatingAnchorElem !== floatingAnchorElem) {
       setFloatingAnchorElem(_floatingAnchorElem);
     }
   };
