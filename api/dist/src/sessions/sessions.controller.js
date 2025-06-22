@@ -8,6 +8,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SessionsController = void 0;
 const common_1 = require("@nestjs/common");
@@ -20,15 +23,26 @@ let SessionsController = class SessionsController {
         this.s3service = s3service;
         this.mediaService = mediaService;
     }
-    async getSessionsOnRender() {
-        return this.sessionsService.getFiveSessions();
+    async getSessionsOnRender(cursor, users, instruments, tags, saved) {
+        const filters = {
+            users: users ? users.split(',') : [],
+            instruments: instruments ? instruments.split(',') : [],
+            tags: tags ? tags.split(',') : [],
+            saved: saved === 'true',
+        };
+        return this.sessionsService.getSessionsWithFilters(filters, cursor);
     }
 };
 exports.SessionsController = SessionsController;
 __decorate([
     (0, common_1.Get)(),
+    __param(0, (0, common_1.Query)('cursor')),
+    __param(1, (0, common_1.Query)('users')),
+    __param(2, (0, common_1.Query)('instruments')),
+    __param(3, (0, common_1.Query)('tags')),
+    __param(4, (0, common_1.Query)('saved')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [String, String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], SessionsController.prototype, "getSessionsOnRender", null);
 exports.SessionsController = SessionsController = __decorate([

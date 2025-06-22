@@ -19,6 +19,8 @@ import { S3 } from '@aws-sdk/client-s3';
 import { S3Service } from './s3/s3.service';
 import { AllExceptionsFilter } from './filters/all-exceptions.filter';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { InstrumentsController } from './instruments/instruments.controller';
+import { TagsController } from './tags/tags.controller';
 
 @Module({
   imports: [
@@ -41,7 +43,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
       },
     ]),
   ],
-  controllers: [AppController],
+  controllers: [AppController, InstrumentsController, TagsController],
   providers: [
     AppService,
     MusiciansService,

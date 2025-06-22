@@ -19,11 +19,20 @@ let MusiciansController = class MusiciansController {
     constructor(musiciansService) {
         this.musiciansService = musiciansService;
     }
+    async getAllDisplayNames() {
+        return this.musiciansService.getAllDisplayNames();
+    }
     async getMusicianById(id) {
         return this.musiciansService.getMusicianById(Number(id));
     }
 };
 exports.MusiciansController = MusiciansController;
+__decorate([
+    (0, common_1.Get)('all-display-names'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], MusiciansController.prototype, "getAllDisplayNames", null);
 __decorate([
     (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Param)('id')),

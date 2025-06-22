@@ -4,4 +4,5 @@ export declare class MusiciansService {
     private prisma;
     constructor(prisma: PrismaService);
     getMusicianById(id: number): Promise<MusicianFrontendDTO | null>;
+    getAllDisplayNames(): Promise<string[]>;
 }

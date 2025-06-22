@@ -27,6 +27,8 @@ const jwt_1 = require("@nestjs/jwt");
 const s3_service_1 = require("./s3/s3.service");
 const all_exceptions_filter_1 = require("./filters/all-exceptions.filter");
 const throttler_1 = require("@nestjs/throttler");
+const instruments_controller_1 = require("./instruments/instruments.controller");
+const tags_controller_1 = require("./tags/tags.controller");
 let AppModule = class AppModule {
     configure(consumer) {
         consumer.apply(logger_middleware_1.LoggerMiddleware).forRoutes('*');
@@ -55,7 +57,7 @@ exports.AppModule = AppModule = __decorate([
                 },
             ]),
         ],
-        controllers: [app_controller_1.AppController],
+        controllers: [app_controller_1.AppController, instruments_controller_1.InstrumentsController, tags_controller_1.TagsController],
         providers: [
             app_service_1.AppService,
             musicians_service_1.MusiciansService,

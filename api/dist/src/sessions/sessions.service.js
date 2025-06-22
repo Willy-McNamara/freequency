@@ -16,12 +16,44 @@ let SessionsService = class SessionsService {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async getFiveSessions() {
-        const prisma = this.prisma;
-        const take = 5;
-        const sessions = await prisma.session.findMany({
-            take: take,
+    async getSessionsWithFilters(filters, cursor) {
+        const take = 10;
+        const whereConditions = {};
+        if (filters.users.length > 0) {
+            whereConditions.musician = {
+                displayName: {
+                    in: filters.users,
+                },
+            };
+        }
+        if (filters.instruments.length > 0) {
+            whereConditions.instruments = {
+                some: {
+                    label: {
+                        in: filters.instruments,
+                    },
+                },
+            };
+        }
+        if (filters.tags.length > 0) {
+            whereConditions.tags = {
+                some: {
+                    label: {
+                        in: filters.tags,
+                    },
+                },
+            };
+        }
+        if (filters.saved) {
+            whereConditions.gasUps = {
+                some: {},
+            };
+        }
+        const sessions = await this.prisma.session.findMany({
+            take: take + 1,
+            cursor: cursor ? { id: parseInt(cursor) } : undefined,
             orderBy: { id: 'desc' },
+            where: whereConditions,
             include: {
                 gasUps: {
                     include: {
@@ -71,7 +103,12 @@ let SessionsService = class SessionsService {
                 },
             },
         });
-        const frontendSessionDto = sessions.map((session) => ({
+        const hasMore = sessions.length > take;
+        const sessionsToReturn = hasMore ? sessions.slice(0, take) : sessions;
+        const nextCursor = hasMore
+            ? sessionsToReturn[sessionsToReturn.length - 1].id.toString()
+            : undefined;
+        const frontendSessionDto = sessionsToReturn.map((session) => ({
             id: session.id,
             title: session.title,
             notes: session.notes,
@@ -97,7 +134,19 @@ let SessionsService = class SessionsService {
             comments: session.comments,
             media: session.media ?? null,
         }));
-        return frontendSessionDto;
+        return {
+            sessions: frontendSessionDto,
+            nextCursor,
+        };
+    }
+    async getFiveSessions() {
+        const result = await this.getSessionsWithFilters({
+            users: [],
+            instruments: [],
+            tags: [],
+            saved: false,
+        });
+        return result.sessions;
     }
 };
 exports.SessionsService = SessionsService;
