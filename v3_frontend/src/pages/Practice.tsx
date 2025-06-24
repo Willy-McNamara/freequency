@@ -33,6 +33,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   const { sessionTitle, setSessionTitle, tags, setTags } = session;
 
   const wasSessionTimerRunning = useRef(false);
+  const timeAlreadyAddedToSession = useRef(0);
 
   useEffect(() => {
     const stored = localStorage.getItem("practiceSelectedTaskId");
@@ -59,6 +60,9 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
       setNotes(selectedTask.notes || "");
       setChecklist(selectedTask.checklist || []);
       setTaskTimerRunning(true);
+
+      // Track time already added to session timer
+      timeAlreadyAddedToSession.current = selectedTask.timeSpent || 0;
 
       // Pause session timer
       wasSessionTimerRunning.current = session.sessionTimerRunning ?? false;
@@ -104,10 +108,13 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   const handleBack = () => {
     if (selectedTask && typeof session.updateTaskTime === "function") {
       session.updateTaskTime(selectedTask.id, taskTimer);
-      // Add task timer to session timer
-      session.setSessionTimerSeconds(
-        (session.sessionTimerSeconds || 0) + taskTimer
-      );
+      // Add only the incremental time to session timer
+      const incrementalTime = taskTimer - timeAlreadyAddedToSession.current;
+      if (incrementalTime > 0) {
+        session.setSessionTimerSeconds(
+          (session.sessionTimerSeconds || 0) + incrementalTime
+        );
+      }
     }
     setTaskTimerRunning(false);
     // Resume session timer when returning to Practice view
