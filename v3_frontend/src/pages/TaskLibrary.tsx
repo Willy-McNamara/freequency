@@ -196,6 +196,7 @@ const TaskLibrary: React.FC = () => {
   const handleUseInCurrentSession = (task: Task) => {
     if (!session) return;
     // Add the task to the session if not already present
+    console.log("logging checklist in handleUseInSesh :", task.checklist);
     if (!session.tasks.some((t) => t.id === String(task.id))) {
       session.setTasks([
         ...session.tasks,

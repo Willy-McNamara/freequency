@@ -21,7 +21,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [taskTimer, setTaskTimer] = useState<number>(0);
   const [taskTimerRunning, setTaskTimerRunning] = useState(false);
-  const [notes, setNotes] = useState("");
+  const [taskNotes, setTaskNotes] = useState<string>("");
   const [checklist, setChecklist] = useState<
     { item: string; checked: boolean }[]
   >([]);
@@ -34,6 +34,14 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
 
   const wasSessionTimerRunning = useRef(false);
   const timeAlreadyAddedToSession = useRef(0);
+  const lastTaskRef = useRef<{ id: string | null; notes: string }>({
+    id: null,
+    notes: "",
+  });
+
+  const [sessionNotes, setSessionNotes] = useState("");
+
+  const lastPersistedTaskId = useRef<string | null>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem("practiceSelectedTaskId");
@@ -56,10 +64,26 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   // Sync state when selectedTask changes
   useEffect(() => {
     if (selectedTaskId && selectedTask) {
+      console.log(
+        "use effect to setChecklist, timer, notes, ran. here is selectedTask and selectedTask.checklist :",
+        selectedTask,
+        selectedTask.checklist
+      );
       setTaskTimer(selectedTask.timeSpent || 0);
-      setNotes(selectedTask.notes || "");
       setChecklist(selectedTask.checklist || []);
       setTaskTimerRunning(true);
+
+      // Only update if the task or notes actually changed
+      if (
+        lastTaskRef.current.id !== selectedTaskId ||
+        lastTaskRef.current.notes !== (selectedTask.notes || "")
+      ) {
+        setTaskNotes(selectedTask.notes || "");
+        lastTaskRef.current = {
+          id: selectedTaskId,
+          notes: selectedTask.notes || "",
+        };
+      }
 
       // Track time already added to session timer
       timeAlreadyAddedToSession.current = selectedTask.timeSpent || 0;
@@ -70,8 +94,9 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
         session.setSessionTimerRunning(false);
       }
     }
+    // Do NOT set taskNotes to "" when no task is selected
     // eslint-disable-next-line
-  }, [selectedTaskId]);
+  }, [selectedTaskId, selectedTask?.notes]);
 
   // Timer logic for Task-in-Session (independent from session timer)
   useEffect(() => {
@@ -86,14 +111,23 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   // Notes persistence
   useEffect(() => {
     if (selectedTask && typeof session.updateTaskNotes === "function")
-      session.updateTaskNotes(selectedTask.id, notes);
-  }, [notes, selectedTaskId]);
+      session.updateTaskNotes(selectedTask.id, taskNotes);
+  }, [taskNotes, selectedTaskId]);
 
   // Checklist persistence
   useEffect(() => {
-    if (selectedTask && typeof session.updateTaskChecklist === "function")
+    // Only persist if the checklist changes for the same task
+    if (
+      selectedTask &&
+      typeof session.updateTaskChecklist === "function" &&
+      lastPersistedTaskId.current === selectedTask.id
+    ) {
       session.updateTaskChecklist(selectedTask.id, checklist);
-  }, [checklist, selectedTaskId]);
+    }
+    // Update the ref to the current task
+    lastPersistedTaskId.current = selectedTaskId;
+    // eslint-disable-next-line
+  }, [checklist]);
 
   // Checklist toggle
   const toggleChecklistItem = (idx: number) => {
@@ -129,12 +163,12 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   return (
     <div className="w-full min-h-screen">
       {selectedTask ? (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-background px-4 py-8">
+        <div className="flex flex-col items-center justify-center w-[90vw] min-h-screen bg-background px-4 py-8">
           <div className="w-full max-w-xl bg-card rounded-xl shadow-lg p-8 flex flex-col items-center relative">
             {/* Back Arrow at top left */}
             <button
               type="button"
-              className="absolute top-4 left-4 p-2 rounded-full hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring"
+              className="absolute top-16 left-8 p-2 rounded-full hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring"
               onClick={handleBack}
               aria-label="Back to Session"
             >
@@ -181,13 +215,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                 }
               }}
             />
-            {/* Notes */}
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="mt-4 p-3 border border-muted rounded-md w-full min-h-[120px] resize-vertical"
-              placeholder="Notes for this task..."
-            />
+            <RichTextEditor value={taskNotes} onChange={setTaskNotes} />
             {/* Checklist */}
             <div className="mt-6 w-full">
               <h4 className="font-semibold mb-2">Checklist</h4>
@@ -265,7 +293,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
               aria-label="Session title"
             />
           </div>
-          <RichTextEditor />
+          <RichTextEditor value={sessionNotes} onChange={setSessionNotes} />
           <PracticeTaskList
             tasks={session.tasks}
             onAddNew={() => {
