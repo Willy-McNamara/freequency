@@ -30,7 +30,14 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
     (t: SessionTask) => t.id === selectedTaskId
   );
 
-  const { sessionTitle, setSessionTitle, tags, setTags } = session;
+  const {
+    sessionTitle,
+    setSessionTitle,
+    tags,
+    setTags,
+    sessionNotes,
+    setSessionNotes,
+  } = session;
 
   const wasSessionTimerRunning = useRef(false);
   const timeAlreadyAddedToSession = useRef(0);
@@ -38,8 +45,6 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
     id: null,
     notes: "",
   });
-
-  const [sessionNotes, setSessionNotes] = useState("");
 
   const lastPersistedTaskId = useRef<string | null>(null);
 
@@ -108,7 +113,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
     }
   }, [taskTimerRunning]);
 
-  // Notes persistence
+  // Task Notes persistence
   useEffect(() => {
     if (selectedTask && typeof session.updateTaskNotes === "function")
       session.updateTaskNotes(selectedTask.id, taskNotes);
@@ -293,7 +298,10 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
               aria-label="Session title"
             />
           </div>
-          <RichTextEditor value={sessionNotes} onChange={setSessionNotes} />
+          <RichTextEditor
+            value={sessionNotes || ""}
+            onChange={setSessionNotes}
+          />
           <PracticeTaskList
             tasks={session.tasks}
             onAddNew={() => {

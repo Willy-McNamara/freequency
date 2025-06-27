@@ -21,6 +21,7 @@ export interface SessionState {
   isActive?: boolean;
   sessionTimerSeconds?: number;
   sessionTimerRunning?: boolean;
+  sessionNotes?: string;
 }
 
 export interface SessionContextValue extends SessionState {
@@ -30,6 +31,7 @@ export interface SessionContextValue extends SessionState {
   setIsActive: (active: boolean) => void;
   setSessionTimerSeconds: (seconds: number) => void;
   setSessionTimerRunning: (running: boolean) => void;
+  setSessionNotes: (notes: string) => void;
   updateTaskNotes: (taskId: string, notes: string) => void;
   updateTaskChecklist: (
     taskId: string,
@@ -49,6 +51,7 @@ const defaultSession: SessionState = {
   isActive: false,
   sessionTimerSeconds: 0,
   sessionTimerRunning: false,
+  sessionNotes: "",
 };
 
 const SESSION_STORAGE_KEY = "practiceSession";
@@ -72,6 +75,9 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
   const [sessionTimerRunning, setSessionTimerRunning] = useState<boolean>(
     defaultSession.sessionTimerRunning || false
   );
+  const [sessionNotes, setSessionNotes] = useState<string>(
+    defaultSession.sessionNotes || ""
+  );
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -87,6 +93,8 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
           setSessionTimerSeconds(parsed.sessionTimerSeconds);
         if (typeof parsed.sessionTimerRunning === "boolean")
           setSessionTimerRunning(parsed.sessionTimerRunning);
+        if (typeof parsed.sessionNotes === "string")
+          setSessionNotes(parsed.sessionNotes);
       } catch {
         /* ignore JSON parse errors */
       }
@@ -104,6 +112,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
         isActive,
         sessionTimerSeconds,
         sessionTimerRunning,
+        sessionNotes,
       })
     );
   }, [
@@ -113,6 +122,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
     isActive,
     sessionTimerSeconds,
     sessionTimerRunning,
+    sessionNotes,
   ]);
 
   const updateTaskNotes = (taskId: string, notes: string) => {
@@ -149,6 +159,8 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
     setSessionTimerSeconds,
     sessionTimerRunning,
     setSessionTimerRunning,
+    sessionNotes,
+    setSessionNotes,
     updateTaskNotes,
     updateTaskChecklist,
     updateTaskTime,
