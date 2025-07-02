@@ -166,7 +166,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
 
   // Main Practice view
   return (
-    <div className="w-full min-h-screen">
+    <div className="w-[70vw] min-h-screen">
       {selectedTask ? (
         <div className="flex flex-col items-center justify-center w-[90vw] min-h-screen bg-background px-4 py-8">
           <div className="w-full max-w-xl bg-card rounded-xl shadow-lg p-8 flex flex-col items-center relative">
@@ -339,11 +339,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                 ) {
                   // Reset all session data
                   session.setSessionTitle("Untitled Session");
-                  session.setTags([
-                    { id: "tag1", label: "Warmup" },
-                    { id: "tag2", label: "Scales" },
-                    { id: "tag3", label: "Sight Reading" },
-                  ]);
+                  session.setTags([]);
                   session.setTasks([]);
                   session.setIsActive(false);
                   session.setSessionTimerSeconds(0);

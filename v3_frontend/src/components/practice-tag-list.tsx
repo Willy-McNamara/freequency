@@ -22,20 +22,24 @@ export function PracticeTagList({
       <h3 className="font-bold text-base mb-1">Tags</h3>
       <div
         className={cn(
-          "flex flex-wrap gap-2 border-2 border-dashed border-zinc-400 rounded-xl p-3 min-w-[150px] w-full sm:min-w-[250px] sm:w-auto",
+          "flex items-center flex-wrap gap-2 border-2 border-dashed border-zinc-400 rounded-xl p-3 min-w-[150px] w-full sm:min-w-[250px] sm:w-auto",
           className
         )}
       >
         <button type="button" onClick={onAddTag} className="focus:outline-none">
           <Badge
             variant="secondary"
-            className="mb-1 cursor-pointer select-none"
+            className="mb-1 cursor-pointer select-none max-h-[1.2rem] p-0"
           >
             + add
           </Badge>
         </button>
         {tags.map((tag) => (
-          <Badge key={tag.id} variant={tag.variant} className="mb-1">
+          <Badge
+            key={tag.id}
+            variant={tag.variant}
+            className="mb-1 max-h-[1.2rem]"
+          >
             {tag.label}
           </Badge>
         ))}

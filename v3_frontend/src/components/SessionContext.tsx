@@ -42,11 +42,7 @@ export interface SessionContextValue extends SessionState {
 
 const defaultSession: SessionState = {
   sessionTitle: "Untitled Session",
-  tags: [
-    { id: "tag1", label: "Warmup" },
-    { id: "tag2", label: "Scales" },
-    { id: "tag3", label: "Sight Reading" },
-  ],
+  tags: [],
   tasks: [],
   isActive: false,
   sessionTimerSeconds: 0,

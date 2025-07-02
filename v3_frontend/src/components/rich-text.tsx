@@ -25,7 +25,6 @@ import { FontFormatToolbarPlugin } from "@/components/editor/plugins/toolbar/fon
 import { ToolbarPlugin } from "@/components/editor/plugins/toolbar/toolbar-plugin";
 import { editorTheme } from "@/components/editor/themes/editor-theme";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { CharacterLimitPlugin } from "@lexical/react/LexicalCharacterLimitPlugin";
 
 const editorConfig: InitialConfigType = {
   namespace: "Editor",
@@ -114,8 +113,6 @@ export function Plugins({ onChange }: { onChange?: (value: string) => void }) {
     }
   };
 
-  const CHAR_LIMIT = 500;
-
   return (
     <div className="relative">
       {/* toolbar plugins */}
@@ -144,9 +141,6 @@ export function Plugins({ onChange }: { onChange?: (value: string) => void }) {
           }
           ErrorBoundary={LexicalErrorBoundary}
         />
-        <div className="absolute bottom-2 right-4 z-10 text-xs text-muted-foreground pointer-events-none select-none">
-          <CharacterLimitPlugin charset="UTF-16" maxLength={CHAR_LIMIT} />
-        </div>
         {onChange && (
           <OnChangePlugin
             ignoreSelectionChange={true}
