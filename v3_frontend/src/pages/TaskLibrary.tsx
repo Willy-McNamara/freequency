@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   FilterBar,
   FilterState,
@@ -11,7 +11,9 @@ import {
   CreateTaskModal,
   CreateTaskData,
 } from "../components/create-task-modal";
-import { Plus } from "lucide-react";
+import { useNavigate } from "react-router";
+import { SessionContext } from "@/components/SessionContext";
+import { Pause, Timer } from "lucide-react";
 
 const TaskLibrary: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -48,6 +50,8 @@ const TaskLibrary: React.FC = () => {
 
   // Get task ID from URL query parameter
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
+  const session = useContext(SessionContext);
+  const navigate = useNavigate();
 
   // Fetch tasks from API
   useEffect(() => {
@@ -185,9 +189,33 @@ const TaskLibrary: React.FC = () => {
     }
   }, [tasks]);
 
-  const handleTaskClick = (taskId: number) => {
-    console.log("Task clicked:", taskId);
-    // Here you would typically navigate to the task detail page or open a modal
+  const handleTaskClick = () => {
+    // No-op for now
+  };
+
+  const handleUseInCurrentSession = (task: Task) => {
+    if (!session) return;
+    // Add the task to the session if not already present
+    console.log("logging checklist in handleUseInSesh :", task.checklist);
+    if (!session.tasks.some((t) => t.id === String(task.id))) {
+      session.setTasks([
+        ...session.tasks,
+        {
+          id: String(task.id),
+          title: task.title,
+          tags:
+            task.tags?.map((tag) => ({
+              id: String(tag.id),
+              label: tag.label,
+            })) || [],
+          checklist:
+            task.checklist?.map((item) => ({ item, checked: false })) || [],
+        },
+      ]);
+    }
+    // Set a flag in localStorage for the selected task
+    localStorage.setItem("practiceSelectedTaskId", String(task.id));
+    navigate("/practice", { replace: true });
   };
 
   const handleViewDetails = (taskId: number) => {
@@ -206,8 +234,6 @@ const TaskLibrary: React.FC = () => {
 
   const handleCreateTask = async (taskData: CreateTaskData) => {
     try {
-      console.log("Creating new task:", taskData);
-
       const response = await fetch("http://localhost:3000/tasks", {
         method: "POST",
         headers: {
@@ -282,6 +308,14 @@ const TaskLibrary: React.FC = () => {
     ? tasks.find((task) => task.id === selectedTaskId)
     : null;
 
+  // Helper: get total session time (sum of all task timeSpent)
+  const getSessionTime = () => {
+    if (!session || !session.tasks.length) return 0;
+    return session.tasks.reduce((sum, t) => sum + (t.timeSpent || 0), 0);
+  };
+
+  const hasActiveSession = session && session.isActive;
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -321,6 +355,10 @@ const TaskLibrary: React.FC = () => {
           task={selectedTask}
           onBack={handleBackToLibrary}
           onModifyTask={handleModifyTask}
+          hasActiveSession={hasActiveSession}
+          onUseInCurrentSession={
+            hasActiveSession ? handleUseInCurrentSession : undefined
+          }
         />
 
         {/* Create Task Modal - Always rendered */}
@@ -345,49 +383,40 @@ const TaskLibrary: React.FC = () => {
   }
 
   return (
-    <>
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Task Library</h1>
-            <p className="text-muted-foreground mt-2">
-              Discover and save practice tasks from the community
-            </p>
-          </div>
+    <div className="flex flex-col gap-6 w-full max-w-4xl mx-auto">
+      {/* Active Session Indicator */}
+      {hasActiveSession && (
+        <div className="flex items-center gap-4 bg-primary/10 border border-primary rounded-lg px-4 py-2 mt-4 mb-2">
+          <Timer className="w-5 h-5 text-primary" />
+          <span className="font-semibold text-primary">Active Session</span>
+          <span className="ml-2 text-sm text-muted-foreground flex items-center gap-1">
+            <Pause className="w-4 h-4 inline-block" />
+            {Math.floor(getSessionTime() / 60)}:
+            {String(getSessionTime() % 60).padStart(2, "0")}
+          </span>
           <button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+            className="ml-auto px-3 py-1 rounded bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
+            onClick={() => navigate("/practice")}
           >
-            <Plus className="w-4 h-4" />
-            Create Task
+            Return to Practice
           </button>
         </div>
-
-        {/* Filter Bar */}
-        <FilterBar
-          filters={activeFilters}
-          onFilterChange={handleFilterChange}
-          className="mb-6"
-        />
-
-        {/* Task List */}
-        <div className="space-y-4">
-          {filteredTasks.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">No tasks found.</p>
-            </div>
-          ) : (
-            filteredTasks.map((task) => (
-              <TaskListItem
-                key={task.id}
-                task={task}
-                onTaskClick={handleTaskClick}
-                onViewDetails={handleViewDetails}
-              />
-            ))
-          )}
-        </div>
+      )}
+      <FilterBar filters={activeFilters} onFilterChange={handleFilterChange} />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {filteredTasks.map((task) => (
+          <div key={task.id} className="relative">
+            <TaskListItem
+              task={task}
+              onTaskClick={handleTaskClick}
+              onViewDetails={handleViewDetails}
+              hasActiveSession={hasActiveSession}
+              onUseInCurrentSession={
+                hasActiveSession ? handleUseInCurrentSession : undefined
+              }
+            />
+          </div>
+        ))}
       </div>
 
       {/* Create Task Modal - Always rendered */}
@@ -407,7 +436,7 @@ const TaskLibrary: React.FC = () => {
         onSubmit={handleModifySubmit}
         initialData={modifyTaskData}
       />
-    </>
+    </div>
   );
 };
 

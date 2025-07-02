@@ -3,6 +3,10 @@ import { Play, Pause } from "lucide-react";
 
 export interface PracticeTimerProps {
   className?: string;
+  value?: number;
+  onChange?: (seconds: number) => void;
+  runningValue?: boolean;
+  onRunningChange?: (running: boolean) => void;
 }
 
 export interface PracticeTimerRef {
@@ -15,37 +19,43 @@ export interface PracticeTimerRef {
 export const PracticeTimer = React.forwardRef<
   PracticeTimerRef,
   PracticeTimerProps
->(({ className }, ref) => {
-  const [seconds, setSeconds] = React.useState(0);
-  const [running, setRunning] = React.useState(false);
+>(({ className, value, onChange, runningValue, onRunningChange }, ref) => {
+  const [seconds, setSeconds] = React.useState(value || 0);
+  const running = runningValue ?? false;
   const intervalRef = React.useRef<number | null>(null);
 
-  React.useImperativeHandle(
-    ref,
-    () => ({
-      start: () => setRunning(true),
-      pause: () => setRunning(false),
-      reset: () => setSeconds(0),
-      getTime: () => seconds,
-    }),
-    [seconds]
-  );
+  React.useImperativeHandle(ref, () => ({
+    start: () => onRunningChange?.(true),
+    pause: () => onRunningChange?.(false),
+    reset: () => onChange?.(0),
+    getTime: () => seconds,
+  }));
 
   React.useEffect(() => {
     if (running) {
-      intervalRef.current = setInterval(() => {
+      intervalRef.current = window.setInterval(() => {
         setSeconds((s) => s + 1);
       }, 1000);
-    } else if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
+    } else {
+      if (intervalRef.current) clearInterval(intervalRef.current);
     }
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
+      if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [running]);
+
+  // Sync with value prop
+  React.useEffect(() => {
+    if (typeof value === "number" && value !== seconds) {
+      setSeconds(value);
+    }
+    // eslint-disable-next-line
+  }, [value]);
+
+  // Notify parent of changes
+  React.useEffect(() => {
+    if (onChange) onChange(seconds);
+  }, [seconds, onChange]);
 
   const minutes = Math.floor(seconds / 60);
   const secs = seconds % 60;
@@ -60,7 +70,7 @@ export const PracticeTimer = React.forwardRef<
       <button
         type="button"
         aria-label={running ? "Pause timer" : "Start timer"}
-        onClick={() => setRunning((r) => !r)}
+        onClick={() => onRunningChange?.(!running)}
         className="focus:outline-none"
       >
         {running ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}

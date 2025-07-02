@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   InitialConfigType,
   LexicalComposer,
@@ -8,15 +8,23 @@ import {
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
-import { ParagraphNode, TextNode } from "lexical";
+import {
+  ParagraphNode,
+  TextNode,
+  LexicalEditor,
+  LexicalNode,
+  $getRoot,
+} from "lexical";
 import { OverflowNode } from "@lexical/overflow";
+import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
+import { $generateHtmlFromNodes, $generateNodesFromDOM } from "@lexical/html";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 
 import { ContentEditable } from "@/components/editor/editor-ui/content-editable";
 import { FontFormatToolbarPlugin } from "@/components/editor/plugins/toolbar/font-format-toolbar-plugin";
 import { ToolbarPlugin } from "@/components/editor/plugins/toolbar/toolbar-plugin";
 import { editorTheme } from "@/components/editor/themes/editor-theme";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { CharacterLimitPlugin } from "@lexical/react/LexicalCharacterLimitPlugin";
 
 const editorConfig: InitialConfigType = {
   namespace: "Editor",
@@ -27,16 +35,66 @@ const editorConfig: InitialConfigType = {
   },
 };
 
-export function RichTextEditor() {
+export interface RichTextEditorProps {
+  value: string; // HTML string
+  onChange: (value: string) => void;
+}
+
+// Syncs the editor state with the value prop when it changes
+function RichTextSync({
+  value,
+  lastHtmlRef,
+}: {
+  value: string;
+  lastHtmlRef: React.MutableRefObject<string>;
+}) {
+  const [editor] = useLexicalComposerContext();
+  useEffect(() => {
+    if (!editor) return;
+    // Only update if the incoming value is different from the last HTML set in the editor
+    if (value !== lastHtmlRef.current) {
+      const parser = new DOMParser();
+      const dom = parser.parseFromString(value, "text/html");
+      editor.update(() => {
+        const nodes: LexicalNode[] = $generateNodesFromDOM(editor, dom);
+        $getRoot().clear();
+        $getRoot().append(...nodes);
+      });
+      lastHtmlRef.current = value;
+    }
+  }, [editor, value, lastHtmlRef]);
+  return null;
+}
+
+export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
+  // Set initial editor state from HTML value
+  const lastHtmlRef = useRef(value);
+  const initialConfig = {
+    ...editorConfig,
+    editorState: (editor: LexicalEditor) => {
+      if (!value) return;
+      const parser = new DOMParser();
+      const dom = parser.parseFromString(value, "text/html");
+      editor.update(() => {
+        const nodes: LexicalNode[] = $generateNodesFromDOM(editor, dom);
+        $getRoot().clear();
+        $getRoot().append(...nodes);
+      });
+      lastHtmlRef.current = value;
+    },
+  };
+
   return (
     <div className="bg-background w-full overflow-hidden rounded-lg border">
-      <LexicalComposer
-        initialConfig={{
-          ...editorConfig,
-        }}
-      >
+      <LexicalComposer initialConfig={initialConfig}>
+        <RichTextSync value={value} lastHtmlRef={lastHtmlRef} />
         <TooltipProvider>
-          <Plugins />
+          <Plugins
+            onChange={(html) => {
+              lastHtmlRef.current = html;
+              onChange(html);
+            }}
+          />
         </TooltipProvider>
       </LexicalComposer>
     </div>
@@ -45,16 +103,15 @@ export function RichTextEditor() {
 
 const placeholder = "Add session notes here...";
 
-export function Plugins() {
-  const [, setFloatingAnchorElem] = useState<HTMLDivElement | null>(null);
+export function Plugins({ onChange }: { onChange?: (value: string) => void }) {
+  const [floatingAnchorElem, setFloatingAnchorElem] =
+    useState<HTMLDivElement | null>(null);
 
   const onRef = (_floatingAnchorElem: HTMLDivElement) => {
-    if (_floatingAnchorElem !== null) {
+    if (_floatingAnchorElem !== floatingAnchorElem) {
       setFloatingAnchorElem(_floatingAnchorElem);
     }
   };
-
-  const CHAR_LIMIT = 500;
 
   return (
     <div className="relative">
@@ -84,9 +141,17 @@ export function Plugins() {
           }
           ErrorBoundary={LexicalErrorBoundary}
         />
-        <div className="absolute bottom-2 right-4 z-10 text-xs text-muted-foreground pointer-events-none select-none">
-          <CharacterLimitPlugin charset="UTF-16" maxLength={CHAR_LIMIT} />
-        </div>
+        {onChange && (
+          <OnChangePlugin
+            ignoreSelectionChange={true}
+            onChange={(_editorState, editor) => {
+              editor.update(() => {
+                const html = $generateHtmlFromNodes(editor, null);
+                onChange(html);
+              });
+            }}
+          />
+        )}
         {/* rest of the plugins */}
       </div>
     </div>
