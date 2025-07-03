@@ -1,8 +1,41 @@
 import { ChartBarLabel } from "@/components/bar-chart";
 import { ChartPieDonutActive } from "@/components/pie-chart";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import {
+  ChevronDownIcon,
+  TagIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+} from "lucide-react";
+import {
+  addDays,
+  addWeeks,
+  addMonths,
+  addYears,
+  startOfWeek,
+  startOfMonth,
+  startOfYear,
+  format,
+  subWeeks,
+  subMonths,
+  subYears,
+  endOfWeek,
+  endOfMonth,
+  endOfYear,
+  isWithinInterval,
+  parseISO,
+} from "date-fns";
+
+// NOTE: If you see a 'Cannot find module "date-fns"' error, run: npm install date-fns
 
 // Define the possible views as a union type
 type ViewType = "MENU" | "TOTAL" | "CHRONOLOGICAL" | "GOALS";
@@ -153,10 +186,240 @@ const pieChartDataMock = {
   ],
 };
 
+// Mock tag options for dropdown
+const tagOptions = [
+  "All Tags",
+  "Scales",
+  "Arpeggios",
+  "Sight Reading",
+  "Improvisation",
+  "Ear Training",
+  "Transcription",
+  "Repertoire",
+  "Rhythm",
+];
+
 function formatMinutes(minutes: number) {
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
   return h > 0 ? `${h}h ${m}m` : `${m}m`;
+}
+
+// TagSelectDropdown component
+function TagSelectDropdown({
+  options,
+  value,
+  onChange,
+  className = "",
+}: {
+  options: string[];
+  value: string;
+  onChange: (tag: string) => void;
+  className?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const filtered = options.filter((tag) =>
+    tag.toLowerCase().includes(search.toLowerCase())
+  );
+  return (
+    <>
+      <Button
+        variant="outline"
+        className={`flex items-center gap-2 min-w-[180px] justify-between ${className}`}
+        onClick={() => setOpen(true)}
+        type="button"
+      >
+        <span className="flex items-center gap-2">
+          <TagIcon className="w-4 h-4" />
+          {value}
+        </span>
+        <ChevronDownIcon className="w-4 h-4" />
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-[350px]">
+          <DialogHeader>
+            <DialogTitle>Select Tag</DialogTitle>
+          </DialogHeader>
+          <Input
+            placeholder="Search your tags..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="mb-2"
+          />
+          <div className="max-h-60 overflow-y-auto space-y-1">
+            {filtered.length === 0 && (
+              <div className="text-muted-foreground text-sm py-2 px-1">
+                No tags found
+              </div>
+            )}
+            {filtered.map((tag) => (
+              <button
+                key={tag}
+                className={`w-full text-left px-3 py-2 rounded-md hover:bg-muted transition-colors ${
+                  tag === value ? "bg-primary/10 font-semibold" : ""
+                }`}
+                onClick={() => {
+                  onChange(tag);
+                  setOpen(false);
+                }}
+                type="button"
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
+// Mock API data and functions
+const mockTags = [
+  { id: 1, label: "Scales", color: "#60a5fa" },
+  { id: 2, label: "Arpeggios", color: "#fbbf24" },
+  { id: 3, label: "Sight Reading", color: "#34d399" },
+  { id: 4, label: "Improvisation", color: "#f472b6" },
+  { id: 5, label: "Ear Training", color: "#a78bfa" },
+  { id: 6, label: "Transcription", color: "#f87171" },
+  { id: 7, label: "Repertoire", color: "#facc15" },
+  { id: 8, label: "Rhythm", color: "#38bdf8" },
+];
+
+type TimeRangeKey = "week" | "month" | "year";
+type TaskInUseMock = {
+  label: string;
+  occurrence: number;
+  duration: number;
+  tags: string[];
+  createdAt: string; // ISO date string
+};
+
+// Helper to get a date for a given week, month, or year bucket
+function getDateForLabel(
+  label: string,
+  range: TimeRangeKey,
+  baseDate: Date
+): Date {
+  if (range === "week") {
+    const days = [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday",
+    ];
+    const idx = days.indexOf(label);
+    return addDays(startOfWeek(baseDate, { weekStartsOn: 1 }), idx);
+  }
+  if (range === "month") {
+    const weeks = ["W1", "W2", "W3", "W4"];
+    const idx = weeks.indexOf(label);
+    return addWeeks(startOfMonth(baseDate), idx);
+  }
+  if (range === "year") {
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    const idx = months.indexOf(label);
+    return addMonths(startOfYear(baseDate), idx);
+  }
+  return baseDate;
+}
+
+// Generate mock tasks-in-use with createdAt dates for the last 8 weeks, 6 months, 2 years
+function generateMockTasksInUse(): TaskInUseMock[] {
+  const now = new Date();
+  const tasks: TaskInUseMock[] = [];
+  // Weeks
+  for (let w = 0; w < 8; w++) {
+    const weekStart = subWeeks(startOfWeek(now, { weekStartsOn: 1 }), w);
+    [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday",
+    ].forEach((day, i) => {
+      if (Math.random() > 0.6) return; // skip some days for realism
+      const date = addDays(weekStart, i);
+      tasks.push({
+        label: day,
+        occurrence: Math.floor(Math.random() * 8),
+        duration: Math.floor(Math.random() * 60),
+        tags: [mockTags[Math.floor(Math.random() * mockTags.length)].label],
+        createdAt: date.toISOString(),
+      });
+    });
+  }
+  // Months
+  for (let m = 0; m < 6; m++) {
+    const monthStart = subMonths(startOfMonth(now), m);
+    ["W1", "W2", "W3", "W4"].forEach((week, i) => {
+      if (Math.random() > 0.5) return;
+      const date = addWeeks(monthStart, i);
+      tasks.push({
+        label: week,
+        occurrence: Math.floor(Math.random() * 20),
+        duration: Math.floor(Math.random() * 200),
+        tags: [mockTags[Math.floor(Math.random() * mockTags.length)].label],
+        createdAt: date.toISOString(),
+      });
+    });
+  }
+  // Years
+  for (let y = 0; y < 2; y++) {
+    const yearStart = subYears(startOfYear(now), y);
+    [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ].forEach((month, i) => {
+      if (Math.random() > 0.4) return;
+      const date = addMonths(yearStart, i);
+      tasks.push({
+        label: month,
+        occurrence: Math.floor(Math.random() * 50),
+        duration: Math.floor(Math.random() * 500),
+        tags: [mockTags[Math.floor(Math.random() * mockTags.length)].label],
+        createdAt: date.toISOString(),
+      });
+    });
+  }
+  return tasks;
+}
+
+// Mock API functions
+function fetchUserTags(): Promise<typeof mockTags> {
+  return Promise.resolve(mockTags);
+}
+function fetchAllTasksInUse(): Promise<TaskInUseMock[]> {
+  return Promise.resolve(generateMockTasksInUse());
 }
 
 const Growth: React.FC = () => {
@@ -165,6 +428,11 @@ const Growth: React.FC = () => {
   const [selectedMetric, setSelectedMetric] = useState<Metric>("occurrence");
   const [selectedTotalRange, setSelectedTotalRange] =
     useState<TotalTimeRange>("week");
+  const [selectedTag, setSelectedTag] = useState<string>("All Tags");
+  const [userTags, setUserTags] = useState<typeof mockTags>([]);
+  const [allTasksInUse, setAllTasksInUse] = useState<TaskInUseMock[]>([]);
+  const [tasksInUse, setTasksInUse] = useState<TaskInUseMock[]>([]); // filtered for current window
+  const [currentIndex, setCurrentIndex] = useState(0); // 0 = present, 1 = previous, etc.
 
   // Back button for subviews
   const handleBack = () => setView("MENU");
@@ -184,9 +452,39 @@ const Growth: React.FC = () => {
       ? "Stats for each week of the month"
       : "Stats for each month of the year";
 
+  // Fetch tags and all tasks-in-use on mount
+  useEffect(() => {
+    fetchUserTags().then((tags) => setUserTags(tags));
+    fetchAllTasksInUse().then((tasks) => setAllTasksInUse(tasks));
+  }, []);
+
+  // When time range, currentIndex, or allTasksInUse changes, filter for current window
+  useEffect(() => {
+    const now = new Date();
+    let windowStart: Date, windowEnd: Date;
+    if (selectedTimeRange === "week") {
+      windowStart = startOfWeek(addWeeks(now, -currentIndex), {
+        weekStartsOn: 1,
+      });
+      windowEnd = endOfWeek(addWeeks(now, -currentIndex), { weekStartsOn: 1 });
+    } else if (selectedTimeRange === "month") {
+      windowStart = startOfMonth(addMonths(now, -currentIndex));
+      windowEnd = endOfMonth(addMonths(now, -currentIndex));
+    } else {
+      windowStart = startOfYear(addYears(now, -currentIndex));
+      windowEnd = endOfYear(addYears(now, -currentIndex));
+    }
+    setTasksInUse(
+      allTasksInUse.filter((task) => {
+        const date = parseISO(task.createdAt);
+        return isWithinInterval(date, { start: windowStart, end: windowEnd });
+      })
+    );
+  }, [selectedTimeRange, currentIndex, allTasksInUse]);
+
   if (view === "TOTAL") {
-    let tagTotals = tagTotalsMock[selectedTotalRange];
-    let pieData = pieChartDataMock[selectedTotalRange];
+    let tagTotals = tagTotalsMock[selectedTotalRange as TimeRangeKey];
+    let pieData = pieChartDataMock[selectedTotalRange as TimeRangeKey];
     // Map tag to color for indicator
     const tagColorMap: Record<string, string> = {};
     pieData.forEach((item) => {
@@ -202,14 +500,16 @@ const Growth: React.FC = () => {
     );
     return (
       <div className="w-[75vw] mx-auto">
-        <Button
-          onClick={handleBack}
-          variant="ghost"
-          className="mb-4 text-sm text-muted-foreground"
-        >
-          &larr; Back
-        </Button>
-        <h1 className="text-2xl font-bold mb-2">Stats Totals</h1>
+        <div className="flex justify-start mb-2">
+          <Button
+            onClick={handleBack}
+            variant="ghost"
+            className="text-sm text-muted-foreground"
+          >
+            &larr; Back
+          </Button>
+        </div>
+        <h1 className="text-2xl font-bold text-center mb-4">Stats Totals</h1>
         {/* Time range buttons */}
         <div className="flex justify-center gap-3 mb-4">
           {totalTimeRanges.map((range) => (
@@ -264,21 +564,179 @@ const Growth: React.FC = () => {
   }
 
   if (view === "CHRONOLOGICAL") {
+    // Full label sets for each time range
+    const fullLabels: Record<string, string[]> = {
+      week: [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+      ],
+      month: ["W1", "W2", "W3", "W4"],
+      year: [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ],
+    };
+    // Filter tasks-in-use by selected tag
+    let filteredData = tasksInUse;
+    if (selectedTag !== "All Tags") {
+      filteredData = tasksInUse.filter((entry) =>
+        entry.tags.includes(selectedTag)
+      );
+    }
+    // Map filtered data onto the full set of labels, filling missing with zeroes
+    const currentLabels = fullLabels[selectedTimeRange];
+    const dataByLabel = Object.fromEntries(
+      filteredData.map((entry) => [entry.label, entry])
+    );
+    const chartData = currentLabels.map((label) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { tags: _unused, ...rest } = dataByLabel[label] || {};
+      return dataByLabel[label] ? rest : { label, occurrence: 0, duration: 0 };
+    });
+    // Calculate total for selected metric
+    const total = chartData.reduce(
+      (sum, entry) => sum + (entry[selectedMetric] as number),
+      0
+    );
+    // Build description string
+    let totalString = "";
+    if (selectedMetric === "duration") {
+      if (total >= 60) {
+        const hours = Math.floor(total / 60);
+        const minutes = total % 60;
+        totalString = `${hours} hr${hours > 1 ? "s" : ""}${
+          minutes > 0 ? ` ${minutes} min` : ""
+        }`;
+      } else {
+        totalString = `${total} min`;
+      }
+    } else {
+      totalString = `${total} occurrences`;
+    }
+    const period =
+      selectedTimeRange === "week"
+        ? "this week"
+        : selectedTimeRange === "month"
+        ? "this month"
+        : "this year";
+    const chartDescription = `${totalString} total ${period}`;
+    // Navigation logic
+    // Find the earliest and latest periods with data
+    const now = new Date();
+    let minIndex = 0,
+      maxIndex = 0;
+    if (allTasksInUse.length > 0) {
+      const allDates = allTasksInUse.map((t) => parseISO(t.createdAt));
+      if (selectedTimeRange === "week") {
+        const earliest = allDates.reduce((a, b) => (a < b ? a : b));
+        minIndex = Math.floor(
+          (now.getTime() -
+            startOfWeek(earliest, { weekStartsOn: 1 }).getTime()) /
+            (7 * 24 * 60 * 60 * 1000)
+        );
+      } else if (selectedTimeRange === "month") {
+        const earliest = allDates.reduce((a, b) => (a < b ? a : b));
+        minIndex = Math.floor(
+          (now.getFullYear() - earliest.getFullYear()) * 12 +
+            (now.getMonth() - earliest.getMonth())
+        );
+      } else {
+        const earliest = allDates.reduce((a, b) => (a < b ? a : b));
+        minIndex = now.getFullYear() - earliest.getFullYear();
+      }
+    }
+    // UI for navigation
+    const canGoBack = currentIndex < minIndex;
+    const canGoForward = currentIndex > 0;
+    // Display label for current period
+    let periodLabel = "";
+    if (selectedTimeRange === "week") {
+      const start = startOfWeek(addWeeks(now, -currentIndex), {
+        weekStartsOn: 1,
+      });
+      const end = endOfWeek(addWeeks(now, -currentIndex), { weekStartsOn: 1 });
+      periodLabel = `${format(start, "MMM d")} - ${format(end, "MMM d, yyyy")}`;
+    } else if (selectedTimeRange === "month") {
+      const start = startOfMonth(addMonths(now, -currentIndex));
+      periodLabel = format(start, "MMMM yyyy");
+    } else {
+      const start = startOfYear(addYears(now, -currentIndex));
+      periodLabel = format(start, "yyyy");
+    }
+    // Build chart title
+    const tagDisplay =
+      selectedTag === "All Tags" ? "all tags" : selectedTag.toLowerCase();
+    const chartTitle =
+      selectedMetric === "duration"
+        ? `Time spent on ${tagDisplay}`
+        : `Sessions including ${tagDisplay}`;
     return (
       <div className="w-[75vw]">
-        <button
-          onClick={handleBack}
-          className="mb-4 text-sm text-muted-foreground hover:underline"
-        >
-          &larr; Back
-        </button>
-        <h1 className="text-2xl font-bold mb-2">Chronological Stats</h1>
+        <div className="flex justify-start mb-2">
+          <button
+            onClick={handleBack}
+            className="text-sm text-muted-foreground hover:underline"
+          >
+            &larr; Back
+          </button>
+        </div>
+        <h1 className="text-2xl font-bold text-center mb-4">
+          Chronological Stats
+        </h1>
+        {/* Tag filter dropdown */}
+        <div className="flex justify-center mb-4">
+          <TagSelectDropdown
+            options={["All Tags", ...userTags.map((t) => t.label)]}
+            value={selectedTag}
+            onChange={setSelectedTag}
+          />
+        </div>
+        {/* Time navigation */}
+        <div className="flex items-center justify-center gap-2 mb-4">
+          <button
+            className="p-2 rounded-full border disabled:opacity-50"
+            onClick={() => setCurrentIndex((i) => i + 1)}
+            disabled={!canGoBack}
+            aria-label="Previous"
+          >
+            <ChevronLeftIcon className="w-5 h-5" />
+          </button>
+          <span className="font-semibold text-base min-w-[120px] text-center">
+            {periodLabel}
+          </span>
+          <button
+            className="p-2 rounded-full border disabled:opacity-50"
+            onClick={() => setCurrentIndex((i) => Math.max(i - 1, 0))}
+            disabled={!canGoForward}
+            aria-label="Next"
+          >
+            <ChevronRightIcon className="w-5 h-5" />
+          </button>
+        </div>
         {/* Time range buttons */}
         <div className="flex justify-center gap-3 mb-4">
           {timeRanges.map((range) => (
             <button
               key={range.key}
-              onClick={() => setSelectedTimeRange(range.key)}
+              onClick={() => {
+                setSelectedTimeRange(range.key as TimeRangeKey);
+                setCurrentIndex(0);
+              }}
               className={`px-4 py-2 rounded-md border transition-colors duration-150 focus:outline-none ${
                 selectedTimeRange === range.key
                   ? "border-primary bg-muted font-semibold"
@@ -291,7 +749,7 @@ const Growth: React.FC = () => {
         </div>
         {/* Chart */}
         <ChartBarLabel
-          data={currentRange.data}
+          data={chartData}
           xAxisKey="label"
           yAxisKey={selectedMetric}
           title={chartTitle}
@@ -325,14 +783,16 @@ const Growth: React.FC = () => {
   }
   if (view === "GOALS") {
     return (
-      <div>
-        <button
-          onClick={handleBack}
-          className="mb-4 text-sm text-muted-foreground hover:underline"
-        >
-          &larr; Back
-        </button>
-        <h1 className="text-2xl font-bold mb-2">Goals</h1>
+      <div className="w-[75vw] mx-auto">
+        <div className="flex justify-start mb-2">
+          <button
+            onClick={handleBack}
+            className="text-sm text-muted-foreground hover:underline"
+          >
+            &larr; Back
+          </button>
+        </div>
+        <h1 className="text-2xl font-bold text-center mb-4">Goals</h1>
         <div>Coming soon...</div>
       </div>
     );
