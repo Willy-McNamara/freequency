@@ -13,6 +13,7 @@ import {
   MusicianDto,
   MusicianFrontendDTO,
   MusicianUpdateDto,
+  GoalDto,
 } from './dto/musician.dto';
 import { JwtAuthGuard } from '../auth/jwt.guard';
 
@@ -28,6 +29,11 @@ export class MusiciansController {
   @Get(':id')
   async getMusicianById(@Param('id') id: string): Promise<MusicianFrontendDTO> {
     return this.musiciansService.getMusicianById(Number(id));
+  }
+
+  @Get(':id/goals')
+  async getGoalsForMusician(@Param('id') id: string): Promise<GoalDto[]> {
+    return this.musiciansService.getGoalsForMusician(Number(id));
   }
 
   // // @Post()

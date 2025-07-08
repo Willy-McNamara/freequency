@@ -111,3 +111,13 @@ export class CommentDto {
   musicianId: number;
   sessionId: number;
 }
+
+export class GoalDto {
+  id: number;
+  musicianId: number;
+  tag: string;
+  type: 'duration' | 'frequency';
+  target: number;
+  timeFrame: 'daily' | 'weekly' | 'monthly' | 'annually';
+  createdAt: Date;
+}

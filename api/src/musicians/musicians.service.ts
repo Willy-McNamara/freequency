@@ -6,6 +6,7 @@ import {
   MusicianFrontendDTO,
   MusicianJwtDto,
   MusicianUpdateDto,
+  GoalDto,
 } from './dto/musician.dto';
 import { format } from 'path';
 
@@ -41,6 +42,22 @@ export class MusiciansService {
       totalGasUpsReceived: musician.totalGasUpsReceived,
       createdAt: musician.createdAt,
     };
+  }
+
+  async getGoalsForMusician(musicianId: number): Promise<GoalDto[]> {
+    const goals = await this.prisma.goal.findMany({
+      where: { musicianId },
+      orderBy: { createdAt: 'asc' },
+    });
+    return goals.map((g) => ({
+      id: g.id,
+      musicianId: g.musicianId,
+      tag: g.tag,
+      type: g.type,
+      target: g.target,
+      timeFrame: g.timeFrame,
+      createdAt: g.createdAt,
+    }));
   }
 
   // async createMusician(

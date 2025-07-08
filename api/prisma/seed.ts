@@ -21,28 +21,28 @@ async function main() {
 
   // Create all instrument tags (finite list)
   const instrumentLabels = [
-    'Piano',
-    'Guitar',
-    'Listening',
-    'Violin',
-    'Drums',
-    'Flute',
-    'Clarinet',
-    'Saxophone',
-    'Trumpet',
-    'Trombone',
-    'Voice',
-    'Cello',
-    'Ukulele',
-    'Percussion',
-    'Double Bass',
-    'Bass Guitar',
-    'Oboe',
-    'Harp',
-    'Accordion',
-    'Banjo',
-    'DJing',
-    'Production',
+    'piano',
+    'guitar',
+    'listening',
+    'violin',
+    'drums',
+    'flute',
+    'clarinet',
+    'saxophone',
+    'trumpet',
+    'trombone',
+    'voice',
+    'cello',
+    'ukulele',
+    'percussion',
+    'double bass',
+    'bass guitar',
+    'oboe',
+    'harp',
+    'accordion',
+    'banjo',
+    'djing',
+    'production',
   ];
   const instrumentTags = {};
   for (const label of instrumentLabels) {
@@ -57,12 +57,12 @@ async function main() {
 
   // After upserting instrument tags, check that all required tags exist
   const requiredInstruments = [
-    'Piano',
-    'Guitar',
-    'Drums',
-    'Bass Guitar',
-    'Violin',
-    'Saxophone',
+    'piano',
+    'guitar',
+    'drums',
+    'bass guitar',
+    'violin',
+    'saxophone',
   ];
   const missing = requiredInstruments.filter(
     (name) => !instrumentTags[sanitizeTagLabel(name)],
@@ -79,12 +79,12 @@ async function main() {
   }
 
   // Create Tags first (so we can assign them later)
-  const pianoTag = instrumentTags[sanitizeTagLabel('Piano')];
-  const guitarTag = instrumentTags[sanitizeTagLabel('Guitar')];
-  const drumsTag = instrumentTags[sanitizeTagLabel('Drums')];
-  const bassTag = instrumentTags[sanitizeTagLabel('Bass Guitar')];
-  const violinTag = instrumentTags[sanitizeTagLabel('Violin')];
-  const saxophoneTag = instrumentTags[sanitizeTagLabel('Saxophone')];
+  const pianoTag = instrumentTags[sanitizeTagLabel('piano')];
+  const guitarTag = instrumentTags[sanitizeTagLabel('guitar')];
+  const drumsTag = instrumentTags[sanitizeTagLabel('drums')];
+  const bassTag = instrumentTags[sanitizeTagLabel('bass guitar')];
+  const violinTag = instrumentTags[sanitizeTagLabel('violin')];
+  const saxophoneTag = instrumentTags[sanitizeTagLabel('saxophone')];
 
   // Create Musicians
   const musician1 = await prisma.musician.create({
@@ -105,6 +105,43 @@ async function main() {
       },
     },
   });
+  // Seed goals for musician1
+  await prisma.goal.createMany({
+    data: [
+      {
+        musicianId: musician1.id,
+        tag: 'scales',
+        type: 'duration',
+        target: 30,
+        timeFrame: 'daily',
+        createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      },
+      {
+        musicianId: musician1.id,
+        tag: 'all tags',
+        type: 'frequency',
+        target: 5,
+        timeFrame: 'weekly',
+        createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      },
+      {
+        musicianId: musician1.id,
+        tag: 'sight reading',
+        type: 'duration',
+        target: 120,
+        timeFrame: 'monthly',
+        createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      },
+      {
+        musicianId: musician1.id,
+        tag: 'arpeggios',
+        type: 'frequency',
+        target: 20,
+        timeFrame: 'annually',
+        createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      },
+    ],
+  });
 
   const musician2 = await prisma.musician.create({
     data: {
@@ -123,6 +160,43 @@ async function main() {
         connect: [{ id: violinTag.id }],
       },
     },
+  });
+  // Seed goals for musician2
+  await prisma.goal.createMany({
+    data: [
+      {
+        musicianId: musician2.id,
+        tag: 'scales',
+        type: 'duration',
+        target: 20,
+        timeFrame: 'daily',
+        createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      },
+      {
+        musicianId: musician2.id,
+        tag: 'all tags',
+        type: 'frequency',
+        target: 3,
+        timeFrame: 'weekly',
+        createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      },
+      {
+        musicianId: musician2.id,
+        tag: 'sight reading',
+        type: 'duration',
+        target: 90,
+        timeFrame: 'monthly',
+        createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      },
+      {
+        musicianId: musician2.id,
+        tag: 'arpeggios',
+        type: 'frequency',
+        target: 10,
+        timeFrame: 'annually',
+        createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      },
+    ],
   });
 
   const musician3 = await prisma.musician.create({
@@ -143,6 +217,43 @@ async function main() {
       },
     },
   });
+  // Seed goals for musician3
+  await prisma.goal.createMany({
+    data: [
+      {
+        musicianId: musician3.id,
+        tag: 'scales',
+        type: 'duration',
+        target: 25,
+        timeFrame: 'daily',
+        createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      },
+      {
+        musicianId: musician3.id,
+        tag: 'all tags',
+        type: 'frequency',
+        target: 4,
+        timeFrame: 'weekly',
+        createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      },
+      {
+        musicianId: musician3.id,
+        tag: 'sight reading',
+        type: 'duration',
+        target: 100,
+        timeFrame: 'monthly',
+        createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      },
+      {
+        musicianId: musician3.id,
+        tag: 'arpeggios',
+        type: 'frequency',
+        target: 15,
+        timeFrame: 'annually',
+        createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      },
+    ],
+  });
 
   const musician4 = await prisma.musician.create({
     data: {
@@ -161,6 +272,43 @@ async function main() {
         connect: [{ id: saxophoneTag.id }],
       },
     },
+  });
+  // Seed goals for musician4
+  await prisma.goal.createMany({
+    data: [
+      {
+        musicianId: musician4.id,
+        tag: 'scales',
+        type: 'duration',
+        target: 35,
+        timeFrame: 'daily',
+        createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      },
+      {
+        musicianId: musician4.id,
+        tag: 'all tags',
+        type: 'frequency',
+        target: 6,
+        timeFrame: 'weekly',
+        createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      },
+      {
+        musicianId: musician4.id,
+        tag: 'sight reading',
+        type: 'duration',
+        target: 110,
+        timeFrame: 'monthly',
+        createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      },
+      {
+        musicianId: musician4.id,
+        tag: 'arpeggios',
+        type: 'frequency',
+        target: 18,
+        timeFrame: 'annually',
+        createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      },
+    ],
   });
 
   const musician5 = await prisma.musician.create({
@@ -181,6 +329,43 @@ async function main() {
       },
     },
   });
+  // Seed goals for musician5
+  await prisma.goal.createMany({
+    data: [
+      {
+        musicianId: musician5.id,
+        tag: 'scales',
+        type: 'duration',
+        target: 28,
+        timeFrame: 'daily',
+        createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      },
+      {
+        musicianId: musician5.id,
+        tag: 'all tags',
+        type: 'frequency',
+        target: 7,
+        timeFrame: 'weekly',
+        createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      },
+      {
+        musicianId: musician5.id,
+        tag: 'sight reading',
+        type: 'duration',
+        target: 95,
+        timeFrame: 'monthly',
+        createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      },
+      {
+        musicianId: musician5.id,
+        tag: 'arpeggios',
+        type: 'frequency',
+        target: 12,
+        timeFrame: 'annually',
+        createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      },
+    ],
+  });
 
   const musician6 = await prisma.musician.create({
     data: {
@@ -199,6 +384,43 @@ async function main() {
         connect: [{ id: drumsTag.id }],
       },
     },
+  });
+  // Seed goals for musician6
+  await prisma.goal.createMany({
+    data: [
+      {
+        musicianId: musician6.id,
+        tag: 'scales',
+        type: 'duration',
+        target: 32,
+        timeFrame: 'daily',
+        createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      },
+      {
+        musicianId: musician6.id,
+        tag: 'all tags',
+        type: 'frequency',
+        target: 6,
+        timeFrame: 'weekly',
+        createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      },
+      {
+        musicianId: musician6.id,
+        tag: 'sight reading',
+        type: 'duration',
+        target: 110,
+        timeFrame: 'monthly',
+        createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      },
+      {
+        musicianId: musician6.id,
+        tag: 'arpeggios',
+        type: 'frequency',
+        target: 14,
+        timeFrame: 'annually',
+        createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      },
+    ],
   });
 
   // Create TaskDefinitions

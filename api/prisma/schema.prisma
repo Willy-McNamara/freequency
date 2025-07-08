@@ -92,6 +92,7 @@ model Musician  {
   media               Media[]
   taskDefinitions     TaskDefinition[]
   tasksInUse          TaskInUse[]
+  goals               Goal[] // Added: relation to Goal
 
   @@index([id, email])
 }
@@ -134,4 +135,31 @@ model Tag {
   tasks     TaskInUse[] @relation("TaskTags")
   musicians Musician[] @relation("MusicianTags")
   sessionInstruments Session[] @relation("SessionInstruments")
+}
+
+// Add enums for goal type and time frame
+
+enum GoalType {
+  duration
+  frequency
+}
+
+enum GoalTimeFrame {
+  daily
+  weekly
+  monthly
+  annually
+}
+
+model Goal {
+  id         Int           @id @default(autoincrement())
+  musicianId Int
+  musician   Musician      @relation(fields: [musicianId], references: [id])
+  tag        String
+  type       GoalType
+  target     Int
+  timeFrame  GoalTimeFrame
+  createdAt  DateTime      @default(now())
+
+  @@index([musicianId])
 }

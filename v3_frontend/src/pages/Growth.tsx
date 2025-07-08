@@ -3,9 +3,9 @@ import { ChartPieDonutActive } from "@/components/pie-chart";
 import React, { useState, useEffect } from "react";
 import {
   Card,
-  CardContent,
   CardDescription,
   CardTitle,
+  CardContent,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -62,42 +62,6 @@ interface Goal {
   timeFrame: GoalTimeFrame;
   createdAt: string;
 }
-
-// Mock goals data
-const mockGoals: Goal[] = [
-  {
-    id: "1",
-    tag: "Scales",
-    type: "duration",
-    target: 30,
-    timeFrame: "daily",
-    createdAt: "2024-01-01T00:00:00.000Z",
-  },
-  {
-    id: "2",
-    tag: "All Tags",
-    type: "frequency",
-    target: 5,
-    timeFrame: "weekly",
-    createdAt: "2024-01-01T00:00:00.000Z",
-  },
-  {
-    id: "3",
-    tag: "Sight Reading",
-    type: "duration",
-    target: 120,
-    timeFrame: "monthly",
-    createdAt: "2024-01-01T00:00:00.000Z",
-  },
-  {
-    id: "4",
-    tag: "Arpeggios",
-    type: "frequency",
-    target: 20,
-    timeFrame: "annually",
-    createdAt: "2024-01-01T00:00:00.000Z",
-  },
-];
 
 // Mock data for demo
 const weekData = [
@@ -246,17 +210,7 @@ const pieChartDataMock = {
 };
 
 // Mock tag options for dropdown
-const tagOptions = [
-  "All Tags",
-  "Scales",
-  "Arpeggios",
-  "Sight Reading",
-  "Improvisation",
-  "Ear Training",
-  "Transcription",
-  "Repertoire",
-  "Rhythm",
-];
+// Remove unused variable: tagOptions
 
 function formatMinutes(minutes: number) {
   const h = Math.floor(minutes / 60);
@@ -271,7 +225,7 @@ function TagSelectDropdown({
   onChange,
   className = "",
 }: {
-  options: string[];
+  options: { id: number; label: string; color?: string }[];
   value: string;
   onChange: (tag: string) => void;
   className?: string;
@@ -279,7 +233,7 @@ function TagSelectDropdown({
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const filtered = options.filter((tag) =>
-    tag.toLowerCase().includes(search.toLowerCase())
+    tag.label.toLowerCase().includes(search.toLowerCase())
   );
   return (
     <>
@@ -314,17 +268,17 @@ function TagSelectDropdown({
             )}
             {filtered.map((tag) => (
               <button
-                key={tag}
+                key={tag.id}
                 className={`w-full text-left px-3 py-2 rounded-md hover:bg-muted transition-colors ${
-                  tag === value ? "bg-primary/10 font-semibold" : ""
+                  tag.label === value ? "bg-primary/10 font-semibold" : ""
                 }`}
                 onClick={() => {
-                  onChange(tag);
+                  onChange(tag.label);
                   setOpen(false);
                 }}
                 type="button"
               >
-                {tag}
+                {tag.label}
               </button>
             ))}
           </div>
@@ -353,6 +307,15 @@ type TaskInUseMock = {
   duration: number;
   tags: string[];
   createdAt: string; // ISO date string
+  sessionId: number; // Added for occurrence tracking
+};
+
+type TaskInUseApiResponse = {
+  duration: number;
+  tags: string[];
+  createdAt: string;
+  sessionId: number; // Added for occurrence tracking
+  // ...other fields if needed
 };
 
 // Helper to get a date for a given week, month, or year bucket
@@ -424,6 +387,7 @@ function generateMockTasksInUse(): TaskInUseMock[] {
         duration: Math.floor(Math.random() * 60),
         tags: [mockTags[Math.floor(Math.random() * mockTags.length)].label],
         createdAt: date.toISOString(),
+        sessionId: Math.floor(Math.random() * 100), // Mock sessionId
       });
     });
   }
@@ -439,6 +403,7 @@ function generateMockTasksInUse(): TaskInUseMock[] {
         duration: Math.floor(Math.random() * 200),
         tags: [mockTags[Math.floor(Math.random() * mockTags.length)].label],
         createdAt: date.toISOString(),
+        sessionId: Math.floor(Math.random() * 100), // Mock sessionId
       });
     });
   }
@@ -467,6 +432,7 @@ function generateMockTasksInUse(): TaskInUseMock[] {
         duration: Math.floor(Math.random() * 500),
         tags: [mockTags[Math.floor(Math.random() * mockTags.length)].label],
         createdAt: date.toISOString(),
+        sessionId: Math.floor(Math.random() * 100), // Mock sessionId
       });
     });
   }
@@ -540,16 +506,62 @@ function formatGoalSummary(goal: Goal): string {
 }
 
 // Mock API functions
-function fetchUserTags(): Promise<typeof mockTags> {
-  return Promise.resolve(mockTags);
+function fetchUserTags(): Promise<
+  { id: number; label: string; color?: string }[]
+> {
+  return fetch("http://localhost:3000/tags/all-labels")
+    .then((res) => res.json())
+    .then((labels: string[]) =>
+      labels.map((label, idx) => ({
+        id: idx + 1,
+        label,
+        color: undefined, // Color is not provided by the API
+      }))
+    );
 }
 
 function fetchAllTasksInUse(): Promise<TaskInUseMock[]> {
-  return Promise.resolve(generateMockTasksInUse());
+  // Hardcoded for musicianId 26 for now
+  return fetch("http://localhost:3000/tasks-in-use/musician/26")
+    .then((res) => res.json())
+    .then((tasks: TaskInUseApiResponse[]) =>
+      tasks.map((t) => ({
+        label: "", // Not provided by backend
+        occurrence: 1, // Each TaskInUse is one occurrence
+        duration: t.duration,
+        tags: t.tags,
+        createdAt:
+          typeof t.createdAt === "string"
+            ? t.createdAt
+            : new Date(t.createdAt).toISOString(),
+        sessionId: t.sessionId, // Add sessionId
+      }))
+    );
 }
 
-function fetchGoals(): Promise<Goal[]> {
-  return Promise.resolve(mockGoals);
+type GoalApiResponse = {
+  id: number;
+  musicianId: number;
+  tag: string;
+  type: "duration" | "frequency";
+  target: number;
+  timeFrame: "daily" | "weekly" | "monthly" | "annually";
+  createdAt: string;
+};
+
+function fetchGoals(musicianId: number): Promise<Goal[]> {
+  return fetch(`http://localhost:3000/musicians/${musicianId}/goals`)
+    .then((res) => res.json())
+    .then((goals: GoalApiResponse[]) =>
+      goals.map((g) => ({
+        ...g,
+        id: String(g.id),
+        createdAt:
+          typeof g.createdAt === "string"
+            ? g.createdAt
+            : new Date(g.createdAt).toISOString(),
+      }))
+    );
 }
 
 const Growth: React.FC = () => {
@@ -559,7 +571,9 @@ const Growth: React.FC = () => {
   const [selectedTotalRange, setSelectedTotalRange] =
     useState<TotalTimeRange>("week");
   const [selectedTag, setSelectedTag] = useState<string>("All Tags");
-  const [userTags, setUserTags] = useState<typeof mockTags>([]);
+  const [userTags, setUserTags] = useState<
+    { id: number; label: string; color?: string }[]
+  >([]);
   const [allTasksInUse, setAllTasksInUse] = useState<TaskInUseMock[]>([]);
   const [tasksInUse, setTasksInUse] = useState<TaskInUseMock[]>([]); // filtered for current window
   const [currentIndex, setCurrentIndex] = useState(0); // 0 = present, 1 = previous, etc.
@@ -578,61 +592,47 @@ const Growth: React.FC = () => {
   // Back button for subviews
   const handleBack = () => setView("MENU");
 
-  // Get the data for the selected time range
-  const currentRange = timeRanges.find((r) => r.key === selectedTimeRange)!;
-  const chartDescription =
-    selectedTimeRange === "week"
-      ? "Stats for each day of the week"
-      : selectedTimeRange === "month"
-      ? "Stats for each week of the month"
-      : "Stats for each month of the year";
+  // Place these handlers inside the Growth component:
+  function handleDeleteGoal(goalId: string) {
+    setGoals((prevGoals) => prevGoals.filter((goal) => goal.id !== goalId));
+    console.log(`Deleting goal with ID: ${goalId}`);
+  }
+  function handleCreateGoal() {
+    const newGoalWithId = {
+      ...newGoal,
+      id: String(Date.now()),
+      createdAt: new Date().toISOString(),
+    };
+    setGoals((prevGoals) => [...prevGoals, newGoalWithId]);
+    console.log("Creating new goal:", newGoalWithId);
+    setIsGoalModalOpen(false);
+  }
+  function handleEditGoal() {
+    setGoals((prevGoals) =>
+      prevGoals.map((goal) =>
+        goal.id === editingGoal?.id ? editingGoal : goal
+      )
+    );
+    console.log("Editing goal:", editingGoal);
+    setIsGoalModalOpen(false);
+  }
 
   // Fetch tags, all tasks-in-use, and goals on mount
   useEffect(() => {
-    fetchUserTags().then((tags) => setUserTags(tags));
-    fetchAllTasksInUse().then((tasks) => setAllTasksInUse(tasks));
-    fetchGoals().then((goals) => setGoals(goals));
-  }, []);
-
-  // Goal handlers
-  const handleCreateGoal = () => {
-    const goal: Goal = {
-      id: Date.now().toString(),
-      ...newGoal,
-      createdAt: new Date().toISOString(),
-    };
-    setGoals([...goals, goal]);
-    setNewGoal({
-      tag: "All Tags",
-      type: "duration",
-      target: 30,
-      timeFrame: "daily",
+    const musicianId = 26; // TODO: Replace with real user context when available
+    fetchUserTags().then((tags) => {
+      console.log("[Growth] Tags from API:", tags);
+      setUserTags(tags);
     });
-    setIsGoalModalOpen(false);
-  };
-
-  const handleEditGoal = () => {
-    if (!editingGoal) return;
-    setGoals(
-      goals.map((goal) => (goal.id === editingGoal.id ? editingGoal : goal))
-    );
-    setEditingGoal(null);
-    setIsGoalModalOpen(false);
-  };
-
-  const handleDeleteGoal = (goalId: string) => {
-    setGoals(goals.filter((goal) => goal.id !== goalId));
-  };
-
-  const openEditModal = (goal: Goal) => {
-    setEditingGoal(goal);
-    setIsGoalModalOpen(true);
-  };
-
-  const openCreateModal = () => {
-    setEditingGoal(null);
-    setIsGoalModalOpen(true);
-  };
+    fetchAllTasksInUse().then((tasks) => {
+      console.log("[Growth] TasksInUse from API:", tasks);
+      setAllTasksInUse(tasks);
+    });
+    fetchGoals(musicianId).then((goals) => {
+      console.log("[Growth] Goals from API:", goals);
+      setGoals(goals);
+    });
+  }, []);
 
   // When time range, currentIndex, or allTasksInUse changes, filter for current window
   useEffect(() => {
@@ -774,16 +774,53 @@ const Growth: React.FC = () => {
         entry.tags.includes(selectedTag)
       );
     }
-    // Map filtered data onto the full set of labels, filling missing with zeroes
-    const currentLabels = fullLabels[selectedTimeRange];
-    const dataByLabel = Object.fromEntries(
-      filteredData.map((entry) => [entry.label, entry])
-    );
-    const chartData = currentLabels.map((label) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { tags: _unused, ...rest } = dataByLabel[label] || {};
-      return dataByLabel[label] ? rest : { label, occurrence: 0, duration: 0 };
+    // Assign label based on createdAt and selectedTimeRange
+    const labeledData = filteredData.map((entry) => {
+      const date = parseISO(entry.createdAt);
+      let label = "";
+      if (selectedTimeRange === "week") {
+        label = format(date, "EEEE"); // "Monday", etc.
+      } else if (selectedTimeRange === "month") {
+        const weekOfMonth = Math.floor((date.getDate() - 1) / 7) + 1;
+        label = `W${weekOfMonth}`;
+      } else if (selectedTimeRange === "year") {
+        label = format(date, "MMM"); // "Jan", etc.
+      }
+      return { ...entry, label };
     });
+    const currentLabels = fullLabels[selectedTimeRange];
+    // Aggregate all records by label for duration
+    const dataByLabel = labeledData.reduce((acc, entry) => {
+      if (!acc[entry.label]) {
+        acc[entry.label] = { label: entry.label, occurrence: 0, duration: 0 };
+      }
+      acc[entry.label].duration += entry.duration || 0;
+      return acc;
+    }, {} as Record<string, { label: string; occurrence: number; duration: number }>);
+
+    // For occurrence: count unique sessionIds per label for the selected tag
+    const tagSessionMap: Record<string, Set<number>> = {};
+    labeledData.forEach((entry) => {
+      if (selectedTag === "All Tags" || entry.tags.includes(selectedTag)) {
+        if (!tagSessionMap[entry.label]) tagSessionMap[entry.label] = new Set();
+        tagSessionMap[entry.label].add(entry.sessionId);
+      }
+    });
+
+    const chartData = currentLabels.map((label) => {
+      if (selectedMetric === "occurrence") {
+        return {
+          label,
+          occurrence: tagSessionMap[label]?.size || 0,
+          duration: dataByLabel[label]?.duration || 0,
+        };
+      } else {
+        return dataByLabel[label]
+          ? dataByLabel[label]
+          : { label, occurrence: 0, duration: 0 };
+      }
+    });
+    console.log("[Chronological] chartData:", chartData);
     // Calculate total for selected metric
     const total = chartData.reduce(
       (sum, entry) => sum + (entry[selectedMetric] as number),
@@ -877,7 +914,7 @@ const Growth: React.FC = () => {
         {/* Tag filter dropdown */}
         <div className="flex justify-center mb-4">
           <TagSelectDropdown
-            options={["All Tags", ...userTags.map((t) => t.label)]}
+            options={[{ id: 0, label: "All Tags" }, ...userTags]}
             value={selectedTag}
             onChange={setSelectedTag}
           />
@@ -951,13 +988,23 @@ const Growth: React.FC = () => {
                 : "border-border bg-background font-normal hover:bg-muted/50"
             }`}
           >
-            Duration (mins)
+            Duration (min)
           </button>
         </div>
       </div>
     );
   }
+
   if (view === "GOALS") {
+    // Add Goal Button
+    const openCreateModal = () => {
+      setEditingGoal(null);
+      setIsGoalModalOpen(true);
+    };
+    const openEditModal = (goal: Goal) => {
+      setEditingGoal(goal);
+      setIsGoalModalOpen(true);
+    };
     return (
       <div className="w-[75vw] mx-auto">
         <div className="flex justify-start mb-2">
@@ -970,7 +1017,6 @@ const Growth: React.FC = () => {
           </Button>
         </div>
         <h1 className="text-2xl font-bold text-center mb-4">Goals</h1>
-
         {/* Add Goal Button */}
         <div className="flex justify-center mb-6">
           <Button onClick={openCreateModal} className="flex items-center gap-2">
@@ -978,7 +1024,6 @@ const Growth: React.FC = () => {
             Add Goal
           </Button>
         </div>
-
         {/* Goals List */}
         <div className="space-y-4">
           {goals.map((goal) => {
@@ -988,7 +1033,6 @@ const Growth: React.FC = () => {
               100
             );
             const isComplete = progress >= goal.target;
-
             return (
               <Card
                 key={goal.id}
@@ -1039,7 +1083,6 @@ const Growth: React.FC = () => {
                       </Button>
                     </div>
                   </div>
-
                   {/* Progress Bar */}
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
@@ -1054,7 +1097,6 @@ const Growth: React.FC = () => {
             );
           })}
         </div>
-
         {/* Goal Modal */}
         <Dialog open={isGoalModalOpen} onOpenChange={setIsGoalModalOpen}>
           <DialogContent className="sm:max-w-[425px]">
@@ -1086,7 +1128,6 @@ const Growth: React.FC = () => {
                   ))}
                 </select>
               </div>
-
               {/* Goal Type */}
               <div className="grid gap-2">
                 <label className="text-sm font-medium">Goal Type</label>
@@ -1111,7 +1152,6 @@ const Growth: React.FC = () => {
                   <option value="frequency">Frequency (sessions)</option>
                 </select>
               </div>
-
               {/* Target Amount */}
               <div className="grid gap-2">
                 <label className="text-sm font-medium">Target Amount</label>
@@ -1129,7 +1169,6 @@ const Growth: React.FC = () => {
                   }}
                 />
               </div>
-
               {/* Time Frame */}
               <div className="grid gap-2">
                 <label className="text-sm font-medium">Time Frame</label>
@@ -1181,37 +1220,73 @@ const Growth: React.FC = () => {
     );
   }
 
-  // Main menu view
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-8">Growth</h1>
-      <div className="flex gap-6 mt-8">
-        <div
-          className="border border-border rounded-lg p-6 cursor-pointer flex-1 hover:bg-muted/50 transition-colors"
-          onClick={() => setView("TOTAL")}
-        >
-          <h2 className="text-lg font-semibold mb-1">Total Stats</h2>
-          <p className="text-muted-foreground">
-            View your all-time stats and progress.
+    <div className="w-[75vw] mx-auto">
+      <h1 className="text-2xl font-bold text-center mb-4">Growth</h1>
+      <p className="text-center text-muted-foreground mb-6">
+        Track your musical practice over time.
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="p-6 text-center flex flex-col items-center justify-between">
+          <CardTitle className="text-lg font-semibold mb-2">
+            Total Practice Time
+          </CardTitle>
+          <p className="text-4xl font-bold text-primary mb-2">
+            {formatMinutes(
+              allTasksInUse.reduce((sum, task) => sum + task.duration, 0)
+            )}
           </p>
-        </div>
-        <div
-          className="border border-border rounded-lg p-6 cursor-pointer flex-1 hover:bg-muted/50 transition-colors"
-          onClick={() => setView("CHRONOLOGICAL")}
-        >
-          <h2 className="text-lg font-semibold mb-1">Chronological Stats</h2>
-          <p className="text-muted-foreground">See your stats over time.</p>
-        </div>
-        <div
-          className="border border-border rounded-lg p-6 cursor-pointer flex-1 hover:bg-muted/50 transition-colors"
-          onClick={() => setView("GOALS")}
-        >
-          <h2 className="text-lg font-semibold mb-1">Goals</h2>
-          <p className="text-muted-foreground">
-            Track your goals and achievements.
+          <p className="text-sm text-muted-foreground mb-4">
+            Across all sessions
           </p>
-        </div>
+          <Button onClick={() => setView("TOTAL")} className="mt-auto">
+            View Totals
+          </Button>
+        </Card>
+        <Card className="p-6 text-center flex flex-col items-center justify-between">
+          <CardTitle className="text-lg font-semibold mb-2">
+            Total Sessions
+          </CardTitle>
+          <p className="text-4xl font-bold text-primary mb-2">
+            {allTasksInUse.length}
+          </p>
+          <p className="text-sm text-muted-foreground mb-4">
+            For the selected period
+          </p>
+          <Button onClick={() => setView("CHRONOLOGICAL")} className="mt-auto">
+            View Chronological
+          </Button>
+        </Card>
+        <Card className="p-6 text-center flex flex-col items-center justify-between">
+          <CardTitle className="text-lg font-semibold mb-2">
+            Active Goals
+          </CardTitle>
+          <p className="text-4xl font-bold text-primary mb-2">{goals.length}</p>
+          <p className="text-sm text-muted-foreground mb-4">
+            Set for your practice
+          </p>
+          <Button onClick={() => setView("GOALS")} className="mt-auto">
+            Manage Goals
+          </Button>
+        </Card>
       </div>
+      {/* Remove the row of buttons below the cards */}
+      {/*
+      <div className="mt-8 flex justify-center gap-4">
+        <Button onClick={() => setView("TOTAL")} className="w-full md:w-auto">
+          View Totals
+        </Button>
+        <Button
+          onClick={() => setView("CHRONOLOGICAL")}
+          className="w-full md:w-auto"
+        >
+          View Chronological
+        </Button>
+        <Button onClick={() => setView("GOALS")} className="w-full md:w-auto">
+          Manage Goals
+        </Button>
+      </div>
+      */}
     </div>
   );
 };
