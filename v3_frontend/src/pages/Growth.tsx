@@ -1,7 +1,12 @@
 import { ChartBarLabel } from "@/components/bar-chart";
 import { ChartPieDonutActive } from "@/components/pie-chart";
 import React, { useState, useEffect } from "react";
-import { Card, CardDescription, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,6 +20,9 @@ import {
   TagIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  PlusIcon,
+  EditIcon,
+  TrashIcon,
 } from "lucide-react";
 import {
   addDays,
@@ -33,12 +41,63 @@ import {
   endOfYear,
   isWithinInterval,
   parseISO,
+  startOfDay,
+  endOfDay,
 } from "date-fns";
 
 // NOTE: If you see a 'Cannot find module "date-fns"' error, run: npm install date-fns
 
 // Define the possible views as a union type
 type ViewType = "MENU" | "TOTAL" | "CHRONOLOGICAL" | "GOALS";
+
+// Goal types and interfaces
+type GoalType = "duration" | "frequency";
+type GoalTimeFrame = "daily" | "weekly" | "monthly" | "annually";
+
+interface Goal {
+  id: string;
+  tag: string; // "All Tags" or specific tag name
+  type: GoalType;
+  target: number; // minutes for duration, occurrences for frequency
+  timeFrame: GoalTimeFrame;
+  createdAt: string;
+}
+
+// Mock goals data
+const mockGoals: Goal[] = [
+  {
+    id: "1",
+    tag: "Scales",
+    type: "duration",
+    target: 30,
+    timeFrame: "daily",
+    createdAt: "2024-01-01T00:00:00.000Z",
+  },
+  {
+    id: "2",
+    tag: "All Tags",
+    type: "frequency",
+    target: 5,
+    timeFrame: "weekly",
+    createdAt: "2024-01-01T00:00:00.000Z",
+  },
+  {
+    id: "3",
+    tag: "Sight Reading",
+    type: "duration",
+    target: 120,
+    timeFrame: "monthly",
+    createdAt: "2024-01-01T00:00:00.000Z",
+  },
+  {
+    id: "4",
+    tag: "Arpeggios",
+    type: "frequency",
+    target: 20,
+    timeFrame: "annually",
+    createdAt: "2024-01-01T00:00:00.000Z",
+  },
+];
 
 // Mock data for demo
 const weekData = [
@@ -414,12 +473,83 @@ function generateMockTasksInUse(): TaskInUseMock[] {
   return tasks;
 }
 
+// Goal calculation functions
+function calculateGoalProgress(
+  goal: Goal,
+  tasksInUse: TaskInUseMock[]
+): number {
+  const now = new Date();
+  let periodStart: Date, periodEnd: Date;
+
+  // Determine the current period based on goal timeFrame
+  switch (goal.timeFrame) {
+    case "daily":
+      periodStart = startOfDay(now);
+      periodEnd = endOfDay(now);
+      break;
+    case "weekly":
+      periodStart = startOfWeek(now, { weekStartsOn: 1 });
+      periodEnd = endOfWeek(now, { weekStartsOn: 1 });
+      break;
+    case "monthly":
+      periodStart = startOfMonth(now);
+      periodEnd = endOfMonth(now);
+      break;
+    case "annually":
+      periodStart = startOfYear(now);
+      periodEnd = endOfYear(now);
+      break;
+  }
+
+  // Filter tasks within the current period
+  const periodTasks = tasksInUse.filter((task) => {
+    const taskDate = parseISO(task.createdAt);
+    return isWithinInterval(taskDate, { start: periodStart, end: periodEnd });
+  });
+
+  // Filter by tag if goal is tag-specific
+  const relevantTasks =
+    goal.tag === "All Tags"
+      ? periodTasks
+      : periodTasks.filter((task) => task.tags.includes(goal.tag));
+
+  // Calculate progress based on goal type
+  if (goal.type === "duration") {
+    const totalMinutes = relevantTasks.reduce(
+      (sum, task) => sum + task.duration,
+      0
+    );
+    return Math.min(totalMinutes, goal.target);
+  } else {
+    const totalOccurrences = relevantTasks.reduce(
+      (sum, task) => sum + task.occurrence,
+      0
+    );
+    return Math.min(totalOccurrences, goal.target);
+  }
+}
+
+function formatGoalSummary(goal: Goal): string {
+  const tagDisplay =
+    goal.tag === "All Tags" ? "all tags" : goal.tag.toLowerCase();
+  const typeDisplay = goal.type === "duration" ? "minutes" : "sessions";
+  const timeFrameDisplay =
+    goal.timeFrame.charAt(0).toUpperCase() + goal.timeFrame.slice(1);
+
+  return `${tagDisplay} | ${goal.target} ${typeDisplay} | ${timeFrameDisplay}`;
+}
+
 // Mock API functions
 function fetchUserTags(): Promise<typeof mockTags> {
   return Promise.resolve(mockTags);
 }
+
 function fetchAllTasksInUse(): Promise<TaskInUseMock[]> {
   return Promise.resolve(generateMockTasksInUse());
+}
+
+function fetchGoals(): Promise<Goal[]> {
+  return Promise.resolve(mockGoals);
 }
 
 const Growth: React.FC = () => {
@@ -434,17 +564,22 @@ const Growth: React.FC = () => {
   const [tasksInUse, setTasksInUse] = useState<TaskInUseMock[]>([]); // filtered for current window
   const [currentIndex, setCurrentIndex] = useState(0); // 0 = present, 1 = previous, etc.
 
+  // Goals state
+  const [goals, setGoals] = useState<Goal[]>([]);
+  const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
+  const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
+  const [newGoal, setNewGoal] = useState<Omit<Goal, "id" | "createdAt">>({
+    tag: "All Tags",
+    type: "duration",
+    target: 30,
+    timeFrame: "daily",
+  });
+
   // Back button for subviews
   const handleBack = () => setView("MENU");
 
   // Get the data for the selected time range
   const currentRange = timeRanges.find((r) => r.key === selectedTimeRange)!;
-  const chartTitle =
-    selectedTimeRange === "week"
-      ? "Chronological Stats (Week)"
-      : selectedTimeRange === "month"
-      ? "Chronological Stats (Month)"
-      : "Chronological Stats (Year)";
   const chartDescription =
     selectedTimeRange === "week"
       ? "Stats for each day of the week"
@@ -452,11 +587,52 @@ const Growth: React.FC = () => {
       ? "Stats for each week of the month"
       : "Stats for each month of the year";
 
-  // Fetch tags and all tasks-in-use on mount
+  // Fetch tags, all tasks-in-use, and goals on mount
   useEffect(() => {
     fetchUserTags().then((tags) => setUserTags(tags));
     fetchAllTasksInUse().then((tasks) => setAllTasksInUse(tasks));
+    fetchGoals().then((goals) => setGoals(goals));
   }, []);
+
+  // Goal handlers
+  const handleCreateGoal = () => {
+    const goal: Goal = {
+      id: Date.now().toString(),
+      ...newGoal,
+      createdAt: new Date().toISOString(),
+    };
+    setGoals([...goals, goal]);
+    setNewGoal({
+      tag: "All Tags",
+      type: "duration",
+      target: 30,
+      timeFrame: "daily",
+    });
+    setIsGoalModalOpen(false);
+  };
+
+  const handleEditGoal = () => {
+    if (!editingGoal) return;
+    setGoals(
+      goals.map((goal) => (goal.id === editingGoal.id ? editingGoal : goal))
+    );
+    setEditingGoal(null);
+    setIsGoalModalOpen(false);
+  };
+
+  const handleDeleteGoal = (goalId: string) => {
+    setGoals(goals.filter((goal) => goal.id !== goalId));
+  };
+
+  const openEditModal = (goal: Goal) => {
+    setEditingGoal(goal);
+    setIsGoalModalOpen(true);
+  };
+
+  const openCreateModal = () => {
+    setEditingGoal(null);
+    setIsGoalModalOpen(true);
+  };
 
   // When time range, currentIndex, or allTasksInUse changes, filter for current window
   useEffect(() => {
@@ -785,15 +961,222 @@ const Growth: React.FC = () => {
     return (
       <div className="w-[75vw] mx-auto">
         <div className="flex justify-start mb-2">
-          <button
+          <Button
             onClick={handleBack}
-            className="text-sm text-muted-foreground hover:underline"
+            variant="ghost"
+            className="text-sm text-muted-foreground"
           >
             &larr; Back
-          </button>
+          </Button>
         </div>
         <h1 className="text-2xl font-bold text-center mb-4">Goals</h1>
-        <div>Coming soon...</div>
+
+        {/* Add Goal Button */}
+        <div className="flex justify-center mb-6">
+          <Button onClick={openCreateModal} className="flex items-center gap-2">
+            <PlusIcon className="w-4 h-4" />
+            Add Goal
+          </Button>
+        </div>
+
+        {/* Goals List */}
+        <div className="space-y-4">
+          {goals.map((goal) => {
+            const progress = calculateGoalProgress(goal, allTasksInUse);
+            const progressPercentage = Math.min(
+              (progress / goal.target) * 100,
+              100
+            );
+            const isComplete = progress >= goal.target;
+
+            return (
+              <Card
+                key={goal.id}
+                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => openEditModal(goal)}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex-1">
+                      <CardTitle className="text-lg font-semibold mb-2">
+                        {formatGoalSummary(goal)}
+                      </CardTitle>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <span>
+                          Progress: {progress} / {goal.target}{" "}
+                          {goal.type === "duration" ? "minutes" : "sessions"}
+                        </span>
+                        <span
+                          className={`font-semibold ${
+                            isComplete ? "text-green-600" : "text-blue-600"
+                          }`}
+                        >
+                          {Math.round(progressPercentage)}%
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openEditModal(goal);
+                        }}
+                      >
+                        <EditIcon className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteGoal(goal.id);
+                        }}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <TrashIcon className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        isComplete ? "bg-green-500" : "bg-blue-500"
+                      }`}
+                      style={{ width: `${progressPercentage}%` }}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
+        {/* Goal Modal */}
+        <Dialog open={isGoalModalOpen} onOpenChange={setIsGoalModalOpen}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>
+                {editingGoal ? "Edit Goal" : "Create New Goal"}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              {/* Tag Selection */}
+              <div className="grid gap-2">
+                <label className="text-sm font-medium">Tag</label>
+                <select
+                  className="w-full p-2 border rounded-md"
+                  value={editingGoal?.tag || newGoal.tag}
+                  onChange={(e) => {
+                    if (editingGoal) {
+                      setEditingGoal({ ...editingGoal, tag: e.target.value });
+                    } else {
+                      setNewGoal({ ...newGoal, tag: e.target.value });
+                    }
+                  }}
+                >
+                  <option value="All Tags">All Tags</option>
+                  {userTags.map((tag) => (
+                    <option key={tag.id} value={tag.label}>
+                      {tag.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Goal Type */}
+              <div className="grid gap-2">
+                <label className="text-sm font-medium">Goal Type</label>
+                <select
+                  className="w-full p-2 border rounded-md"
+                  value={editingGoal?.type || newGoal.type}
+                  onChange={(e) => {
+                    if (editingGoal) {
+                      setEditingGoal({
+                        ...editingGoal,
+                        type: e.target.value as GoalType,
+                      });
+                    } else {
+                      setNewGoal({
+                        ...newGoal,
+                        type: e.target.value as GoalType,
+                      });
+                    }
+                  }}
+                >
+                  <option value="duration">Duration (minutes)</option>
+                  <option value="frequency">Frequency (sessions)</option>
+                </select>
+              </div>
+
+              {/* Target Amount */}
+              <div className="grid gap-2">
+                <label className="text-sm font-medium">Target Amount</label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={editingGoal?.target || newGoal.target}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value) || 0;
+                    if (editingGoal) {
+                      setEditingGoal({ ...editingGoal, target: value });
+                    } else {
+                      setNewGoal({ ...newGoal, target: value });
+                    }
+                  }}
+                />
+              </div>
+
+              {/* Time Frame */}
+              <div className="grid gap-2">
+                <label className="text-sm font-medium">Time Frame</label>
+                <select
+                  className="w-full p-2 border rounded-md"
+                  value={editingGoal?.timeFrame || newGoal.timeFrame}
+                  onChange={(e) => {
+                    if (editingGoal) {
+                      setEditingGoal({
+                        ...editingGoal,
+                        timeFrame: e.target.value as GoalTimeFrame,
+                      });
+                    } else {
+                      setNewGoal({
+                        ...newGoal,
+                        timeFrame: e.target.value as GoalTimeFrame,
+                      });
+                    }
+                  }}
+                >
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="annually">Annually</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setIsGoalModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={editingGoal ? handleEditGoal : handleCreateGoal}
+                disabled={
+                  editingGoal
+                    ? !editingGoal.target || editingGoal.target <= 0
+                    : !newGoal.target || newGoal.target <= 0
+                }
+              >
+                {editingGoal ? "Save Changes" : "Create Goal"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
