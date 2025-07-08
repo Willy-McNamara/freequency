@@ -40,6 +40,21 @@ let MusiciansService = class MusiciansService {
             createdAt: musician.createdAt,
         };
     }
+    async getGoalsForMusician(musicianId) {
+        const goals = await this.prisma.goal.findMany({
+            where: { musicianId },
+            orderBy: { createdAt: 'asc' },
+        });
+        return goals.map((g) => ({
+            id: g.id,
+            musicianId: g.musicianId,
+            tag: g.tag,
+            type: g.type,
+            target: g.target,
+            timeFrame: g.timeFrame,
+            createdAt: g.createdAt,
+        }));
+    }
     async getAllDisplayNames() {
         const musicians = await this.prisma.musician.findMany({
             select: { displayName: true },

@@ -25,6 +25,9 @@ let MusiciansController = class MusiciansController {
     async getMusicianById(id) {
         return this.musiciansService.getMusicianById(Number(id));
     }
+    async getGoalsForMusician(id) {
+        return this.musiciansService.getGoalsForMusician(Number(id));
+    }
 };
 exports.MusiciansController = MusiciansController;
 __decorate([
@@ -40,6 +43,13 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], MusiciansController.prototype, "getMusicianById", null);
+__decorate([
+    (0, common_1.Get)(':id/goals'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], MusiciansController.prototype, "getGoalsForMusician", null);
 exports.MusiciansController = MusiciansController = __decorate([
     (0, common_1.Controller)('musicians'),
     __metadata("design:paramtypes", [musicians_service_1.MusiciansService])
