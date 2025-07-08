@@ -659,8 +659,41 @@ const Growth: React.FC = () => {
   }, [selectedTimeRange, currentIndex, allTasksInUse]);
 
   if (view === "TOTAL") {
-    let tagTotals = tagTotalsMock[selectedTotalRange as TimeRangeKey];
-    let pieData = pieChartDataMock[selectedTotalRange as TimeRangeKey];
+    // Aggregate tag totals from allTasksInUse for the selected period
+    // 1. Group by tag, sum durations
+    const tagTotalsMap: Record<string, number> = {};
+    let totalMinutes = 0;
+    allTasksInUse.forEach((task) => {
+      (task.tags || ["Untagged"]).forEach((tag) => {
+        tagTotalsMap[tag] = (tagTotalsMap[tag] || 0) + (task.duration || 0);
+        totalMinutes += task.duration || 0;
+      });
+    });
+    // 2. Build tagTotals array
+    const tagTotals = Object.entries(tagTotalsMap)
+      .map(([tag, minutes]) => ({
+        tag,
+        minutes,
+        percent:
+          totalMinutes > 0 ? Math.round((minutes / totalMinutes) * 100) : 0,
+      }))
+      .sort((a, b) => b.minutes - a.minutes);
+    // 3. Build pie chart data
+    const pieChartColors = [
+      "#60a5fa", // blue
+      "#fbbf24", // yellow
+      "#34d399", // green
+      "#f472b6", // pink
+      "#a78bfa", // purple
+      "#f87171", // red
+      "#facc15", // gold
+      "#38bdf8", // sky
+    ];
+    const pieData = tagTotals.map((t, i) => ({
+      tag: t.tag,
+      value: t.minutes,
+      fill: pieChartColors[i % pieChartColors.length],
+    }));
     // Map tag to color for indicator
     const tagColorMap: Record<string, string> = {};
     pieData.forEach((item) => {
@@ -668,12 +701,6 @@ const Growth: React.FC = () => {
         tagColorMap[item.tag] = item.fill;
       }
     });
-    // Sort tagTotals by minutes descending
-    tagTotals = [...tagTotals].sort((a, b) => b.minutes - a.minutes);
-    // Sort pieData by value descending
-    pieData = [...pieData].sort(
-      (a, b) => (b.value as number) - (a.value as number)
-    );
     return (
       <div className="w-[75vw] mx-auto">
         <div className="flex justify-start mb-2">
