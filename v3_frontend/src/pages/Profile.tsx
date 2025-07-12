@@ -3,6 +3,7 @@ import { Button } from "../components/button";
 import { Badge } from "../components/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/avatar";
 import { Card, CardContent } from "../components/card";
+import { apiConfig } from "../config/api";
 interface Instrument {
   id: number;
   name: string;
@@ -43,7 +44,7 @@ export default function Profile() {
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        const response = await fetch("http://localhost:3000/musicians/3");
+        const response = await fetch(apiConfig.endpoints.musicians.profile(3));
         const profileData = await response.json();
         console.log(profileData);
         // setData(profileData);

@@ -1,9 +1,42 @@
-import React, { JSX } from "react";
+import { JSX } from "react";
 import { Avatar, AvatarFallback } from "./avatar";
 import { Badge } from "./badge";
 import { MessageSquareIcon, ThumbsUpIcon } from "lucide-react";
 
-export const FeedPost = ({ postData }): JSX.Element => {
+interface PostData {
+  id: number;
+  title: string;
+  notes: string;
+  createdAt: string;
+  musician: {
+    displayName: string;
+    avatarUrl: string | null;
+  };
+  instruments: Array<{
+    id: number;
+    label: string;
+    color: string | null;
+  }>;
+  tags: Array<{
+    id: number;
+    label: string;
+    color: string | null;
+  }>;
+  gasUps: Array<{
+    musician: {
+      displayName: string;
+      avatarUrl: string | null;
+    };
+  }>;
+  comments: Array<{
+    musician: {
+      displayName: string;
+      avatarUrl: string | null;
+    };
+  }>;
+}
+
+export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
   // Mock data ahead of passing in actual post data
 
   console.log(postData);
@@ -50,19 +83,24 @@ export const FeedPost = ({ postData }): JSX.Element => {
         </div>
 
         <div className="flex items-center gap-[17px]">
-          {postData.tags.map((tag, index) => (
-            <Badge
-              key={index}
-              className={`h-5 px-3 py-2 rounded-md ${
-                tag.color
-                  ? "bg-slate-700 text-slate-50"
-                  : "bg-slate-200 text-[#0f172a]"
-              }`}
-              variant="outline"
-            >
-              <span className="font-small">{tag.label}</span>
-            </Badge>
-          ))}
+          {postData.tags.map(
+            (
+              tag: { id: number; label: string; color: string | null },
+              index: number
+            ) => (
+              <Badge
+                key={index}
+                className={`h-5 px-3 py-2 rounded-md ${
+                  tag.color
+                    ? "bg-slate-700 text-slate-50"
+                    : "bg-slate-200 text-[#0f172a]"
+                }`}
+                variant="outline"
+              >
+                <span className="font-small">{tag.label}</span>
+              </Badge>
+            )
+          )}
         </div>
       </div>
       {/* splicing in metadata */}

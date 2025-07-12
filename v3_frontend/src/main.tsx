@@ -8,8 +8,11 @@ import Practice from "./pages/Practice";
 import TaskLibrary from "./pages/TaskLibrary";
 import Growth from "./pages/Growth";
 import Profile from "./pages/Profile";
+import Login from "./pages/Login";
 import ErrorBoundaryWrapper from "./ErrorBoundary.tsx";
 import { SessionProvider } from "./components/SessionContext";
+import { AuthProvider } from "./components/auth/AuthProvider";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
 const root = document.getElementById("root");
 
@@ -20,19 +23,32 @@ if (!root) {
 ReactDOM.createRoot(root).render(
   <BrowserRouter>
     <ErrorBoundaryWrapper>
-      <SessionProvider>
-        <Routes>
-          <Route path="/" element={<App />}>
-            <Route index element={<Feed />} />
-            <Route path="/practice" element={<Practice />} />
-            <Route path="/task-library" element={<TaskLibrary />} />
-            <Route path="/growth" element={<Growth />} />
-            <Route path="/profile" element={<Profile />} />
-            {/* Fallback for unknown routes */}
-            <Route path="*" element={<h1>Page Not Found</h1>} />
-          </Route>
-        </Routes>
-      </SessionProvider>
+      <AuthProvider>
+        <SessionProvider>
+          <Routes>
+            {/* Public route */}
+            <Route path="/login" element={<Login />} />
+
+            {/* Protected routes */}
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <App />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<Feed />} />
+              <Route path="/practice" element={<Practice />} />
+              <Route path="/task-library" element={<TaskLibrary />} />
+              <Route path="/growth" element={<Growth />} />
+              <Route path="/profile" element={<Profile />} />
+              {/* Fallback for unknown routes */}
+              <Route path="*" element={<h1>Page Not Found</h1>} />
+            </Route>
+          </Routes>
+        </SessionProvider>
+      </AuthProvider>
     </ErrorBoundaryWrapper>
   </BrowserRouter>
 );

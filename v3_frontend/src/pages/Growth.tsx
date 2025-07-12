@@ -25,7 +25,6 @@ import {
   TrashIcon,
 } from "lucide-react";
 import {
-  addDays,
   addWeeks,
   addMonths,
   addYears,
@@ -33,9 +32,6 @@ import {
   startOfMonth,
   startOfYear,
   format,
-  subWeeks,
-  subMonths,
-  subYears,
   endOfWeek,
   endOfMonth,
   endOfYear,
@@ -44,6 +40,8 @@ import {
   startOfDay,
   endOfDay,
 } from "date-fns";
+import { useAuth } from "../components/auth/AuthProvider";
+import { apiConfig } from "../config/api";
 
 // NOTE: If you see a 'Cannot find module "date-fns"' error, run: npm install date-fns
 
@@ -112,102 +110,103 @@ type TotalTimeRange = (typeof totalTimeRanges)[number]["key"];
 type Metric = "occurrence" | "duration";
 
 // Mock data for tag breakdown (for demo)
-const tagTotalsMock = {
-  day: [
-    { tag: "Scales", minutes: 40, percent: 40 },
-    { tag: "Arpeggios", minutes: 30, percent: 30 },
-    { tag: "Sight Reading", minutes: 20, percent: 20 },
-    { tag: "Improvisation", minutes: 10, percent: 10 },
-    { tag: "Ear Training", minutes: 15, percent: 12 },
-    { tag: "Transcription", minutes: 12, percent: 8 },
-    { tag: "Repertoire", minutes: 18, percent: 15 },
-    { tag: "Rhythm", minutes: 8, percent: 7 },
-  ],
-  week: [
-    { tag: "Scales", minutes: 200, percent: 33 },
-    { tag: "Arpeggios", minutes: 180, percent: 30 },
-    { tag: "Sight Reading", minutes: 120, percent: 20 },
-    { tag: "Improvisation", minutes: 100, percent: 17 },
-    { tag: "Ear Training", minutes: 90, percent: 14 },
-    { tag: "Transcription", minutes: 80, percent: 12 },
-    { tag: "Repertoire", minutes: 110, percent: 18 },
-    { tag: "Rhythm", minutes: 60, percent: 10 },
-  ],
-  month: [
-    { tag: "Scales", minutes: 800, percent: 32 },
-    { tag: "Arpeggios", minutes: 700, percent: 28 },
-    { tag: "Sight Reading", minutes: 600, percent: 24 },
-    { tag: "Improvisation", minutes: 400, percent: 16 },
-    { tag: "Ear Training", minutes: 350, percent: 14 },
-    { tag: "Transcription", minutes: 300, percent: 12 },
-    { tag: "Repertoire", minutes: 420, percent: 17 },
-    { tag: "Rhythm", minutes: 250, percent: 10 },
-  ],
-  year: [
-    { tag: "Scales", minutes: 9000, percent: 30 },
-    { tag: "Arpeggios", minutes: 8000, percent: 27 },
-    { tag: "Sight Reading", minutes: 7000, percent: 23 },
-    { tag: "Improvisation", minutes: 6000, percent: 20 },
-    { tag: "Ear Training", minutes: 5500, percent: 18 },
-    { tag: "Transcription", minutes: 5000, percent: 15 },
-    { tag: "Repertoire", minutes: 6500, percent: 22 },
-    { tag: "Rhythm", minutes: 4000, percent: 12 },
-  ],
-};
+// Mock data for tag breakdown (for demo) - unused but kept for reference
+// const _tagTotalsMock = {
+//   day: [
+//     { tag: "Scales", minutes: 40, percent: 40 },
+//     { tag: "Arpeggios", minutes: 30, percent: 30 },
+//     { tag: "Sight Reading", minutes: 20, percent: 20 },
+//     { tag: "Improvisation", minutes: 10, percent: 10 },
+//     { tag: "Ear Training", minutes: 15, percent: 12 },
+//     { tag: "Transcription", minutes: 12, percent: 8 },
+//     { tag: "Repertoire", minutes: 18, percent: 15 },
+//     { tag: "Rhythm", minutes: 8, percent: 7 },
+//   ],
+//   week: [
+//     { tag: "Scales", minutes: 200, percent: 33 },
+//     { tag: "Arpeggios", minutes: 180, percent: 30 },
+//     { tag: "Sight Reading", minutes: 120, percent: 20 },
+//     { tag: "Improvisation", minutes: 100, percent: 17 },
+//     { tag: "Ear Training", minutes: 90, percent: 14 },
+//     { tag: "Transcription", minutes: 80, percent: 12 },
+//     { tag: "Repertoire", minutes: 110, percent: 18 },
+//     { tag: "Rhythm", minutes: 60, percent: 10 },
+//   ],
+//   month: [
+//     { tag: "Scales", minutes: 800, percent: 32 },
+//     { tag: "Arpeggios", minutes: 700, percent: 28 },
+//     { tag: "Sight Reading", minutes: 600, percent: 24 },
+//     { tag: "Improvisation", minutes: 400, percent: 16 },
+//     { tag: "Ear Training", minutes: 350, percent: 14 },
+//     { tag: "Transcription", minutes: 300, percent: 12 },
+//     { tag: "Repertoire", minutes: 420, percent: 17 },
+//     { tag: "Rhythm", minutes: 250, percent: 10 },
+//   ],
+//   year: [
+//     { tag: "Scales", minutes: 9000, percent: 30 },
+//     { tag: "Arpeggios", minutes: 8000, percent: 27 },
+//     { tag: "Sight Reading", minutes: 7000, percent: 23 },
+//     { tag: "Improvisation", minutes: 6000, percent: 20 },
+//     { tag: "Ear Training", minutes: 5500, percent: 18 },
+//     { tag: "Transcription", minutes: 5000, percent: 15 },
+//     { tag: "Repertoire", minutes: 6500, percent: 22 },
+//     { tag: "Rhythm", minutes: 4000, percent: 12 },
+//   ],
+// };
 
-const pieChartColors = [
-  "#60a5fa", // blue
-  "#fbbf24", // yellow
-  "#34d399", // green
-  "#f472b6", // pink
-  "#a78bfa", // purple
-  "#f87171", // red
-  "#facc15", // gold
-  "#38bdf8", // sky
-];
+// const pieChartColors = [
+//   "#60a5fa", // blue
+//   "#fbbf24", // yellow
+//   "#34d399", // green
+//   "#f472b6", // pink
+//   "#a78bfa", // purple
+//   "#f87171", // red
+//   "#facc15", // gold
+//   "#38bdf8", // sky
+// ];
 
-const pieChartDataMock = {
-  day: [
-    { tag: "Scales", value: 40, fill: pieChartColors[0] },
-    { tag: "Arpeggios", value: 30, fill: pieChartColors[1] },
-    { tag: "Sight Reading", value: 20, fill: pieChartColors[2] },
-    { tag: "Improvisation", value: 10, fill: pieChartColors[3] },
-    { tag: "Ear Training", value: 15, fill: pieChartColors[4] },
-    { tag: "Transcription", value: 12, fill: pieChartColors[5] },
-    { tag: "Repertoire", value: 18, fill: pieChartColors[6] },
-    { tag: "Rhythm", value: 8, fill: pieChartColors[7] },
-  ],
-  week: [
-    { tag: "Scales", value: 200, fill: pieChartColors[0] },
-    { tag: "Arpeggios", value: 180, fill: pieChartColors[1] },
-    { tag: "Sight Reading", value: 120, fill: pieChartColors[2] },
-    { tag: "Improvisation", value: 100, fill: pieChartColors[3] },
-    { tag: "Ear Training", value: 90, fill: pieChartColors[4] },
-    { tag: "Transcription", value: 80, fill: pieChartColors[5] },
-    { tag: "Repertoire", value: 110, fill: pieChartColors[6] },
-    { tag: "Rhythm", value: 60, fill: pieChartColors[7] },
-  ],
-  month: [
-    { tag: "Scales", value: 800, fill: pieChartColors[0] },
-    { tag: "Arpeggios", value: 700, fill: pieChartColors[1] },
-    { tag: "Sight Reading", value: 600, fill: pieChartColors[2] },
-    { tag: "Improvisation", value: 400, fill: pieChartColors[3] },
-    { tag: "Ear Training", value: 350, fill: pieChartColors[4] },
-    { tag: "Transcription", value: 300, fill: pieChartColors[5] },
-    { tag: "Repertoire", value: 420, fill: pieChartColors[6] },
-    { tag: "Rhythm", value: 250, fill: pieChartColors[7] },
-  ],
-  year: [
-    { tag: "Scales", value: 9000, fill: pieChartColors[0] },
-    { tag: "Arpeggios", value: 8000, fill: pieChartColors[1] },
-    { tag: "Sight Reading", value: 7000, fill: pieChartColors[2] },
-    { tag: "Improvisation", value: 6000, fill: pieChartColors[3] },
-    { tag: "Ear Training", value: 5500, fill: pieChartColors[4] },
-    { tag: "Transcription", value: 5000, fill: pieChartColors[5] },
-    { tag: "Repertoire", value: 6500, fill: pieChartColors[6] },
-    { tag: "Rhythm", value: 4000, fill: pieChartColors[7] },
-  ],
-};
+// const pieChartDataMock = {
+//   day: [
+//     { tag: "Scales", value: 40, fill: pieChartColors[0] },
+//     { tag: "Arpeggios", value: 30, fill: pieChartColors[1] },
+//     { tag: "Sight Reading", value: 20, fill: pieChartColors[2] },
+//     { tag: "Improvisation", value: 10, fill: pieChartColors[3] },
+//     { tag: "Ear Training", value: 15, fill: pieChartColors[4] },
+//     { tag: "Transcription", value: 12, fill: pieChartColors[5] },
+//     { tag: "Repertoire", value: 18, fill: pieChartColors[6] },
+//     { tag: "Rhythm", value: 8, fill: pieChartColors[7] },
+//   ],
+//   week: [
+//     { tag: "Scales", value: 200, fill: pieChartColors[0] },
+//     { tag: "Arpeggios", value: 180, fill: pieChartColors[1] },
+//     { tag: "Sight Reading", value: 120, fill: pieChartColors[2] },
+//     { tag: "Improvisation", value: 100, fill: pieChartColors[3] },
+//     { tag: "Ear Training", value: 90, fill: pieChartColors[4] },
+//     { tag: "Transcription", value: 80, fill: pieChartColors[5] },
+//     { tag: "Repertoire", value: 110, fill: pieChartColors[6] },
+//     { tag: "Rhythm", value: 60, fill: pieChartColors[7] },
+//   ],
+//   month: [
+//     { tag: "Scales", value: 800, fill: pieChartColors[0] },
+//     { tag: "Arpeggios", value: 700, fill: pieChartColors[1] },
+//     { tag: "Sight Reading", value: 600, fill: pieChartColors[2] },
+//     { tag: "Improvisation", value: 400, fill: pieChartColors[3] },
+//     { tag: "Ear Training", value: 350, fill: pieChartColors[4] },
+//     { tag: "Transcription", value: 300, fill: pieChartColors[5] },
+//     { tag: "Repertoire", value: 420, fill: pieChartColors[6] },
+//     { tag: "Rhythm", value: 250, fill: pieChartColors[7] },
+//   ],
+//   year: [
+//     { tag: "Scales", value: 9000, fill: pieChartColors[0] },
+//     { tag: "Arpeggios", value: 8000, fill: pieChartColors[1] },
+//     { tag: "Sight Reading", value: 7000, fill: pieChartColors[2] },
+//     { tag: "Improvisation", value: 6000, fill: pieChartColors[3] },
+//     { tag: "Ear Training", value: 5500, fill: pieChartColors[4] },
+//     { tag: "Transcription", value: 5000, fill: pieChartColors[5] },
+//     { tag: "Repertoire", value: 6500, fill: pieChartColors[6] },
+//     { tag: "Rhythm", value: 4000, fill: pieChartColors[7] },
+//   ],
+// };
 
 // Mock tag options for dropdown
 // Remove unused variable: tagOptions
@@ -289,16 +288,16 @@ function TagSelectDropdown({
 }
 
 // Mock API data and functions
-const mockTags = [
-  { id: 1, label: "Scales", color: "#60a5fa" },
-  { id: 2, label: "Arpeggios", color: "#fbbf24" },
-  { id: 3, label: "Sight Reading", color: "#34d399" },
-  { id: 4, label: "Improvisation", color: "#f472b6" },
-  { id: 5, label: "Ear Training", color: "#a78bfa" },
-  { id: 6, label: "Transcription", color: "#f87171" },
-  { id: 7, label: "Repertoire", color: "#facc15" },
-  { id: 8, label: "Rhythm", color: "#38bdf8" },
-];
+// const mockTags = [
+//   { id: 1, label: "Scales", color: "#60a5fa" },
+//   { id: 2, label: "Arpeggios", color: "#fbbf24" },
+//   { id: 3, label: "Sight Reading", color: "#34d399" },
+//   { id: 4, label: "Improvisation", color: "#f472b6" },
+//   { id: 5, label: "Ear Training", color: "#a78bfa" },
+//   { id: 6, label: "Transcription", color: "#f87171" },
+//   { id: 7, label: "Repertoire", color: "#facc15" },
+//   { id: 8, label: "Rhythm", color: "#38bdf8" },
+// ];
 
 type TimeRangeKey = "week" | "month" | "year";
 type TaskInUseMock = {
@@ -319,125 +318,125 @@ type TaskInUseApiResponse = {
 };
 
 // Helper to get a date for a given week, month, or year bucket
-function getDateForLabel(
-  label: string,
-  range: TimeRangeKey,
-  baseDate: Date
-): Date {
-  if (range === "week") {
-    const days = [
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-      "Sunday",
-    ];
-    const idx = days.indexOf(label);
-    return addDays(startOfWeek(baseDate, { weekStartsOn: 1 }), idx);
-  }
-  if (range === "month") {
-    const weeks = ["W1", "W2", "W3", "W4"];
-    const idx = weeks.indexOf(label);
-    return addWeeks(startOfMonth(baseDate), idx);
-  }
-  if (range === "year") {
-    const months = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
-    const idx = months.indexOf(label);
-    return addMonths(startOfYear(baseDate), idx);
-  }
-  return baseDate;
-}
+// function getDateForLabel(
+//   label: string,
+//   range: TimeRangeKey,
+//   baseDate: Date
+// ): Date {
+//   if (range === "week") {
+//     const days = [
+//       "Monday",
+//       "Tuesday",
+//       "Wednesday",
+//       "Thursday",
+//       "Friday",
+//       "Saturday",
+//       "Sunday",
+//     ];
+//     const idx = days.indexOf(label);
+//     return addDays(startOfWeek(baseDate, { weekStartsOn: 1 }), idx);
+//   }
+//   if (range === "month") {
+//     const weeks = ["W1", "W2", "W3", "W4"];
+//     const idx = weeks.indexOf(label);
+//     return addWeeks(startOfMonth(baseDate), idx);
+//   }
+//   if (range === "year") {
+//     const months = [
+//       "Jan",
+//       "Feb",
+//       "Mar",
+//       "Apr",
+//       "May",
+//       "Jun",
+//       "Jul",
+//       "Aug",
+//       "Sep",
+//       "Oct",
+//       "Nov",
+//       "Dec",
+//     ];
+//     const idx = months.indexOf(label);
+//     return addMonths(startOfYear(baseDate), idx);
+//   }
+//   return baseDate;
+// }
 
 // Generate mock tasks-in-use with createdAt dates for the last 8 weeks, 6 months, 2 years
-function generateMockTasksInUse(): TaskInUseMock[] {
-  const now = new Date();
-  const tasks: TaskInUseMock[] = [];
-  // Weeks
-  for (let w = 0; w < 8; w++) {
-    const weekStart = subWeeks(startOfWeek(now, { weekStartsOn: 1 }), w);
-    [
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-      "Sunday",
-    ].forEach((day, i) => {
-      if (Math.random() > 0.6) return; // skip some days for realism
-      const date = addDays(weekStart, i);
-      tasks.push({
-        label: day,
-        occurrence: Math.floor(Math.random() * 8),
-        duration: Math.floor(Math.random() * 60),
-        tags: [mockTags[Math.floor(Math.random() * mockTags.length)].label],
-        createdAt: date.toISOString(),
-        sessionId: Math.floor(Math.random() * 100), // Mock sessionId
-      });
-    });
-  }
-  // Months
-  for (let m = 0; m < 6; m++) {
-    const monthStart = subMonths(startOfMonth(now), m);
-    ["W1", "W2", "W3", "W4"].forEach((week, i) => {
-      if (Math.random() > 0.5) return;
-      const date = addWeeks(monthStart, i);
-      tasks.push({
-        label: week,
-        occurrence: Math.floor(Math.random() * 20),
-        duration: Math.floor(Math.random() * 200),
-        tags: [mockTags[Math.floor(Math.random() * mockTags.length)].label],
-        createdAt: date.toISOString(),
-        sessionId: Math.floor(Math.random() * 100), // Mock sessionId
-      });
-    });
-  }
-  // Years
-  for (let y = 0; y < 2; y++) {
-    const yearStart = subYears(startOfYear(now), y);
-    [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ].forEach((month, i) => {
-      if (Math.random() > 0.4) return;
-      const date = addMonths(yearStart, i);
-      tasks.push({
-        label: month,
-        occurrence: Math.floor(Math.random() * 50),
-        duration: Math.floor(Math.random() * 500),
-        tags: [mockTags[Math.floor(Math.random() * mockTags.length)].label],
-        createdAt: date.toISOString(),
-        sessionId: Math.floor(Math.random() * 100), // Mock sessionId
-      });
-    });
-  }
-  return tasks;
-}
+// function generateMockTasksInUse(): TaskInUseMock[] {
+//   const now = new Date();
+//   const tasks: TaskInUseMock[] = [];
+//   // Weeks
+//   for (let w = 0; w < 8; w++) {
+//     const weekStart = subWeeks(startOfWeek(now, { weekStartsOn: 1 }), w);
+//     [
+//       "Monday",
+//       "Tuesday",
+//       "Wednesday",
+//       "Thursday",
+//       "Friday",
+//       "Saturday",
+//       "Sunday",
+//     ].forEach((day, i) => {
+//       if (Math.random() > 0.6) return; // skip some days for realism
+//       const date = addDays(weekStart, i);
+//       tasks.push({
+//         label: day,
+//         occurrence: Math.floor(Math.random() * 8),
+//         duration: Math.floor(Math.random() * 60),
+//         tags: [mockTags[Math.floor(Math.random() * mockTags.length)].label],
+//         createdAt: date.toISOString(),
+//         sessionId: Math.floor(Math.random() * 100), // Mock sessionId
+//       });
+//     });
+//   }
+//   // Months
+//   for (let m = 0; m < 6; m++) {
+//     const monthStart = subMonths(startOfMonth(now), m);
+//     ["W1", "W2", "W3", "W4"].forEach((week, i) => {
+//       if (Math.random() > 0.5) return;
+//       const date = addWeeks(monthStart, i);
+//       tasks.push({
+//         label: week,
+//         occurrence: Math.floor(Math.random() * 20),
+//         duration: Math.floor(Math.random() * 200),
+//         tags: [mockTags[Math.floor(Math.random() * mockTags.length)].label],
+//         createdAt: date.toISOString(),
+//         sessionId: Math.floor(Math.random() * 100), // Mock sessionId
+//       });
+//     });
+//   }
+//   // Years
+//   for (let y = 0; y < 2; y++) {
+//     const yearStart = subYears(startOfYear(now), y);
+//     [
+//       "Jan",
+//       "Feb",
+//       "Mar",
+//       "Apr",
+//       "May",
+//       "Jun",
+//       "Jul",
+//       "Aug",
+//       "Sep",
+//       "Oct",
+//       "Nov",
+//       "Dec",
+//     ].forEach((month, i) => {
+//       if (Math.random() > 0.4) return;
+//       const date = addMonths(yearStart, i);
+//       tasks.push({
+//         label: month,
+//         occurrence: Math.floor(Math.random() * 50),
+//         duration: Math.floor(Math.random() * 500),
+//         tags: [mockTags[Math.floor(Math.random() * mockTags.length)].label],
+//         createdAt: date.toISOString(),
+//         sessionId: Math.floor(Math.random() * 100), // Mock sessionId
+//       });
+//     });
+//   }
+//   return tasks;
+// }
 
 // Goal calculation functions
 function calculateGoalProgress(
@@ -505,66 +504,10 @@ function formatGoalSummary(goal: Goal): string {
   return `${tagDisplay} | ${goal.target} ${typeDisplay} | ${timeFrameDisplay}`;
 }
 
-// Mock API functions
-function fetchUserTags(): Promise<
-  { id: number; label: string; color?: string }[]
-> {
-  return fetch("http://localhost:3000/tags/all-labels")
-    .then((res) => res.json())
-    .then((labels: string[]) =>
-      labels.map((label, idx) => ({
-        id: idx + 1,
-        label,
-        color: undefined, // Color is not provided by the API
-      }))
-    );
-}
-
-function fetchAllTasksInUse(): Promise<TaskInUseMock[]> {
-  // Hardcoded for musicianId 26 for now
-  return fetch("http://localhost:3000/tasks-in-use/musician/26")
-    .then((res) => res.json())
-    .then((tasks: TaskInUseApiResponse[]) =>
-      tasks.map((t) => ({
-        label: "", // Not provided by backend
-        occurrence: 1, // Each TaskInUse is one occurrence
-        duration: t.duration,
-        tags: t.tags,
-        createdAt:
-          typeof t.createdAt === "string"
-            ? t.createdAt
-            : new Date(t.createdAt).toISOString(),
-        sessionId: t.sessionId, // Add sessionId
-      }))
-    );
-}
-
-type GoalApiResponse = {
-  id: number;
-  musicianId: number;
-  tag: string;
-  type: "duration" | "frequency";
-  target: number;
-  timeFrame: "daily" | "weekly" | "monthly" | "annually";
-  createdAt: string;
-};
-
-function fetchGoals(musicianId: number): Promise<Goal[]> {
-  return fetch(`http://localhost:3000/musicians/${musicianId}/goals`)
-    .then((res) => res.json())
-    .then((goals: GoalApiResponse[]) =>
-      goals.map((g) => ({
-        ...g,
-        id: String(g.id),
-        createdAt:
-          typeof g.createdAt === "string"
-            ? g.createdAt
-            : new Date(g.createdAt).toISOString(),
-      }))
-    );
-}
+// Mock API functions - removed duplicates, see updated versions inside component
 
 const Growth: React.FC = () => {
+  const { user } = useAuth();
   const [view, setView] = useState<ViewType>("MENU");
   const [selectedTimeRange, setSelectedTimeRange] = useState<TimeRange>("week");
   const [selectedMetric, setSelectedMetric] = useState<Metric>("occurrence");
@@ -617,9 +560,61 @@ const Growth: React.FC = () => {
     setIsGoalModalOpen(false);
   }
 
-  // Fetch tags, all tasks-in-use, and goals on mount
+  // Update API functions to use authenticated user
+  function fetchUserTags(): Promise<
+    { id: number; label: string; color?: string }[]
+  > {
+    return fetch(apiConfig.endpoints.tags.all)
+      .then((res) => res.json())
+      .then((labels: string[]) =>
+        labels.map((label, idx) => ({
+          id: idx + 1,
+          label,
+          color: undefined, // Color is not provided by the API
+        }))
+      );
+  }
+
+  // Move fetchAllTasksInUse inside component to access user
+  function fetchAllTasksInUse(): Promise<TaskInUseMock[]> {
+    // Use authenticated user's ID instead of hardcoded 26
+    const musicianId = user?.id || 26; // Fallback to 26 if no user
+    return fetch(apiConfig.endpoints.tasksInUse.byMusician(musicianId))
+      .then((res) => res.json())
+      .then((tasks: TaskInUseApiResponse[]) =>
+        tasks.map((t) => ({
+          label: "", // Not provided by backend
+          occurrence: 1, // Each TaskInUse is one occurrence
+          duration: t.duration,
+          tags: t.tags || [],
+          createdAt:
+            typeof t.createdAt === "string"
+              ? t.createdAt
+              : new Date(t.createdAt).toISOString(),
+          sessionId: t.sessionId, // Add sessionId
+        }))
+      );
+  }
+
+  function fetchGoals(musicianId: number): Promise<Goal[]> {
+    return fetch(apiConfig.endpoints.musicians.goals(musicianId))
+      .then((res) => res.json())
+      .then((goals: Goal[]) =>
+        goals.map((g) => ({
+          ...g,
+          id: String(g.id),
+          createdAt:
+            typeof g.createdAt === "string"
+              ? g.createdAt
+              : new Date(g.createdAt).toISOString(),
+        }))
+      );
+  }
+
+  // Update useEffect to use authenticated user
   useEffect(() => {
-    const musicianId = 26; // TODO: Replace with real user context when available
+    const musicianId = user?.id || 26; // Fallback to 26 if no user
+
     fetchUserTags().then((tags) => {
       console.log("[Growth] Tags from API:", tags);
       setUserTags(tags);
@@ -632,7 +627,7 @@ const Growth: React.FC = () => {
       console.log("[Growth] Goals from API:", goals);
       setGoals(goals);
     });
-  }, []);
+  }, [user]); // Add user as dependency
 
   // When time range, currentIndex, or allTasksInUse changes, filter for current window
   useEffect(() => {
@@ -878,8 +873,7 @@ const Growth: React.FC = () => {
     // Navigation logic
     // Find the earliest and latest periods with data
     const now = new Date();
-    let minIndex = 0,
-      maxIndex = 0;
+    let minIndex = 0;
     if (allTasksInUse.length > 0) {
       const allDates = allTasksInUse.map((t) => parseISO(t.createdAt));
       if (selectedTimeRange === "week") {
