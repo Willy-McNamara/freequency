@@ -1,5 +1,6 @@
 import { SessionsService } from './sessions.service';
 import { NewFrontendSessionDTO } from './dto/session.dto';
+import { CreatedCommentDto, CreatedGasUpDto } from 'src/musicians/dto/musician.dto';
 import { S3Service } from 'src/s3/s3.service';
 import { MediaService } from 'src/media/media.service';
 export declare class SessionsController {
@@ -12,4 +13,6 @@ export declare class SessionsController {
         nextCursor?: string;
     }>;
     createSessionWithoutAudio(body: any, req: any): Promise<NewFrontendSessionDTO>;
+    addComment(body: any, req: any): Promise<CreatedCommentDto>;
+    addGasUp(body: any, req: any): Promise<CreatedGasUpDto>;
 }

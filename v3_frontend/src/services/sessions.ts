@@ -30,4 +30,48 @@ export const sessionService = {
     }
     return response.json();
   },
+
+  async getSessionById(sessionId: number) {
+    const response = await fetch(buildApiUrl(`/sessions/${sessionId}`), {
+      method: "GET",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!response.ok) {
+      throw new Error("Failed to fetch session");
+    }
+    return response.json();
+  },
+
+  async addComment(sessionId: number, commentText: string) {
+    const response = await fetch(buildApiUrl("/sessions/addComment"), {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        text: commentText,
+        sessionId: sessionId,
+      }),
+    });
+    if (!response.ok) {
+      throw new Error("Failed to add comment");
+    }
+    return response.json();
+  },
+
+  async addGasUp(sessionId: number, musicianId: number) {
+    const response = await fetch(buildApiUrl("/sessions/addGasUp"), {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sessionId: sessionId,
+        musicianId: musicianId,
+      }),
+    });
+    if (!response.ok) {
+      throw new Error("Failed to add gas up");
+    }
+    return response.json();
+  },
 };

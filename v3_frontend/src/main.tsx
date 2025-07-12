@@ -9,6 +9,7 @@ import TaskLibrary from "./pages/TaskLibrary";
 import Growth from "./pages/Growth";
 import Profile from "./pages/Profile";
 import Login from "./pages/Login";
+import { PostView } from "./pages/PostView";
 import ErrorBoundaryWrapper from "./ErrorBoundary.tsx";
 import { SessionProvider } from "./components/SessionContext";
 import { AuthProvider } from "./components/auth/AuthProvider";
@@ -39,10 +40,12 @@ ReactDOM.createRoot(root).render(
               }
             >
               <Route index element={<Feed />} />
+              <Route path="/feed" element={<Feed />} />
               <Route path="/practice" element={<Practice />} />
               <Route path="/task-library" element={<TaskLibrary />} />
               <Route path="/growth" element={<Growth />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/post/:postId" element={<PostView />} />
               {/* Fallback for unknown routes */}
               <Route path="*" element={<h1>Page Not Found</h1>} />
             </Route>

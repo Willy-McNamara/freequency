@@ -85,7 +85,7 @@ export class GasUpDto {
 export class CreatedGasUpDto {
   musician: {
     displayName: string;
-    profilePictureUrl: string;
+    avatarUrl: string | null;
   };
   id: number;
   musicianId: number;
@@ -100,7 +100,7 @@ export class CreatedCommentDto {
   sessionId: number;
   musician: {
     displayName: string;
-    profilePictureUrl: string;
+    avatarUrl: string | null;
   };
 }
 
