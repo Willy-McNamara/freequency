@@ -41,6 +41,30 @@ interface Post {
       avatarUrl: string | null;
     };
   }>;
+  tasks: Array<{
+    id: number;
+    title: string;
+    notes: string;
+    timeSpent: number;
+    taskDefinition: {
+      id: number;
+      title: string;
+      description: string;
+      instrument: string;
+      user: {
+        displayName: string;
+        avatarUrl: string | null;
+      };
+      tags: Array<{
+        id: number;
+        label: string;
+        color: string | null;
+      }>;
+      checklist: string[];
+      savedCount: number;
+      usedCount: number;
+    };
+  }>;
 }
 
 const Feed = () => {

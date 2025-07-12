@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback } from "./avatar";
 import { Badge } from "./badge";
 import { MessageSquareIcon, ThumbsUpIcon } from "lucide-react";
 import { RichTextRenderer } from "./rich-text";
+import { useMemo } from "react";
 
 interface PostData {
   id: number;
@@ -36,6 +37,30 @@ interface PostData {
       avatarUrl: string | null;
     };
   }>;
+  tasks: Array<{
+    id: number;
+    title: string;
+    notes: string;
+    timeSpent: number;
+    taskDefinition: {
+      id: number;
+      title: string;
+      description: string;
+      instrument: string;
+      user: {
+        displayName: string;
+        avatarUrl: string | null;
+      };
+      tags: Array<{
+        id: number;
+        label: string;
+        color: string | null;
+      }>;
+      checklist: string[];
+      savedCount: number;
+      usedCount: number;
+    };
+  }>;
 }
 
 export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
@@ -56,6 +81,31 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
     title: postData.title,
     description: postData.notes,
   };
+
+  // Collect all tags from session and tasks, removing duplicates
+  const allTags = useMemo(() => {
+    const sessionTags = postData.tags || [];
+    const taskTags =
+      postData.tasks?.flatMap((task) => task.taskDefinition.tags || []) || [];
+
+    // Combine and remove duplicates based on label
+    const tagMap = new Map<
+      string,
+      { id: number; label: string; color: string | null }
+    >();
+
+    // Add session tags first
+    sessionTags.forEach((tag) => {
+      tagMap.set(tag.label, tag);
+    });
+
+    // Add task tags (task tags will override session tags if same label)
+    taskTags.forEach((tag) => {
+      tagMap.set(tag.label, tag);
+    });
+
+    return Array.from(tagMap.values());
+  }, [postData.tags, postData.tasks]);
 
   // Data for engagement metrics
   const engagementData = [
@@ -97,7 +147,7 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
         </div>
 
         <div className="flex items-center gap-[17px]">
-          {postData.tags.map(
+          {allTags.map(
             (
               tag: { id: number; label: string; color: string | null },
               index: number
