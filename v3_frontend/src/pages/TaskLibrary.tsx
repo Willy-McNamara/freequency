@@ -14,6 +14,7 @@ import {
 import { useNavigate } from "react-router";
 import { SessionContext } from "@/components/SessionContext";
 import { Pause, Timer } from "lucide-react";
+import { apiConfig } from "../config/api";
 
 const TaskLibrary: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -60,7 +61,7 @@ const TaskLibrary: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const response = await fetch("http://localhost:3000/tasks");
+        const response = await fetch(apiConfig.endpoints.tasks);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -91,7 +92,7 @@ const TaskLibrary: React.FC = () => {
 
   const handleFilterChange = (
     filterType: FilterType,
-    isSelected: boolean,
+    _isSelected: boolean,
     options?: FilterOption[]
   ) => {
     setActiveFilters((prev) =>
@@ -234,7 +235,7 @@ const TaskLibrary: React.FC = () => {
 
   const handleCreateTask = async (taskData: CreateTaskData) => {
     try {
-      const response = await fetch("http://localhost:3000/tasks", {
+      const response = await fetch(apiConfig.endpoints.tasks, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -277,7 +278,7 @@ const TaskLibrary: React.FC = () => {
     try {
       console.log("Submitting modified task:", taskData);
 
-      const response = await fetch("http://localhost:3000/tasks", {
+      const response = await fetch(apiConfig.endpoints.tasks, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

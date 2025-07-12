@@ -9,6 +9,7 @@ import {
 } from "./ui/dialog";
 import { Badge } from "./badge";
 import { Plus } from "lucide-react";
+import { apiConfig } from "../config/api";
 
 interface Tag {
   id: number;
@@ -53,7 +54,7 @@ export const TagModal: React.FC<TagModalProps> = ({
   React.useEffect(() => {
     if (!isOpen) return;
     setLoading(true);
-    fetch("http://localhost:3000/tags/all-labels")
+    fetch(apiConfig.endpoints.tags.all)
       .then((res) => res.json())
       .then((data) => setTags(data))
       .catch(() => setTags([]))
@@ -80,7 +81,7 @@ export const TagModal: React.FC<TagModalProps> = ({
     setCreating(true);
     setError(null);
     try {
-      const res = await fetch("http://localhost:3000/tags", {
+      const res = await fetch(apiConfig.endpoints.tags.create, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ label: query.trim() }),

@@ -29,7 +29,8 @@ import { TagsController } from './tags/tags.controller';
     MusiciansModule,
     TasksModule,
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '../../../v3_frontend/dist'),
+      rootPath: join(process.cwd(), '../v3_frontend/dist'),
+      serveRoot: '/',
     }),
     AuthModule,
     JwtModule.register({

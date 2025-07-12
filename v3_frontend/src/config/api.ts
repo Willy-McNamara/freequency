@@ -1,0 +1,95 @@
+// API Configuration
+// This file centralizes all backend URL configuration for easy deployment
+
+interface ApiConfig {
+  baseUrl: string;
+  authUrl: string;
+  endpoints: {
+    auth: {
+      me: string;
+      login: string;
+      logout: string;
+    };
+    musicians: {
+      profile: (id: number) => string;
+      allDisplayNames: string;
+      goals: (id: number) => string;
+    };
+    sessions: string;
+    tasks: string;
+    tasksInUse: {
+      byMusician: (id: number) => string;
+    };
+    tags: {
+      all: string;
+      create: string;
+    };
+    instruments: {
+      all: string;
+    };
+  };
+}
+
+// Environment-based configuration
+const getApiConfig = (): ApiConfig => {
+  // In development, use localhost
+  // In production, this will be overridden by environment variables
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+
+  return {
+    baseUrl,
+    authUrl: `${baseUrl}/auth`,
+    endpoints: {
+      auth: {
+        me: `${baseUrl}/auth/me`,
+        login: `${baseUrl}/auth/login`,
+        logout: `${baseUrl}/auth/logout`,
+      },
+      musicians: {
+        profile: (id: number) => `${baseUrl}/musicians/${id}`,
+        allDisplayNames: `${baseUrl}/musicians/all-display-names`,
+        goals: (id: number) => `${baseUrl}/musicians/${id}/goals`,
+      },
+      sessions: `${baseUrl}/sessions`,
+      tasks: `${baseUrl}/tasks`,
+      tasksInUse: {
+        byMusician: (id: number) => `${baseUrl}/tasks-in-use/musician/${id}`,
+      },
+      tags: {
+        all: `${baseUrl}/tags/all-labels`,
+        create: `${baseUrl}/tags`,
+      },
+      instruments: {
+        all: `${baseUrl}/instruments/all-labels`,
+      },
+    },
+  };
+};
+
+// Export the configuration
+export const apiConfig = getApiConfig();
+
+// Utility function to build full URLs
+export const buildApiUrl = (endpoint: string): string => {
+  // If endpoint already has http/https, return as-is
+  if (endpoint.startsWith("http")) {
+    return endpoint;
+  }
+
+  // Otherwise, prepend the base URL
+  return `${apiConfig.baseUrl}${
+    endpoint.startsWith("/") ? endpoint : `/${endpoint}`
+  }`;
+};
+
+// Environment detection
+export const isDevelopment = import.meta.env.DEV;
+export const isProduction = import.meta.env.PROD;
+
+// Log configuration in development
+if (isDevelopment) {
+  console.log("API Configuration:", {
+    baseUrl: apiConfig.baseUrl,
+    environment: import.meta.env.MODE,
+  });
+}

@@ -24,13 +24,25 @@ let SessionsController = class SessionsController {
         this.mediaService = mediaService;
     }
     async getSessionsOnRender(cursor, users, instruments, tags, saved) {
+        console.log('Sessions endpoint called with filters:', {
+            cursor,
+            users,
+            instruments,
+            tags,
+            saved,
+        });
         const filters = {
             users: users ? users.split(',') : [],
             instruments: instruments ? instruments.split(',') : [],
             tags: tags ? tags.split(',') : [],
             saved: saved === 'true',
         };
-        return this.sessionsService.getSessionsWithFilters(filters, cursor);
+        const result = await this.sessionsService.getSessionsWithFilters(filters, cursor);
+        console.log('Sessions result:', {
+            count: result.sessions.length,
+            hasNextCursor: !!result.nextCursor,
+        });
+        return result;
     }
 };
 exports.SessionsController = SessionsController;

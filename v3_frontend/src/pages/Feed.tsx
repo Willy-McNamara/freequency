@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { FeedPost } from "../components/feed-post";
 import {
   FilterBar,
@@ -6,6 +6,7 @@ import {
   FilterType,
   FilterOption,
 } from "../components/filter-bar";
+import { apiConfig } from "../config/api";
 
 interface Post {
   id: number;
@@ -145,7 +146,7 @@ const Feed = () => {
         // For initial fetch (new filter), do not use any cursor
         const params = buildQueryParams(cursorOverride);
         const response = await fetch(
-          `http://localhost:3000/sessions?${params.toString()}`
+          `${apiConfig.endpoints.sessions}?${params.toString()}`
         );
 
         if (!response.ok) {
@@ -209,7 +210,7 @@ const Feed = () => {
 
   const handleFilterChange = (
     filterType: FilterType,
-    isSelected: boolean,
+    _isSelected: boolean,
     options?: FilterOption[]
   ) => {
     setActiveFilters((prev) =>
@@ -252,13 +253,13 @@ const Feed = () => {
 
   // Fetch all users, instruments, and tags on mount
   useEffect(() => {
-    fetch("http://localhost:3000/musicians/all-display-names")
+    fetch(apiConfig.endpoints.musicians.allDisplayNames)
       .then((res) => res.json())
       .then((data) => setAllUsers(data));
-    fetch("http://localhost:3000/instruments/all-labels")
+    fetch(apiConfig.endpoints.instruments.all)
       .then((res) => res.json())
       .then((data) => setAllInstruments(data));
-    fetch("http://localhost:3000/tags/all-labels")
+    fetch(apiConfig.endpoints.tags.all)
       .then((res) => res.json())
       .then((data) => setAllTags(data));
   }, []);

@@ -46,6 +46,14 @@ export class SessionsController {
     @Query('tags') tags?: string,
     @Query('saved') saved?: string,
   ): Promise<{ sessions: NewFrontendSessionDTO[]; nextCursor?: string }> {
+    console.log('Sessions endpoint called with filters:', {
+      cursor,
+      users,
+      instruments,
+      tags,
+      saved,
+    });
+
     const filters = {
       users: users ? users.split(',') : [],
       instruments: instruments ? instruments.split(',') : [],
@@ -53,7 +61,15 @@ export class SessionsController {
       saved: saved === 'true',
     };
 
-    return this.sessionsService.getSessionsWithFilters(filters, cursor);
+    const result = await this.sessionsService.getSessionsWithFilters(
+      filters,
+      cursor,
+    );
+    console.log('Sessions result:', {
+      count: result.sessions.length,
+      hasNextCursor: !!result.nextCursor,
+    });
+    return result;
   }
 
   // @Post('nextChunk')
