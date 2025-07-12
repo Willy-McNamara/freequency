@@ -11,6 +11,7 @@ import type {
   SessionContextValue,
 } from "@/components/SessionContext";
 import { ArrowLeft, Trash2 } from "lucide-react";
+import { sessionService } from "../services/sessions";
 
 const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   session,
@@ -162,6 +163,50 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
     }
     localStorage.removeItem("practiceSelectedTaskId");
     setSelectedTaskId(null);
+  };
+
+  const handleSaveSession = async () => {
+    try {
+      // Explicitly type sessionData to match backend DTO
+      const sessionData: {
+        title: string;
+        notes: string;
+        instruments: number[];
+        tags: number[];
+        duration: number;
+        tasks: Array<{
+          id: number;
+          title: string;
+          notes: string;
+          timeSpent: number;
+          checklist: { item: string; checked: boolean }[];
+          tags: number[];
+        }>;
+      } = {
+        title: session.sessionTitle || "Untitled Session",
+        notes: session.sessionNotes || "",
+        instruments: [], // No instrument selection in context yet
+        tags: session.tags ? session.tags.map((t) => Number(t.id)) : [],
+        duration: session.sessionTimerSeconds || 0,
+        tasks: (session.tasks || []).map((task) => ({
+          id: Number(task.id),
+          title: task.title || "",
+          notes: task.notes || "",
+          timeSpent: task.timeSpent || 0,
+          checklist: Array.isArray(task.checklist) ? task.checklist : [],
+          tags: Array.isArray(task.tags)
+            ? task.tags.map((t) => Number(t.id))
+            : [],
+        })),
+      };
+      await sessionService.saveSession(sessionData);
+      alert("Session saved!");
+    } catch (err) {
+      alert(
+        "Failed to save session: " +
+          (err instanceof Error ? err.message : "Unknown error")
+      );
+    }
   };
 
   // Main Practice view
@@ -324,6 +369,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
             <button
               type="button"
               className="px-6 py-2 rounded-md bg-primary text-primary-foreground font-semibold shadow hover:bg-primary/80 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              onClick={handleSaveSession}
             >
               Save Session
             </button>

@@ -78,25 +78,28 @@ export class SessionsController {
   //   return this.sessionsService.getSessionsChunk(body.cursor);
   // }
 
-  // @Post('newSessionWithoutAudio')
-  // @UseGuards(JwtAuthGuard)
-  // async createSessionWithoutAudio(
-  //   @Body() body: any,
-  //   @Req() req: any,
-  // ): Promise<FrontendSessionDto> {
-  //   const createSession: CreateSessionDto = {
-  //     title: body.title,
-  //     notes: body.notes,
-  //     instruments: body.instruments,
-  //     duration: body.duration,
-  //     isPublic: body.isPublic,
-  //     musicianId: req.user.id,
-  //   };
-  //   const newSession: FrontendSessionDto =
-  //     await this.sessionsService.createSession(createSession);
+  @Post('newSessionWithoutAudio')
+  @UseGuards(JwtAuthGuard)
+  async createSessionWithoutAudio(
+    @Body() body: any,
+    @Req() req: any,
+  ): Promise<NewFrontendSessionDTO> {
+    // Expecting: { title, notes, instruments: number[], tags: number[], duration }
+    const createSession: CreateSessionDto = {
+      title: body.title,
+      notes: body.notes,
+      instruments: body.instruments, // array of instrument IDs
+      tags: body.tags, // array of tag IDs
+      duration: body.duration,
+      isPublic: true, // all sessions public for now
+      musicianId: req.user.id,
+      tasks: body.tasks || [], // array of task data
+    };
+    const newSession: NewFrontendSessionDTO =
+      await this.sessionsService.createSession(createSession);
 
-  //   return newSession;
-  // }
+    return newSession;
+  }
 
   // @Post('newSessionWithAudio')
   // @UseGuards(JwtAuthGuard)

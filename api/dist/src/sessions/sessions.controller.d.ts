@@ -11,4 +11,5 @@ export declare class SessionsController {
         sessions: NewFrontendSessionDTO[];
         nextCursor?: string;
     }>;
+    createSessionWithoutAudio(body: any, req: any): Promise<NewFrontendSessionDTO>;
 }

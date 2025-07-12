@@ -13,7 +13,12 @@ const Login: React.FC = () => {
   const { login } = useAuth();
 
   const handleGoogleLogin = () => {
-    login();
+    // In development, use debug parameter
+    if (import.meta.env.DEV) {
+      window.location.href = "http://localhost:3000/auth/login?debug=true";
+    } else {
+      login();
+    }
   };
 
   return (

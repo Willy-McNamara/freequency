@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SessionsController = void 0;
 const common_1 = require("@nestjs/common");
 const sessions_service_1 = require("./sessions.service");
+const jwt_guard_1 = require("../auth/jwt.guard");
 const s3_service_1 = require("../s3/s3.service");
 const media_service_1 = require("../media/media.service");
 let SessionsController = class SessionsController {
@@ -44,6 +45,20 @@ let SessionsController = class SessionsController {
         });
         return result;
     }
+    async createSessionWithoutAudio(body, req) {
+        const createSession = {
+            title: body.title,
+            notes: body.notes,
+            instruments: body.instruments,
+            tags: body.tags,
+            duration: body.duration,
+            isPublic: true,
+            musicianId: req.user.id,
+            tasks: body.tasks || [],
+        };
+        const newSession = await this.sessionsService.createSession(createSession);
+        return newSession;
+    }
 };
 exports.SessionsController = SessionsController;
 __decorate([
@@ -57,6 +72,15 @@ __decorate([
     __metadata("design:paramtypes", [String, String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], SessionsController.prototype, "getSessionsOnRender", null);
+__decorate([
+    (0, common_1.Post)('newSessionWithoutAudio'),
+    (0, common_1.UseGuards)(jwt_guard_1.JwtAuthGuard),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], SessionsController.prototype, "createSessionWithoutAudio", null);
 exports.SessionsController = SessionsController = __decorate([
     (0, common_1.Controller)('sessions'),
     __metadata("design:paramtypes", [sessions_service_1.SessionsService,

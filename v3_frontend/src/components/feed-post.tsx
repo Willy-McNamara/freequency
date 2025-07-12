@@ -2,6 +2,7 @@ import { JSX } from "react";
 import { Avatar, AvatarFallback } from "./avatar";
 import { Badge } from "./badge";
 import { MessageSquareIcon, ThumbsUpIcon } from "lucide-react";
+import { RichText } from "./rich-text";
 
 interface PostData {
   id: number;
@@ -114,9 +115,11 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
           {sessionData.title}
         </h4>
 
-        <p className="font-['Inter',Helvetica] text-black text-sm font-normal leading-6">
-          {sessionData.description}
-        </p>
+        <RichText
+          content={sessionData.description}
+          maxLength={300}
+          className="font-['Inter',Helvetica] text-black text-sm font-normal leading-6"
+        />
       </div>
       {/* splicing in like/comment section */}
       <div className="flex items-center gap-[18px]">
