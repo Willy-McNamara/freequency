@@ -7,23 +7,35 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Observable } from 'rxjs';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') implements CanActivate {
+  constructor(private prisma: PrismaService) {
+    super();
+  }
+
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
     return super.canActivate(context);
   }
 
-  handleRequest(err: any, user: any): any {
+  handleRequest(
+    err: any,
+    user: any,
+    info: any,
+    context: ExecutionContext,
+  ): any {
+    // In debug mode, return a mock user object regardless of JWT validation
     if (process.env.DEBUG === 'TRUE') {
-      Logger.log('DEBUG MODE: jwt.guard.ts handleRequest');
-      return { id: 4 };
+      return { id: 33, email: 'dev@example.com', displayName: 'Dev User' };
     }
+
     if (err || !user) {
       throw new UnauthorizedException('Invalid token');
     }
+
     return user;
   }
 }

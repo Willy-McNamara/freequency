@@ -1,5 +1,5 @@
 import { PrismaService } from 'src/prisma/prisma.service';
-import { NewFrontendSessionDTO } from './dto/session.dto';
+import { CreateSessionDto, NewFrontendSessionDTO } from './dto/session.dto';
 interface SessionFilters {
     users: string[];
     instruments: string[];
@@ -14,5 +14,6 @@ export declare class SessionsService {
         nextCursor?: string;
     }>;
     getFiveSessions(): Promise<NewFrontendSessionDTO[]>;
+    createSession(newSession: CreateSessionDto): Promise<NewFrontendSessionDTO>;
 }
 export {};

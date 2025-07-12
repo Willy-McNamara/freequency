@@ -8,7 +8,10 @@ import { join } from 'path';
 async function bootstrap() {
   config({ path: '.env.local' }); // since git issue with .env, this workaround to use .env.local
   const app = await NestFactory.create(AppModule);
-  app.enableCors();
+  app.enableCors({
+    origin: ['http://localhost:5173', 'http://localhost:3000'], // Vite dev server + backend
+    credentials: true, // Important for JWT cookies
+  });
   app.use(cookieParser());
   //app.useGlobalFilters(new AllExceptionsFilter(app.get(HttpAdapterHost)));
 
