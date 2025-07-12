@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { FeedPost } from "../components/feed-post";
 import {
   FilterBar,
@@ -7,6 +8,7 @@ import {
   FilterOption,
 } from "../components/filter-bar";
 import { apiConfig } from "../config/api";
+import { useAuth } from "../components/auth/AuthProvider";
 
 interface Post {
   id: number;
@@ -42,6 +44,8 @@ interface Post {
 }
 
 const Feed = () => {
+  const [searchParams] = useSearchParams();
+  const { user } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,6 +59,9 @@ const Feed = () => {
   const [allUsers, setAllUsers] = useState<string[]>([]);
   const [allTags, setAllTags] = useState<string[]>([]);
   const [allInstruments, setAllInstruments] = useState<string[]>([]);
+
+  // Check for my-sessions filter in URL
+  const isMySessionsFilter = searchParams.get("filter") === "my-sessions";
 
   const [activeFilters, setActiveFilters] = useState<FilterState[]>([
     {
@@ -301,10 +308,26 @@ const Feed = () => {
             ?.options?.some((opt) => opt.label === tag && opt.checked) || false,
       }));
 
+      // If my-sessions filter is active, automatically select the current user
+      let updatedUserOptions = userOptions;
+      if (isMySessionsFilter && user?.displayName) {
+        updatedUserOptions = userOptions.map((option) => ({
+          ...option,
+          checked: option.label === user.displayName,
+        }));
+      }
+
       setActiveFilters((prev) =>
         prev.map((filter) => {
           if (filter.type === "user") {
-            return { ...filter, options: userOptions };
+            return {
+              ...filter,
+              options: updatedUserOptions,
+              isSelected:
+                isMySessionsFilter && user?.displayName
+                  ? true
+                  : filter.isSelected,
+            };
           }
           if (filter.type === "instrument") {
             return { ...filter, options: instrumentOptions };
@@ -316,7 +339,13 @@ const Feed = () => {
         })
       );
     }
-  }, [allUsers, allInstruments, allTags]);
+  }, [
+    allUsers,
+    allInstruments,
+    allTags,
+    isMySessionsFilter,
+    user?.displayName,
+  ]);
 
   // Initial data fetch: only after all filter options are loaded
   useEffect(() => {
@@ -368,6 +397,20 @@ const Feed = () => {
     <div className="flex flex-col w-full justify-start">
       {/* Filter Bar */}
       <FilterBar filters={activeFilters} onFilterChange={handleFilterChange} />
+
+      {/* My Sessions Indicator */}
+      {isMySessionsFilter && (
+        <div className="flex items-center justify-center py-4 bg-muted/20 border-b border-border">
+          <div className="text-center">
+            <h2 className="text-lg font-semibold text-foreground">
+              My Sessions
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Showing only your practice sessions
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Feed Posts */}
       <div className="flex flex-col items-start gap-12 mb-2 pt-8">

@@ -40,7 +40,6 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
     setSessionNotes,
   } = session;
 
-  const wasSessionTimerRunning = useRef(false);
   const timeAlreadyAddedToSession = useRef(0);
   const lastTaskRef = useRef<{ id: string | null; notes: string }>({
     id: null,
@@ -96,7 +95,6 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
       timeAlreadyAddedToSession.current = selectedTask.timeSpent || 0;
 
       // Pause session timer
-      wasSessionTimerRunning.current = session.sessionTimerRunning ?? false;
       if (session.sessionTimerRunning) {
         session.setSessionTimerRunning(false);
       }
@@ -164,10 +162,9 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
       }
     }
     setTaskTimerRunning(false);
-    // Resume session timer when returning to Practice view
-    if (wasSessionTimerRunning.current) {
-      session.setSessionTimerRunning(true);
-    }
+    // Always resume session timer when returning to Practice view
+    // The session timer should be running by default unless user explicitly paused it
+    session.setSessionTimerRunning(true);
     localStorage.removeItem("practiceSelectedTaskId");
     setSelectedTaskId(null);
   };
@@ -207,7 +204,22 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
         })),
       };
       await sessionService.saveSession(sessionData);
-      alert("Session saved!");
+
+      // Clear all session state after successful save
+      session.setSessionTitle("Untitled Session");
+      session.setTags([]);
+      session.setTasks([]);
+      session.setIsActive(false);
+      session.setSessionTimerSeconds(0);
+      session.setSessionTimerRunning(false);
+      session.setSessionNotes("");
+
+      // Clear localStorage
+      localStorage.removeItem("practiceSession");
+      localStorage.removeItem("practiceSelectedTaskId");
+
+      // Navigate to feed with filter for user's sessions
+      navigate("/feed?filter=my-sessions");
     } catch (err) {
       alert(
         "Failed to save session: " +
