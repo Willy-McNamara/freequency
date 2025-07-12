@@ -128,6 +128,27 @@ export class SessionsService {
             color: true,
           },
         },
+        tasksInUse: {
+          include: {
+            taskDefinition: {
+              include: {
+                musician: {
+                  select: {
+                    displayName: true,
+                    avatarUrl: true,
+                  },
+                },
+              },
+            },
+            tags: {
+              select: {
+                id: true,
+                label: true,
+                color: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -152,7 +173,6 @@ export class SessionsService {
         duration: session.duration,
         isPublic: session.isPublic,
         createdAt: session.createdAt.toISOString(),
-        musicianId: session.musicianId,
         musician: {
           displayName: session.musician.displayName,
           avatarUrl: session.musician.avatarUrl,
@@ -162,9 +182,50 @@ export class SessionsService {
           label: tag.label,
           color: tag.color,
         })),
-        gasUps: session.gasUps,
-        comments: session.comments,
-        media: session.media ?? null,
+        gasUps: session.gasUps.map((gasUp) => ({
+          musician: {
+            displayName: gasUp.musician.displayName,
+            avatarUrl: gasUp.musician.avatarUrl,
+          },
+        })),
+        comments: session.comments.map((comment) => ({
+          id: comment.id,
+          text: comment.text,
+          createdAt: comment.createdAt.toISOString(),
+          musician: {
+            displayName: comment.musician.displayName,
+            avatarUrl: comment.musician.avatarUrl,
+          },
+        })),
+        media: session.media ?? [],
+        tasks: session.tasksInUse
+          .filter(
+            (taskInUse) => !taskInUse.isSessionTask && taskInUse.taskDefinition,
+          )
+          .map((taskInUse) => ({
+            id: taskInUse.id,
+            title: taskInUse.taskDefinition.title,
+            notes: taskInUse.notes,
+            timeSpent: taskInUse.duration,
+            taskDefinition: {
+              id: taskInUse.taskDefinition.id,
+              title: taskInUse.taskDefinition.title,
+              description: taskInUse.taskDefinition.description,
+              instrument: taskInUse.taskDefinition.musician.displayName, // Using musician name as instrument for now
+              user: {
+                displayName: taskInUse.taskDefinition.musician.displayName,
+                avatarUrl: taskInUse.taskDefinition.musician.avatarUrl,
+              },
+              tags: taskInUse.tags.map((tag) => ({
+                id: tag.id,
+                label: tag.label,
+                color: tag.color,
+              })),
+              checklist: taskInUse.checklistCompletions,
+              savedCount: 0, // TODO: Add these fields to TaskDefinition model
+              usedCount: 0,
+            },
+          })),
       }),
     );
 
@@ -443,8 +504,17 @@ export class SessionsService {
             color: tag.color,
           })),
           gasUps: createdSession.gasUps,
-          comments: createdSession.comments,
+          comments: createdSession.comments.map((comment) => ({
+            id: comment.id,
+            text: comment.text,
+            createdAt: comment.createdAt.toISOString(),
+            musician: {
+              displayName: comment.musician.displayName,
+              avatarUrl: comment.musician.avatarUrl,
+            },
+          })),
           media: createdSession.media ?? [],
+          tasks: [],
         };
         return frontendSession;
       });
@@ -454,93 +524,93 @@ export class SessionsService {
     }
   }
 
-  // async addComment(newComment: NewCommentDto): Promise<CreatedCommentDto> {
-  //   const prisma = this.prisma;
+  async addComment(newComment: NewCommentDto): Promise<CreatedCommentDto> {
+    const prisma = this.prisma;
 
-  //   try {
-  //     // $transactions enforce atomicity. so if any db operation fails, the entire transaction is rolled back
-  //     const createdComment = await prisma.$transaction(async (prisma) => {
-  //       const createdComment = await prisma.comment.create({
-  //         data: {
-  //           text: newComment.text,
-  //           musician: {
-  //             connect: { id: newComment.musicianId },
-  //           },
-  //           session: {
-  //             connect: { id: newComment.sessionId },
-  //           },
-  //         },
-  //         include: {
-  //           musician: {
-  //             select: {
-  //               displayName: true,
-  //               profilePictureUrl: true,
-  //             },
-  //           },
-  //         },
-  //       });
+    try {
+      // $transactions enforce atomicity. so if any db operation fails, the entire transaction is rolled back
+      const createdComment = await prisma.$transaction(async (prisma) => {
+        const createdComment = await prisma.comment.create({
+          data: {
+            text: newComment.text,
+            musician: {
+              connect: { id: newComment.musicianId },
+            },
+            session: {
+              connect: { id: newComment.sessionId },
+            },
+          },
+          include: {
+            musician: {
+              select: {
+                displayName: true,
+                avatarUrl: true,
+              },
+            },
+          },
+        });
 
-  //       return createdComment;
-  //     });
-  //     return createdComment;
-  //   } catch (error) {
-  //     // Handle any errors during creation
-  //     throw new Error(`Failed to add comment: ${error.message}`);
-  //   }
-  // }
+        return createdComment;
+      });
+      return createdComment;
+    } catch (error) {
+      // Handle any errors during creation
+      throw new Error(`Failed to add comment: ${error.message}`);
+    }
+  }
 
-  // async addGasUp(newGasUp: NewGasUpDto): Promise<CreatedGasUpDto> {
-  //   const prisma = this.prisma;
+  async addGasUp(newGasUp: NewGasUpDto): Promise<CreatedGasUpDto> {
+    const prisma = this.prisma;
 
-  //   try {
-  //     // $transactions enforce atomicity. so if any db operation fails, the entire transaction is rolled back
-  //     const createdGasUp = await prisma.$transaction(async (prisma) => {
-  //       const createdGasUp = await prisma.gasUp.create({
-  //         data: {
-  //           musician: {
-  //             connect: { id: newGasUp.gasserId },
-  //           },
-  //           session: {
-  //             connect: { id: newGasUp.sessionId },
-  //           },
-  //         },
-  //         include: {
-  //           musician: {
-  //             select: {
-  //               displayName: true,
-  //               profilePictureUrl: true,
-  //             },
-  //           },
-  //         },
-  //       });
+    try {
+      // $transactions enforce atomicity. so if any db operation fails, the entire transaction is rolled back
+      const createdGasUp = await prisma.$transaction(async (prisma) => {
+        const createdGasUp = await prisma.gasUp.create({
+          data: {
+            musician: {
+              connect: { id: newGasUp.gasserId },
+            },
+            session: {
+              connect: { id: newGasUp.sessionId },
+            },
+          },
+          include: {
+            musician: {
+              select: {
+                displayName: true,
+                avatarUrl: true,
+              },
+            },
+          },
+        });
 
-  //       // update the gassersUppers stats
-  //       await prisma.musician.update({
-  //         where: { id: newGasUp.gasserId },
-  //         data: {
-  //           totalGasUpsGiven: {
-  //             increment: 1,
-  //           },
-  //         },
-  //       });
-  //       // update stats for the musician recieving the gas up
-  //       await prisma.musician.update({
-  //         where: { id: newGasUp.musicianId },
-  //         data: {
-  //           // Update fields as needed
-  //           // Assuming you want to increment the totalGasUps field
-  //           totalGasUpsReceived: {
-  //             increment: 1,
-  //           },
-  //         },
-  //       });
+        // update the gassersUppers stats
+        await prisma.musician.update({
+          where: { id: newGasUp.gasserId },
+          data: {
+            totalGasUpsGiven: {
+              increment: 1,
+            },
+          },
+        });
+        // update stats for the musician recieving the gas up
+        await prisma.musician.update({
+          where: { id: newGasUp.musicianId },
+          data: {
+            // Update fields as needed
+            // Assuming you want to increment the totalGasUps field
+            totalGasUpsReceived: {
+              increment: 1,
+            },
+          },
+        });
 
-  //       return createdGasUp;
-  //     });
-  //     return createdGasUp;
-  //   } catch (error) {
-  //     // Handle any errors during creation
-  //     throw new Error(`Failed to gas up: ${error.message}`);
-  //   }
-  // }
+        return createdGasUp;
+      });
+      return createdGasUp;
+    } catch (error) {
+      // Handle any errors during creation
+      throw new Error(`Failed to gas up: ${error.message}`);
+    }
+  }
 }

@@ -80,9 +80,32 @@ export type NewFrontendSessionDTO = {
     };
   }[];
   comments: {
+    id: number;
+    text: string;
+    createdAt: string;
     musician: {
       displayName: string;
       avatarUrl: string | null;
+    };
+  }[];
+  tasks: {
+    id: number;
+    title: string;
+    notes: string;
+    timeSpent: number;
+    taskDefinition: {
+      id: number;
+      title: string;
+      description: string;
+      instrument: string;
+      user: {
+        displayName: string;
+        avatarUrl: string | null;
+      };
+      tags: TagDTO[];
+      checklist: string[];
+      savedCount: number;
+      usedCount: number;
     };
   }[];
 };

@@ -117,3 +117,49 @@ export const RichText: React.FC<RichTextProps> = ({
     />
   );
 };
+
+// Simple rich text editor component for Practice page
+interface RichTextEditorProps {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  className?: string;
+}
+
+export const RichTextEditor: React.FC<RichTextEditorProps> = ({
+  value,
+  onChange,
+  placeholder = "Add notes...",
+  className = "",
+}) => {
+  const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
+    const content = e.currentTarget.innerHTML;
+    onChange(content);
+  };
+
+  return (
+    <div
+      className={`rich-text-editor ${className}`}
+      contentEditable
+      onInput={handleInput}
+      dangerouslySetInnerHTML={{ __html: value || "" }}
+      data-placeholder={placeholder}
+      style={{
+        minHeight: "100px",
+        padding: "8px 12px",
+        border: "1px solid #d1d5db",
+        borderRadius: "6px",
+        outline: "none",
+        lineHeight: "1.5",
+        wordBreak: "break-word",
+        position: "relative",
+      }}
+      onFocus={(e) => {
+        e.currentTarget.style.borderColor = "#3b82f6";
+      }}
+      onBlur={(e) => {
+        e.currentTarget.style.borderColor = "#d1d5db";
+      }}
+    />
+  );
+};

@@ -150,28 +150,28 @@ export class SessionsController {
   //   );
   // }
 
-  // @Post('addComment')
-  // @UseGuards(JwtAuthGuard)
-  // async addComment(
-  //   @Body() body: any,
-  //   @Req() req: any,
-  // ): Promise<CreatedCommentDto> {
-  //   const newComment: NewCommentDto = {
-  //     text: body.text,
-  //     musicianId: req.user.id,
-  //     sessionId: body.sessionId,
-  //   };
-  //   return this.sessionsService.addComment(newComment);
-  // }
+  @Post('addComment')
+  @UseGuards(JwtAuthGuard)
+  async addComment(
+    @Body() body: any,
+    @Req() req: any,
+  ): Promise<CreatedCommentDto> {
+    const newComment: NewCommentDto = {
+      text: body.text,
+      musicianId: req.user.id,
+      sessionId: body.sessionId,
+    };
+    return this.sessionsService.addComment(newComment);
+  }
 
-  // @Post('addGasUp')
-  // @UseGuards(JwtAuthGuard)
-  // async addGasUp(@Body() body: any, @Req() req: any): Promise<CreatedGasUpDto> {
-  //   const newGasUp: NewGasUpDto = {
-  //     gasserId: req.user.id, // the one doing the gassing up
-  //     musicianId: body.musicianId, // the one getting gassed up
-  //     sessionId: body.sessionId,
-  //   };
-  //   return this.sessionsService.addGasUp(newGasUp);
-  // }
+  @Post('addGasUp')
+  @UseGuards(JwtAuthGuard)
+  async addGasUp(@Body() body: any, @Req() req: any): Promise<CreatedGasUpDto> {
+    const newGasUp: NewGasUpDto = {
+      gasserId: req.user.id, // the one doing the gassing up
+      musicianId: body.musicianId, // the one getting gassed up
+      sessionId: body.sessionId,
+    };
+    return this.sessionsService.addGasUp(newGasUp);
+  }
 }

@@ -76,7 +76,7 @@ export declare class GasUpDto {
 export declare class CreatedGasUpDto {
     musician: {
         displayName: string;
-        profilePictureUrl: string;
+        avatarUrl: string | null;
     };
     id: number;
     musicianId: number;
@@ -90,7 +90,7 @@ export declare class CreatedCommentDto {
     sessionId: number;
     musician: {
         displayName: string;
-        profilePictureUrl: string;
+        avatarUrl: string | null;
     };
 }
 export declare class CommentDto {

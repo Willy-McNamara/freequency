@@ -1,4 +1,5 @@
 import { JSX } from "react";
+import { useNavigate } from "react-router";
 import { Avatar, AvatarFallback } from "./avatar";
 import { Badge } from "./badge";
 import { MessageSquareIcon, ThumbsUpIcon } from "lucide-react";
@@ -38,6 +39,8 @@ interface PostData {
 }
 
 export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
+  const navigate = useNavigate();
+
   // Mock data ahead of passing in actual post data
 
   console.log(postData);
@@ -68,9 +71,19 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
     },
   ];
 
+  const handlePostClick = () => {
+    // Pass the full post data to the post view
+    navigate(`/post/${postData.id}`, {
+      state: { postData },
+    });
+  };
+
   return (
-    <div>
-      <div className="flex flex-col items-start gap-2.5 mb-2">
+    <div
+      className="cursor-pointer hover:bg-accent/50 transition-colors duration-200 rounded-lg p-4 -m-4"
+      onClick={handlePostClick}
+    >
+      <div className="flex w-[70vw] flex-col items-start gap-2.5 mb-2">
         <div className="flex items-center w-full">
           <Avatar className="h-10 w-10 bg-slate-200 rounded-[20px]">
             <AvatarFallback className="font-p text-slate-900">
