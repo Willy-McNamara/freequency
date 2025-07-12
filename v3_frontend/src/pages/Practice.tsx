@@ -48,6 +48,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   });
 
   const lastPersistedTaskId = useRef<string | null>(null);
+  const lastTaskNotesRef = useRef<string>("");
 
   useEffect(() => {
     const stored = localStorage.getItem("practiceSelectedTaskId");
@@ -116,9 +117,15 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
 
   // Task Notes persistence
   useEffect(() => {
-    if (selectedTask && typeof session.updateTaskNotes === "function")
+    if (
+      selectedTask &&
+      typeof session.updateTaskNotes === "function" &&
+      taskNotes !== lastTaskNotesRef.current
+    ) {
+      lastTaskNotesRef.current = taskNotes;
       session.updateTaskNotes(selectedTask.id, taskNotes);
-  }, [taskNotes, selectedTaskId]);
+    }
+  }, [taskNotes, selectedTaskId, selectedTask, session]);
 
   // Checklist persistence
   useEffect(() => {

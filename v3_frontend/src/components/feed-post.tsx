@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import { Avatar, AvatarFallback } from "./avatar";
 import { Badge } from "./badge";
 import { MessageSquareIcon, ThumbsUpIcon } from "lucide-react";
-import { RichText } from "./rich-text";
+import { RichTextRenderer } from "./rich-text";
 
 interface PostData {
   id: number;
@@ -128,7 +128,7 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
           {sessionData.title}
         </h4>
 
-        <RichText
+        <RichTextRenderer
           content={sessionData.description}
           maxLength={300}
           className="font-['Inter',Helvetica] text-black text-sm font-normal leading-6"

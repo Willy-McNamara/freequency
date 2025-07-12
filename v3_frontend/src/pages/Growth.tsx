@@ -211,7 +211,8 @@ type Metric = "occurrence" | "duration";
 // Mock tag options for dropdown
 // Remove unused variable: tagOptions
 
-function formatMinutes(minutes: number) {
+function formatMinutes(seconds: number) {
+  const minutes = Math.floor(seconds / 60);
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
   return h > 0 ? `${h}h ${m}m` : `${m}m`;
@@ -689,6 +690,10 @@ const Growth: React.FC = () => {
       value: t.minutes,
       fill: pieChartColors[i % pieChartColors.length],
     }));
+
+    console.log("[Growth] Pie chart data:", pieData);
+    console.log("[Growth] Tag totals:", tagTotals);
+
     // Map tag to color for indicator
     const tagColorMap: Record<string, string> = {};
     pieData.forEach((item) => {
@@ -697,7 +702,7 @@ const Growth: React.FC = () => {
       }
     });
     return (
-      <div className="w-[75vw] mx-auto">
+      <div className="w-[70vw] mx-auto">
         <div className="flex justify-start mb-2">
           <Button
             onClick={handleBack}
@@ -707,7 +712,7 @@ const Growth: React.FC = () => {
             &larr; Back
           </Button>
         </div>
-        <h1 className="text-2xl font-bold text-center mb-4">Stats Totals</h1>
+        <h1 className="text-2xl font-bold text-center mb-4">Total Stats</h1>
         {/* Time range buttons */}
         <div className="flex justify-center gap-3 mb-4">
           {totalTimeRanges.map((range) => (
@@ -727,35 +732,47 @@ const Growth: React.FC = () => {
         </div>
         {/* Pie Chart */}
         <div className="flex justify-center mb-8">
-          <ChartPieDonutActive data={pieData} />
+          {pieData.length > 0 ? (
+            <ChartPieDonutActive data={pieData} />
+          ) : (
+            <div className="text-center text-muted-foreground py-8">
+              <p>No practice data available for the selected time period.</p>
+            </div>
+          )}
         </div>
         {/* Tag breakdown cards */}
         <div className="flex flex-col gap-4">
-          {tagTotals.map((tag) => (
-            <Card
-              key={tag.tag}
-              className="flex flex-row items-center justify-between p-4 group"
-            >
-              <div className="flex items-center gap-3">
-                {/* Color indicator */}
-                <span
-                  className="inline-block w-4 h-4 rounded-full border"
-                  style={{ backgroundColor: tagColorMap[tag.tag] || "#ccc" }}
-                />
-                <div>
-                  <CardTitle className="text-lg font-semibold mb-1">
-                    {tag.tag}
-                  </CardTitle>
-                  <CardDescription>
-                    Total: {formatMinutes(tag.minutes)}
-                  </CardDescription>
+          {tagTotals.length > 0 ? (
+            tagTotals.map((tag) => (
+              <Card
+                key={tag.tag}
+                className="flex flex-row items-center justify-between p-4 group"
+              >
+                <div className="flex items-center gap-3">
+                  {/* Color indicator */}
+                  <span
+                    className="inline-block w-4 h-4 rounded-full border"
+                    style={{ backgroundColor: tagColorMap[tag.tag] || "#ccc" }}
+                  />
+                  <div>
+                    <CardTitle className="text-lg font-semibold mb-1">
+                      {tag.tag}
+                    </CardTitle>
+                    <CardDescription>
+                      Total: {formatMinutes(tag.minutes)}
+                    </CardDescription>
+                  </div>
                 </div>
-              </div>
-              <div className="text-xl font-bold text-primary">
-                {tag.percent}%
-              </div>
-            </Card>
-          ))}
+                <div className="text-xl font-bold text-primary">
+                  {tag.percent}%
+                </div>
+              </Card>
+            ))
+          ) : (
+            <div className="text-center text-muted-foreground py-4">
+              <p>No practice data available for the selected time period.</p>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -811,12 +828,13 @@ const Growth: React.FC = () => {
       return { ...entry, label };
     });
     const currentLabels = fullLabels[selectedTimeRange];
-    // Aggregate all records by label for duration
+    // Aggregate all records by label for duration (convert seconds to minutes)
     const dataByLabel = labeledData.reduce((acc, entry) => {
       if (!acc[entry.label]) {
         acc[entry.label] = { label: entry.label, occurrence: 0, duration: 0 };
       }
-      acc[entry.label].duration += entry.duration || 0;
+      // Convert seconds to minutes
+      acc[entry.label].duration += Math.round((entry.duration || 0) / 60);
       return acc;
     }, {} as Record<string, { label: string; occurrence: number; duration: number }>);
 
