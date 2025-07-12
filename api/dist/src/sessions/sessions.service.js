@@ -148,6 +148,167 @@ let SessionsService = class SessionsService {
         });
         return result.sessions;
     }
+    async createSession(newSession) {
+        try {
+            const createdSession = await this.prisma.$transaction(async (prisma) => {
+                const createdSession = await prisma.session.create({
+                    data: {
+                        title: newSession.title,
+                        notes: newSession.notes,
+                        duration: newSession.duration,
+                        isPublic: newSession.isPublic,
+                        musician: {
+                            connect: { id: newSession.musicianId },
+                        },
+                        instruments: {
+                            connect: newSession.instruments.map((id) => ({ id })),
+                        },
+                        tags: {
+                            connect: newSession.tags.map((id) => ({ id })),
+                        },
+                    },
+                    include: {
+                        musician: {
+                            select: { displayName: true, avatarUrl: true },
+                        },
+                        gasUps: {
+                            include: {
+                                musician: {
+                                    select: { displayName: true, avatarUrl: true },
+                                },
+                            },
+                        },
+                        comments: {
+                            include: {
+                                musician: {
+                                    select: { displayName: true, avatarUrl: true },
+                                },
+                            },
+                        },
+                        media: {
+                            select: { url: true, type: true },
+                        },
+                        tags: true,
+                        instruments: true,
+                    },
+                });
+                const totalTaskTime = newSession.tasks.reduce((sum, task) => sum + task.timeSpent, 0);
+                for (const task of newSession.tasks) {
+                    console.log('Creating TaskInUse for task:', task);
+                    console.log('Task tags:', task.tags);
+                    if (task.tags && task.tags.length > 0) {
+                        const existingTags = await prisma.tag.findMany({
+                            where: { id: { in: task.tags } },
+                        });
+                        console.log('Found existing tags:', existingTags);
+                        if (existingTags.length !== task.tags.length) {
+                            console.log('Warning: Some tags not found. Expected:', task.tags.length, 'Found:', existingTags.length);
+                            task.tags = existingTags.map((tag) => tag.id);
+                        }
+                    }
+                    await prisma.taskInUse.create({
+                        data: {
+                            duration: task.timeSpent,
+                            notes: task.notes,
+                            isSessionTask: false,
+                            checklistCompletions: task.checklist
+                                .filter((item) => item.checked)
+                                .map((item) => item.item),
+                            taskDefinition: {
+                                connect: { id: task.id },
+                            },
+                            musician: {
+                                connect: { id: newSession.musicianId },
+                            },
+                            session: {
+                                connect: { id: createdSession.id },
+                            },
+                            tags: task.tags && task.tags.length > 0
+                                ? {
+                                    connect: task.tags.map((id) => ({ id })),
+                                }
+                                : undefined,
+                        },
+                    });
+                }
+                const sessionTaskDuration = newSession.duration - totalTaskTime;
+                if (sessionTaskDuration > 0) {
+                    console.log('Creating session TaskInUse with tags:', newSession.tags);
+                    let sessionTags = newSession.tags;
+                    if (sessionTags && sessionTags.length > 0) {
+                        const existingSessionTags = await prisma.tag.findMany({
+                            where: { id: { in: sessionTags } },
+                        });
+                        console.log('Found existing session tags:', existingSessionTags);
+                        if (existingSessionTags.length !== sessionTags.length) {
+                            console.log('Warning: Some session tags not found. Expected:', sessionTags.length, 'Found:', existingSessionTags.length);
+                            sessionTags = existingSessionTags.map((tag) => tag.id);
+                        }
+                    }
+                    await prisma.taskInUse.create({
+                        data: {
+                            duration: sessionTaskDuration,
+                            notes: newSession.notes,
+                            isSessionTask: true,
+                            checklistCompletions: [],
+                            musician: {
+                                connect: { id: newSession.musicianId },
+                            },
+                            session: {
+                                connect: { id: createdSession.id },
+                            },
+                            tags: sessionTags && sessionTags.length > 0
+                                ? {
+                                    connect: sessionTags.map((id) => ({ id })),
+                                }
+                                : undefined,
+                        },
+                    });
+                }
+                await prisma.musician.update({
+                    where: { id: newSession.musicianId },
+                    data: {
+                        totalPracticeMinutes: {
+                            increment: newSession.duration,
+                        },
+                        totalSessions: {
+                            increment: 1,
+                        },
+                    },
+                });
+                const frontendSession = {
+                    id: createdSession.id,
+                    title: createdSession.title,
+                    notes: createdSession.notes,
+                    instruments: createdSession.instruments.map((tag) => ({
+                        id: tag.id,
+                        label: tag.label,
+                        color: tag.color,
+                    })),
+                    duration: createdSession.duration,
+                    isPublic: createdSession.isPublic,
+                    createdAt: createdSession.createdAt.toISOString(),
+                    musician: {
+                        displayName: createdSession.musician.displayName,
+                        avatarUrl: createdSession.musician.avatarUrl,
+                    },
+                    tags: createdSession.tags.map((tag) => ({
+                        id: tag.id,
+                        label: tag.label,
+                        color: tag.color,
+                    })),
+                    gasUps: createdSession.gasUps,
+                    comments: createdSession.comments,
+                    media: createdSession.media ?? [],
+                };
+                return frontendSession;
+            });
+            return createdSession;
+        }
+        catch (error) {
+            throw new Error(`Failed to create session: ${error.message}`);
+        }
+    }
 };
 exports.SessionsService = SessionsService;
 exports.SessionsService = SessionsService = __decorate([

@@ -1,0 +1,71 @@
+/* Rich text styling for feed posts */
+.rich-text {
+  /* Base styling */
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+/* Handle common rich text editor classes */
+.rich-text p {
+  margin: 0 0 0.5rem 0;
+}
+
+.rich-text p:last-child {
+  margin-bottom: 0;
+}
+
+/* Remove excessive margins from editor classes */
+.rich-text [class*="leading-7"] {
+  line-height: 1.5 !important;
+}
+
+.rich-text [class*="mt-6"] {
+  margin-top: 0.5rem !important;
+}
+
+/* Handle bold text */
+.rich-text b,
+.rich-text strong {
+  font-weight: 600;
+}
+
+/* Handle italic text */
+.rich-text i,
+.rich-text em {
+  font-style: italic;
+}
+
+/* Handle lists */
+.rich-text ul,
+.rich-text ol {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.rich-text li {
+  margin: 0.25rem 0;
+}
+
+/* Handle links */
+.rich-text a {
+  color: #3b82f6;
+  text-decoration: underline;
+}
+
+.rich-text a:hover {
+  color: #2563eb;
+}
+
+/* Clean up white-space handling */
+.rich-text [style*="white-space: pre-wrap"] {
+  white-space: normal !important;
+}
+
+/* Remove excessive styling classes */
+.rich-text [class*="font-bold"] {
+  font-weight: 600;
+}
+
+.rich-text [class*="font-normal"] {
+  font-weight: normal;
+}
