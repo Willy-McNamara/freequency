@@ -101,7 +101,7 @@ export const GoalsView: React.FC<GoalsViewProps> = ({
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex-1">
-                    <CardTitle className="text-lg font-semibold mb-2">
+                    <CardTitle className="text-lg font-semibold mb-2 text-left">
                       {formatGoalSummary(goal)}
                     </CardTitle>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -259,10 +259,10 @@ export const GoalsView: React.FC<GoalsViewProps> = ({
                   }
                 }}
               >
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-                <option value="annually">Annually</option>
+                <option value="daily">daily</option>
+                <option value="weekly">weekly (mon-sun)</option>
+                <option value="monthly">monthly (calendar month)</option>
+                <option value="annually">annually (calendar year)</option>
               </select>
             </div>
           </div>

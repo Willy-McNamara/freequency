@@ -6,6 +6,7 @@ import {
   Param,
   UseGuards,
   Req,
+  Delete,
 } from '@nestjs/common';
 import { MusiciansService } from './musicians.service';
 import {
@@ -34,6 +35,26 @@ export class MusiciansController {
   @Get(':id/goals')
   async getGoalsForMusician(@Param('id') id: string): Promise<GoalDto[]> {
     return this.musiciansService.getGoalsForMusician(Number(id));
+  }
+
+  @Post(':id/goals')
+  async createGoalForMusician(
+    @Param('id') id: string,
+    @Body() goalDto: GoalDto,
+  ): Promise<GoalDto> {
+    return this.musiciansService.createGoalForMusician(Number(id), goalDto);
+  }
+
+  @Delete(':id/goals/:goalId')
+  async deleteGoalForMusician(
+    @Param('id') id: string,
+    @Param('goalId') goalId: string,
+  ): Promise<{ success: boolean }> {
+    await this.musiciansService.deleteGoalForMusician(
+      Number(id),
+      Number(goalId),
+    );
+    return { success: true };
   }
 
   // // @Post()

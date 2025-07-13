@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MusiciansController = void 0;
 const common_1 = require("@nestjs/common");
 const musicians_service_1 = require("./musicians.service");
+const musician_dto_1 = require("./dto/musician.dto");
 let MusiciansController = class MusiciansController {
     constructor(musiciansService) {
         this.musiciansService = musiciansService;
@@ -27,6 +28,13 @@ let MusiciansController = class MusiciansController {
     }
     async getGoalsForMusician(id) {
         return this.musiciansService.getGoalsForMusician(Number(id));
+    }
+    async createGoalForMusician(id, goalDto) {
+        return this.musiciansService.createGoalForMusician(Number(id), goalDto);
+    }
+    async deleteGoalForMusician(id, goalId) {
+        await this.musiciansService.deleteGoalForMusician(Number(id), Number(goalId));
+        return { success: true };
     }
 };
 exports.MusiciansController = MusiciansController;
@@ -50,6 +58,22 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], MusiciansController.prototype, "getGoalsForMusician", null);
+__decorate([
+    (0, common_1.Post)(':id/goals'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, musician_dto_1.GoalDto]),
+    __metadata("design:returntype", Promise)
+], MusiciansController.prototype, "createGoalForMusician", null);
+__decorate([
+    (0, common_1.Delete)(':id/goals/:goalId'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Param)('goalId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", Promise)
+], MusiciansController.prototype, "deleteGoalForMusician", null);
 exports.MusiciansController = MusiciansController = __decorate([
     (0, common_1.Controller)('musicians'),
     __metadata("design:paramtypes", [musicians_service_1.MusiciansService])

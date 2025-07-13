@@ -48,6 +48,7 @@ export declare class MusicianFrontendDTO {
     totalGasUpsGiven: number;
     totalGasUpsReceived: number;
     createdAt: Date;
+    goals: GoalDto[];
 }
 export declare class MusicianUpdateDto {
     id: number;

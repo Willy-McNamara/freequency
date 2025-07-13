@@ -29,6 +29,12 @@ export class MusiciansService {
       return null; // Return null if musician is not found
     }
 
+    // Fetch goals for the musician
+    const goals = await this.prisma.goal.findMany({
+      where: { musicianId: id },
+      orderBy: { createdAt: 'asc' },
+    });
+
     // Map and return DTO
     return {
       id: musician.id,
@@ -41,6 +47,15 @@ export class MusiciansService {
       totalGasUpsGiven: musician.totalGasUpsGiven,
       totalGasUpsReceived: musician.totalGasUpsReceived,
       createdAt: musician.createdAt,
+      goals: goals.map((g) => ({
+        id: g.id,
+        musicianId: g.musicianId,
+        tag: g.tag,
+        type: g.type,
+        target: g.target,
+        timeFrame: g.timeFrame,
+        createdAt: g.createdAt,
+      })),
     };
   }
 
@@ -200,5 +215,41 @@ export class MusiciansService {
       orderBy: { displayName: 'asc' },
     });
     return musicians.map((m) => m.displayName);
+  }
+
+  async createGoalForMusician(
+    musicianId: number,
+    goalDto: GoalDto,
+  ): Promise<GoalDto> {
+    const created = await this.prisma.goal.create({
+      data: {
+        musicianId,
+        tag: goalDto.tag,
+        type: goalDto.type,
+        target: goalDto.target,
+        timeFrame: goalDto.timeFrame,
+      },
+    });
+    return {
+      id: created.id,
+      musicianId: created.musicianId,
+      tag: created.tag,
+      type: created.type,
+      target: created.target,
+      timeFrame: created.timeFrame,
+      createdAt: created.createdAt,
+    };
+  }
+
+  async deleteGoalForMusician(
+    musicianId: number,
+    goalId: number,
+  ): Promise<void> {
+    await this.prisma.goal.delete({
+      where: {
+        id: goalId,
+        musicianId,
+      },
+    });
   }
 }
