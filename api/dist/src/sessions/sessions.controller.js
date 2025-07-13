@@ -24,14 +24,18 @@ let SessionsController = class SessionsController {
         this.s3service = s3service;
         this.mediaService = mediaService;
     }
-    async getSessionsOnRender(cursor, users, instruments, tags, saved) {
+    async getSessionsOnRender(req, cursor, users, instruments, tags, saved, following) {
         console.log('Sessions endpoint called with filters:', {
             cursor,
             users,
             instruments,
             tags,
             saved,
+            following,
         });
+        if (following === 'true') {
+            return this.sessionsService.getSessionsFromFollowedUsers(req.user.id, cursor);
+        }
         const filters = {
             users: users ? users.split(',') : [],
             instruments: instruments ? instruments.split(',') : [],
@@ -79,13 +83,16 @@ let SessionsController = class SessionsController {
 exports.SessionsController = SessionsController;
 __decorate([
     (0, common_1.Get)(),
-    __param(0, (0, common_1.Query)('cursor')),
-    __param(1, (0, common_1.Query)('users')),
-    __param(2, (0, common_1.Query)('instruments')),
-    __param(3, (0, common_1.Query)('tags')),
-    __param(4, (0, common_1.Query)('saved')),
+    (0, common_1.UseGuards)(jwt_guard_1.JwtAuthGuard),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Query)('cursor')),
+    __param(2, (0, common_1.Query)('users')),
+    __param(3, (0, common_1.Query)('instruments')),
+    __param(4, (0, common_1.Query)('tags')),
+    __param(5, (0, common_1.Query)('saved')),
+    __param(6, (0, common_1.Query)('following')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String, String, String]),
+    __metadata("design:paramtypes", [Object, String, String, String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], SessionsController.prototype, "getSessionsOnRender", null);
 __decorate([

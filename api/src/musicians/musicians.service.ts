@@ -7,6 +7,7 @@ import {
   MusicianJwtDto,
   MusicianUpdateDto,
   GoalDto,
+  ProfileUpdateDto,
 } from './dto/musician.dto';
 import { format } from 'path';
 
@@ -14,7 +15,10 @@ import { format } from 'path';
 export class MusiciansService {
   constructor(private prisma: PrismaService) {}
 
-  async getMusicianById(id: number): Promise<MusicianFrontendDTO | null> {
+  async getMusicianById(
+    id: number,
+    currentUserId?: number,
+  ): Promise<MusicianFrontendDTO | null> {
     const prisma = this.prisma;
 
     // Use prisma musician query to get a musician by ID from the database
@@ -35,6 +39,26 @@ export class MusiciansService {
       orderBy: { createdAt: 'asc' },
     });
 
+    // Get follow status and counts if current user is provided
+    let isFollowing = false;
+    let followerCount = 0;
+    let followingCount = 0;
+
+    if (currentUserId && currentUserId !== id) {
+      const [followStatus, followCounts] = await Promise.all([
+        this.getFollowStatus(currentUserId, id),
+        this.getFollowCounts(id),
+      ]);
+      isFollowing = followStatus.isFollowing;
+      followerCount = followCounts.followerCount;
+      followingCount = followCounts.followingCount;
+    } else if (currentUserId === id) {
+      // If viewing own profile, just get counts
+      const followCounts = await this.getFollowCounts(id);
+      followerCount = followCounts.followerCount;
+      followingCount = followCounts.followingCount;
+    }
+
     // Map and return DTO
     return {
       id: musician.id,
@@ -43,7 +67,7 @@ export class MusiciansService {
       instruments: musician.instruments,
       profilePictureUrl: musician.avatarUrl,
       totalSessions: musician.totalSessions,
-      totalPracticeMinutes: musician.totalPracticeMinutes,
+      totalPracticeSeconds: musician.totalPracticeSeconds,
       totalGasUpsGiven: musician.totalGasUpsGiven,
       totalGasUpsReceived: musician.totalGasUpsReceived,
       createdAt: musician.createdAt,
@@ -56,6 +80,9 @@ export class MusiciansService {
         timeFrame: g.timeFrame,
         createdAt: g.createdAt,
       })),
+      isFollowing,
+      followerCount,
+      followingCount,
     };
   }
 
@@ -92,7 +119,7 @@ export class MusiciansService {
           avatarUrl: createMusicianDto.profilePictureUrl,
           bio: 'Tell us about yourself as a musician! Eventually other users may be able to see your profile :)',
           totalSessions: 0,
-          totalPracticeMinutes: 0,
+          totalPracticeSeconds: 0,
           totalGasUpsGiven: 0,
           totalGasUpsReceived: 0,
         },
@@ -111,7 +138,7 @@ export class MusiciansService {
         instruments: createdMusician.instruments.map((tag) => tag.label), // Convert Tag objects to strings
         profilePictureUrl: createdMusician.avatarUrl,
         totalSessions: createdMusician.totalSessions,
-        totalPracticeMinutes: createdMusician.totalPracticeMinutes,
+        totalPracticeSeconds: createdMusician.totalPracticeSeconds,
         totalGasUpsGiven: createdMusician.totalGasUpsGiven,
         totalGasUpsReceived: createdMusician.totalGasUpsReceived,
         longestStreak: 0, // Not in schema, default to 0
@@ -192,6 +219,63 @@ export class MusiciansService {
     }
   }
 
+  async updateProfile(
+    musicianId: number,
+    profileUpdateDto: ProfileUpdateDto,
+  ): Promise<MusicianFrontendDTO> {
+    try {
+      const updatedMusician = await this.prisma.musician.update({
+        where: { id: musicianId },
+        data: {
+          displayName: profileUpdateDto.displayName,
+          bio: profileUpdateDto.bio,
+          // Update instruments by disconnecting all and connecting new ones
+          instruments: {
+            set: [], // Clear existing instruments
+            connect: profileUpdateDto.instruments.map((instrument) => ({
+              id: instrument.id,
+            })),
+          },
+        },
+        include: {
+          instruments: true,
+        },
+      });
+
+      // Fetch goals for the musician
+      const goals = await this.prisma.goal.findMany({
+        where: { musicianId },
+        orderBy: { createdAt: 'asc' },
+      });
+
+      // Return the updated musician in MusicianFrontendDTO format
+      return {
+        id: updatedMusician.id,
+        displayName: updatedMusician.displayName,
+        bio: updatedMusician.bio ? updatedMusician.bio : '',
+        instruments: updatedMusician.instruments,
+        profilePictureUrl: updatedMusician.avatarUrl,
+        totalSessions: updatedMusician.totalSessions,
+        totalPracticeSeconds: updatedMusician.totalPracticeSeconds,
+        totalGasUpsGiven: updatedMusician.totalGasUpsGiven,
+        totalGasUpsReceived: updatedMusician.totalGasUpsReceived,
+        createdAt: updatedMusician.createdAt,
+        goals: goals.map((g) => ({
+          id: g.id,
+          musicianId: g.musicianId,
+          tag: g.tag,
+          type: g.type,
+          target: g.target,
+          timeFrame: g.timeFrame,
+          createdAt: g.createdAt,
+        })),
+      };
+    } catch (error) {
+      console.error('Error updating musician profile:', error);
+      throw new Error(`Failed to update musician profile: ${error.message}`);
+    }
+  }
+
   formatMusicianForFrontend(musician: any): MusicianFrontendDTO {
     const musicianDto: MusicianFrontendDTO = {
       id: musician.id,
@@ -200,10 +284,11 @@ export class MusiciansService {
       instruments: musician.instruments || [], // Already TagDTO[] from Prisma
       profilePictureUrl: musician.avatarUrl,
       totalSessions: musician.totalSessions,
-      totalPracticeMinutes: musician.totalPracticeMinutes,
+      totalPracticeSeconds: musician.totalPracticeSeconds,
       totalGasUpsGiven: musician.totalGasUpsGiven,
       totalGasUpsReceived: musician.totalGasUpsReceived,
       createdAt: musician.createdAt,
+      goals: [], // Add empty goals array for now
     };
 
     return musicianDto;
@@ -251,5 +336,95 @@ export class MusiciansService {
         musicianId,
       },
     });
+  }
+
+  async followMusician(followerId: number, followingId: number): Promise<void> {
+    if (followerId === followingId) {
+      throw new Error('Cannot follow yourself');
+    }
+
+    // Check if both musicians exist
+    const [follower, following] = await Promise.all([
+      this.prisma.musician.findUnique({ where: { id: followerId } }),
+      this.prisma.musician.findUnique({ where: { id: followingId } }),
+    ]);
+
+    if (!follower || !following) {
+      throw new Error('Musician not found');
+    }
+
+    // Check if already following
+    const existingFollow = await this.prisma.follow.findUnique({
+      where: {
+        followerId_followingId: {
+          followerId,
+          followingId,
+        },
+      },
+    });
+
+    if (existingFollow) {
+      throw new Error('Already following this musician');
+    }
+
+    // Create follow relationship
+    await this.prisma.follow.create({
+      data: {
+        followerId,
+        followingId,
+      },
+    });
+  }
+
+  async unfollowMusician(
+    followerId: number,
+    followingId: number,
+  ): Promise<void> {
+    if (followerId === followingId) {
+      throw new Error('Cannot unfollow yourself');
+    }
+
+    // Delete follow relationship
+    await this.prisma.follow.deleteMany({
+      where: {
+        followerId,
+        followingId,
+      },
+    });
+  }
+
+  async getFollowStatus(
+    followerId: number,
+    followingId: number,
+  ): Promise<{ isFollowing: boolean }> {
+    if (followerId === followingId) {
+      return { isFollowing: false };
+    }
+
+    const follow = await this.prisma.follow.findUnique({
+      where: {
+        followerId_followingId: {
+          followerId,
+          followingId,
+        },
+      },
+    });
+
+    return { isFollowing: !!follow };
+  }
+
+  async getFollowCounts(
+    musicianId: number,
+  ): Promise<{ followerCount: number; followingCount: number }> {
+    const [followerCount, followingCount] = await Promise.all([
+      this.prisma.follow.count({
+        where: { followingId: musicianId },
+      }),
+      this.prisma.follow.count({
+        where: { followerId: musicianId },
+      }),
+    ]);
+
+    return { followerCount, followingCount };
   }
 }

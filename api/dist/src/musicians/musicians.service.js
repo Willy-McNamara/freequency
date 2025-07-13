@@ -16,7 +16,7 @@ let MusiciansService = class MusiciansService {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async getMusicianById(id) {
+    async getMusicianById(id, currentUserId) {
         const prisma = this.prisma;
         const musician = await prisma.musician.findUnique({
             where: { id },
@@ -31,6 +31,23 @@ let MusiciansService = class MusiciansService {
             where: { musicianId: id },
             orderBy: { createdAt: 'asc' },
         });
+        let isFollowing = false;
+        let followerCount = 0;
+        let followingCount = 0;
+        if (currentUserId && currentUserId !== id) {
+            const [followStatus, followCounts] = await Promise.all([
+                this.getFollowStatus(currentUserId, id),
+                this.getFollowCounts(id),
+            ]);
+            isFollowing = followStatus.isFollowing;
+            followerCount = followCounts.followerCount;
+            followingCount = followCounts.followingCount;
+        }
+        else if (currentUserId === id) {
+            const followCounts = await this.getFollowCounts(id);
+            followerCount = followCounts.followerCount;
+            followingCount = followCounts.followingCount;
+        }
         return {
             id: musician.id,
             displayName: musician.displayName,
@@ -38,7 +55,7 @@ let MusiciansService = class MusiciansService {
             instruments: musician.instruments,
             profilePictureUrl: musician.avatarUrl,
             totalSessions: musician.totalSessions,
-            totalPracticeMinutes: musician.totalPracticeMinutes,
+            totalPracticeSeconds: musician.totalPracticeSeconds,
             totalGasUpsGiven: musician.totalGasUpsGiven,
             totalGasUpsReceived: musician.totalGasUpsReceived,
             createdAt: musician.createdAt,
@@ -51,6 +68,9 @@ let MusiciansService = class MusiciansService {
                 timeFrame: g.timeFrame,
                 createdAt: g.createdAt,
             })),
+            isFollowing,
+            followerCount,
+            followingCount,
         };
     }
     async getGoalsForMusician(musicianId) {
@@ -81,7 +101,7 @@ let MusiciansService = class MusiciansService {
                     avatarUrl: createMusicianDto.profilePictureUrl,
                     bio: 'Tell us about yourself as a musician! Eventually other users may be able to see your profile :)',
                     totalSessions: 0,
-                    totalPracticeMinutes: 0,
+                    totalPracticeSeconds: 0,
                     totalGasUpsGiven: 0,
                     totalGasUpsReceived: 0,
                 },
@@ -98,7 +118,7 @@ let MusiciansService = class MusiciansService {
                 instruments: createdMusician.instruments.map((tag) => tag.label),
                 profilePictureUrl: createdMusician.avatarUrl,
                 totalSessions: createdMusician.totalSessions,
-                totalPracticeMinutes: createdMusician.totalPracticeMinutes,
+                totalPracticeSeconds: createdMusician.totalPracticeSeconds,
                 totalGasUpsGiven: createdMusician.totalGasUpsGiven,
                 totalGasUpsReceived: createdMusician.totalGasUpsReceived,
                 longestStreak: 0,
@@ -162,6 +182,55 @@ let MusiciansService = class MusiciansService {
             throw new Error(`Failed to update musician: ${error.message}`);
         }
     }
+    async updateProfile(musicianId, profileUpdateDto) {
+        try {
+            const updatedMusician = await this.prisma.musician.update({
+                where: { id: musicianId },
+                data: {
+                    displayName: profileUpdateDto.displayName,
+                    bio: profileUpdateDto.bio,
+                    instruments: {
+                        set: [],
+                        connect: profileUpdateDto.instruments.map((instrument) => ({
+                            id: instrument.id,
+                        })),
+                    },
+                },
+                include: {
+                    instruments: true,
+                },
+            });
+            const goals = await this.prisma.goal.findMany({
+                where: { musicianId },
+                orderBy: { createdAt: 'asc' },
+            });
+            return {
+                id: updatedMusician.id,
+                displayName: updatedMusician.displayName,
+                bio: updatedMusician.bio ? updatedMusician.bio : '',
+                instruments: updatedMusician.instruments,
+                profilePictureUrl: updatedMusician.avatarUrl,
+                totalSessions: updatedMusician.totalSessions,
+                totalPracticeSeconds: updatedMusician.totalPracticeSeconds,
+                totalGasUpsGiven: updatedMusician.totalGasUpsGiven,
+                totalGasUpsReceived: updatedMusician.totalGasUpsReceived,
+                createdAt: updatedMusician.createdAt,
+                goals: goals.map((g) => ({
+                    id: g.id,
+                    musicianId: g.musicianId,
+                    tag: g.tag,
+                    type: g.type,
+                    target: g.target,
+                    timeFrame: g.timeFrame,
+                    createdAt: g.createdAt,
+                })),
+            };
+        }
+        catch (error) {
+            console.error('Error updating musician profile:', error);
+            throw new Error(`Failed to update musician profile: ${error.message}`);
+        }
+    }
     formatMusicianForFrontend(musician) {
         const musicianDto = {
             id: musician.id,
@@ -170,10 +239,11 @@ let MusiciansService = class MusiciansService {
             instruments: musician.instruments || [],
             profilePictureUrl: musician.avatarUrl,
             totalSessions: musician.totalSessions,
-            totalPracticeMinutes: musician.totalPracticeMinutes,
+            totalPracticeSeconds: musician.totalPracticeSeconds,
             totalGasUpsGiven: musician.totalGasUpsGiven,
             totalGasUpsReceived: musician.totalGasUpsReceived,
             createdAt: musician.createdAt,
+            goals: [],
         };
         return musicianDto;
     }
@@ -211,6 +281,71 @@ let MusiciansService = class MusiciansService {
                 musicianId,
             },
         });
+    }
+    async followMusician(followerId, followingId) {
+        if (followerId === followingId) {
+            throw new Error('Cannot follow yourself');
+        }
+        const [follower, following] = await Promise.all([
+            this.prisma.musician.findUnique({ where: { id: followerId } }),
+            this.prisma.musician.findUnique({ where: { id: followingId } }),
+        ]);
+        if (!follower || !following) {
+            throw new Error('Musician not found');
+        }
+        const existingFollow = await this.prisma.follow.findUnique({
+            where: {
+                followerId_followingId: {
+                    followerId,
+                    followingId,
+                },
+            },
+        });
+        if (existingFollow) {
+            throw new Error('Already following this musician');
+        }
+        await this.prisma.follow.create({
+            data: {
+                followerId,
+                followingId,
+            },
+        });
+    }
+    async unfollowMusician(followerId, followingId) {
+        if (followerId === followingId) {
+            throw new Error('Cannot unfollow yourself');
+        }
+        await this.prisma.follow.deleteMany({
+            where: {
+                followerId,
+                followingId,
+            },
+        });
+    }
+    async getFollowStatus(followerId, followingId) {
+        if (followerId === followingId) {
+            return { isFollowing: false };
+        }
+        const follow = await this.prisma.follow.findUnique({
+            where: {
+                followerId_followingId: {
+                    followerId,
+                    followingId,
+                },
+            },
+        });
+        return { isFollowing: !!follow };
+    }
+    async getFollowCounts(musicianId) {
+        const [followerCount, followingCount] = await Promise.all([
+            this.prisma.follow.count({
+                where: { followingId: musicianId },
+            }),
+            this.prisma.follow.count({
+                where: { followerId: musicianId },
+            }),
+        ]);
+        return { followerCount, followingCount };
     }
 };
 exports.MusiciansService = MusiciansService;

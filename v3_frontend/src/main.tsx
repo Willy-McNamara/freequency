@@ -45,6 +45,7 @@ ReactDOM.createRoot(root).render(
               <Route path="/task-library" element={<TaskLibrary />} />
               <Route path="/growth" element={<Growth />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/profile/:id" element={<Profile />} />
               <Route path="/post/:postId" element={<PostView />} />
               {/* Fallback for unknown routes */}
               <Route path="*" element={<h1>Page Not Found</h1>} />

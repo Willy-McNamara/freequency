@@ -2,12 +2,60 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TaskDTO, CreateTaskDto } from './dto/task.dto';
 
+interface TaskFilters {
+  following?: boolean;
+  users?: string[];
+  instruments?: string[];
+  saved?: boolean;
+  userId?: number;
+}
+
 @Injectable()
 export class TasksService {
   constructor(private prisma: PrismaService) {}
 
-  async getAllTasks(): Promise<TaskDTO[]> {
+  async getAllTasks(filters?: TaskFilters): Promise<TaskDTO[]> {
+    console.log('TasksService.getAllTasks called with filters:', filters);
+
+    // Build where clause for filtering
+    const where: any = {};
+
+    // Filter by following users
+    if (filters?.following && filters?.userId) {
+      console.log('Following filter enabled for userId:', filters.userId);
+      const followingIds = await this.prisma.follow.findMany({
+        where: { followerId: filters.userId },
+        select: { followingId: true },
+      });
+      console.log('Found following IDs:', followingIds);
+      where.musicianId = {
+        in: followingIds.map((f) => f.followingId),
+      };
+      console.log('Where clause for following filter:', where);
+    }
+
+    // Filter by specific users
+    if (filters?.users && filters.users.length > 0) {
+      const musicians = await this.prisma.musician.findMany({
+        where: { displayName: { in: filters.users } },
+        select: { id: true },
+      });
+      where.musicianId = {
+        in: musicians.map((m) => m.id),
+      };
+    }
+
+    // Filter by saved tasks (savedCount > 0)
+    if (filters?.saved) {
+      where.savedCount = {
+        gt: 0,
+      };
+    }
+
+    console.log('Final where clause:', where);
+
     const tasks = await this.prisma.taskDefinition.findMany({
+      where,
       include: {
         musician: {
           select: {
@@ -28,8 +76,10 @@ export class TasksService {
       },
     });
 
+    console.log('Found tasks:', tasks.length);
+
     // Map the database tasks to TaskDTO objects
-    const taskDtos: TaskDTO[] = tasks.map((task) => ({
+    let taskDtos: TaskDTO[] = tasks.map((task) => ({
       id: task.id,
       title: task.title,
       description: task.description,
@@ -47,6 +97,13 @@ export class TasksService {
       savedCount: task.savedCount,
       usedCount: task.usedCount,
     }));
+
+    // Filter by instruments (client-side filtering for now)
+    if (filters?.instruments && filters.instruments.length > 0) {
+      taskDtos = taskDtos.filter((task) =>
+        filters.instruments!.includes(task.instrument),
+      );
+    }
 
     return taskDtos;
   }
@@ -95,12 +152,16 @@ export class TasksService {
     };
   }
 
-  async createTask(createTaskDto: CreateTaskDto): Promise<TaskDTO> {
-    // For now, we'll use the first musician as the creator
-    // In a real app, this would come from the authenticated user
-    const firstMusician = await this.prisma.musician.findFirst();
-    if (!firstMusician) {
-      throw new Error('No musicians found in database');
+  async createTask(
+    createTaskDto: CreateTaskDto,
+    musicianId: number,
+  ): Promise<TaskDTO> {
+    // Use the authenticated user's ID instead of finding the first musician
+    const musician = await this.prisma.musician.findUnique({
+      where: { id: musicianId },
+    });
+    if (!musician) {
+      throw new Error('Musician not found');
     }
 
     // Find or create tags for the instrument and other tags
@@ -141,7 +202,7 @@ export class TasksService {
         checklist: createTaskDto.checklist,
         savedCount: 0,
         usedCount: 0,
-        musicianId: firstMusician.id,
+        musicianId: musicianId,
       },
       include: {
         musician: {
@@ -162,7 +223,7 @@ export class TasksService {
 
     // Connect the tags to the musician's instruments
     await this.prisma.musician.update({
-      where: { id: firstMusician.id },
+      where: { id: musicianId },
       data: {
         instruments: {
           connect: tagsToConnect.map((tag) => ({ id: tag.id })),

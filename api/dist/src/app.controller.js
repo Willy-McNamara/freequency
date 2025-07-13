@@ -25,7 +25,7 @@ let AppController = class AppController {
         this.sessionsService = sessionsService;
     }
     async initialRender(req) {
-        const musicianData = await this.musiciansService.getMusicianById(req.user.id);
+        const musicianData = await this.musiciansService.getMusicianById(req.user.id, req.user.id);
         const sessionsData = await this.sessionsService.getFiveSessions();
         const combinedData = this.appService.formatRenderPayload(musicianData, sessionsData);
         return combinedData;

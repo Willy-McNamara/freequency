@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Body,
   Param,
   UseGuards,
@@ -14,6 +15,7 @@ import {
   MusicianDto,
   MusicianFrontendDTO,
   MusicianUpdateDto,
+  ProfileUpdateDto,
   GoalDto,
 } from './dto/musician.dto';
 import { JwtAuthGuard } from '../auth/jwt.guard';
@@ -28,8 +30,12 @@ export class MusiciansController {
   }
 
   @Get(':id')
-  async getMusicianById(@Param('id') id: string): Promise<MusicianFrontendDTO> {
-    return this.musiciansService.getMusicianById(Number(id));
+  async getMusicianById(
+    @Param('id') id: string,
+    @Req() req: any,
+  ): Promise<MusicianFrontendDTO | null> {
+    const currentUserId = req.user?.id;
+    return this.musiciansService.getMusicianById(Number(id), currentUserId);
   }
 
   @Get(':id/goals')
@@ -46,15 +52,63 @@ export class MusiciansController {
   }
 
   @Delete(':id/goals/:goalId')
-  async deleteGoalForMusician(
+  @UseGuards(JwtAuthGuard)
+  async deleteGoal(
     @Param('id') id: string,
     @Param('goalId') goalId: string,
-  ): Promise<{ success: boolean }> {
+  ): Promise<void> {
     await this.musiciansService.deleteGoalForMusician(
       Number(id),
       Number(goalId),
     );
-    return { success: true };
+  }
+
+  @Post(':id/follow')
+  @UseGuards(JwtAuthGuard)
+  async followMusician(
+    @Param('id') id: string,
+    @Req() req: any,
+  ): Promise<void> {
+    await this.musiciansService.followMusician(req.user.id, Number(id));
+  }
+
+  @Delete(':id/follow')
+  @UseGuards(JwtAuthGuard)
+  async unfollowMusician(
+    @Param('id') id: string,
+    @Req() req: any,
+  ): Promise<void> {
+    await this.musiciansService.unfollowMusician(req.user.id, Number(id));
+  }
+
+  @Get(':id/follow-status')
+  @UseGuards(JwtAuthGuard)
+  async getFollowStatus(
+    @Param('id') id: string,
+    @Req() req: any,
+  ): Promise<{ isFollowing: boolean }> {
+    return this.musiciansService.getFollowStatus(req.user.id, Number(id));
+  }
+
+  @Get(':id/follow-counts')
+  async getFollowCounts(
+    @Param('id') id: string,
+  ): Promise<{ followerCount: number; followingCount: number }> {
+    return this.musiciansService.getFollowCounts(Number(id));
+  }
+
+  @Put(':id')
+  @UseGuards(JwtAuthGuard)
+  async updateProfile(
+    @Param('id') id: string,
+    @Body() profileUpdateDto: ProfileUpdateDto,
+    @Req() req: any,
+  ): Promise<MusicianFrontendDTO> {
+    // Ensure user can only update their own profile
+    if (Number(id) !== req.user.id) {
+      throw new Error('Unauthorized: Can only update your own profile');
+    }
+    return this.musiciansService.updateProfile(Number(id), profileUpdateDto);
   }
 
   // // @Post()

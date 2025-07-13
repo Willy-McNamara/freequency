@@ -10,6 +10,7 @@ interface TotalStatsViewProps {
   tagTotals: Array<{
     tag: string;
     minutes: number;
+    seconds: number;
     percent: number;
   }>;
   pieData: Array<{
@@ -91,7 +92,7 @@ export const TotalStatsView: React.FC<TotalStatsViewProps> = ({
                     {tag.tag}
                   </CardTitle>
                   <CardDescription>
-                    Total: {formatMinutes(tag.minutes)}
+                    Total: {formatMinutes(tag.seconds)}
                   </CardDescription>
                 </div>
               </div>

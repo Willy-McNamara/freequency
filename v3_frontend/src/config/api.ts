@@ -14,6 +14,9 @@ interface ApiConfig {
       profile: (id: number) => string;
       allDisplayNames: string;
       goals: (id: number) => string;
+      follow: (id: number) => string;
+      followStatus: (id: number) => string;
+      followCounts: (id: number) => string;
     };
     sessions: string;
     tasks: string;
@@ -49,6 +52,11 @@ const getApiConfig = (): ApiConfig => {
         profile: (id: number) => `${baseUrl}/musicians/${id}`,
         allDisplayNames: `${baseUrl}/musicians/all-display-names`,
         goals: (id: number) => `${baseUrl}/musicians/${id}/goals`,
+        follow: (id: number) => `${baseUrl}/musicians/${id}/follow`,
+        followStatus: (id: number) =>
+          `${baseUrl}/musicians/${id}/follow-status`,
+        followCounts: (id: number) =>
+          `${baseUrl}/musicians/${id}/follow-counts`,
       },
       sessions: `${baseUrl}/sessions`,
       tasks: `${baseUrl}/tasks`,

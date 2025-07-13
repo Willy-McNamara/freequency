@@ -59,6 +59,7 @@ let SessionsService = class SessionsService {
                     include: {
                         musician: {
                             select: {
+                                id: true,
                                 displayName: true,
                                 avatarUrl: true,
                             },
@@ -69,6 +70,7 @@ let SessionsService = class SessionsService {
                     include: {
                         musician: {
                             select: {
+                                id: true,
                                 displayName: true,
                                 avatarUrl: true,
                             },
@@ -77,6 +79,7 @@ let SessionsService = class SessionsService {
                 },
                 musician: {
                     select: {
+                        id: true,
                         displayName: true,
                         avatarUrl: true,
                     },
@@ -107,6 +110,7 @@ let SessionsService = class SessionsService {
                             include: {
                                 musician: {
                                     select: {
+                                        id: true,
                                         displayName: true,
                                         avatarUrl: true,
                                     },
@@ -142,6 +146,7 @@ let SessionsService = class SessionsService {
             isPublic: session.isPublic,
             createdAt: session.createdAt.toISOString(),
             musician: {
+                id: session.musician.id,
                 displayName: session.musician.displayName,
                 avatarUrl: session.musician.avatarUrl,
             },
@@ -152,6 +157,7 @@ let SessionsService = class SessionsService {
             })),
             gasUps: session.gasUps.map((gasUp) => ({
                 musician: {
+                    id: gasUp.musician.id,
                     displayName: gasUp.musician.displayName,
                     avatarUrl: gasUp.musician.avatarUrl,
                 },
@@ -161,6 +167,7 @@ let SessionsService = class SessionsService {
                 text: comment.text,
                 createdAt: comment.createdAt.toISOString(),
                 musician: {
+                    id: comment.musician.id,
                     displayName: comment.musician.displayName,
                     avatarUrl: comment.musician.avatarUrl,
                 },
@@ -179,6 +186,7 @@ let SessionsService = class SessionsService {
                     description: taskInUse.taskDefinition.description,
                     instrument: taskInUse.taskDefinition.musician.displayName,
                     user: {
+                        id: taskInUse.taskDefinition.musician.id,
                         displayName: taskInUse.taskDefinition.musician.displayName,
                         avatarUrl: taskInUse.taskDefinition.musician.avatarUrl,
                     },
@@ -199,13 +207,330 @@ let SessionsService = class SessionsService {
         };
     }
     async getFiveSessions() {
-        const result = await this.getSessionsWithFilters({
-            users: [],
-            instruments: [],
-            tags: [],
-            saved: false,
+        const sessions = await this.prisma.session.findMany({
+            take: 5,
+            orderBy: { id: 'desc' },
+            include: {
+                gasUps: {
+                    include: {
+                        musician: {
+                            select: {
+                                id: true,
+                                displayName: true,
+                                avatarUrl: true,
+                            },
+                        },
+                    },
+                },
+                comments: {
+                    include: {
+                        musician: {
+                            select: {
+                                id: true,
+                                displayName: true,
+                                avatarUrl: true,
+                            },
+                        },
+                    },
+                },
+                musician: {
+                    select: {
+                        id: true,
+                        displayName: true,
+                        avatarUrl: true,
+                    },
+                },
+                media: {
+                    select: {
+                        url: true,
+                        type: true,
+                    },
+                },
+                tags: {
+                    select: {
+                        id: true,
+                        label: true,
+                        color: true,
+                    },
+                },
+                instruments: {
+                    select: {
+                        id: true,
+                        label: true,
+                        color: true,
+                    },
+                },
+                tasksInUse: {
+                    include: {
+                        taskDefinition: {
+                            include: {
+                                musician: {
+                                    select: {
+                                        id: true,
+                                        displayName: true,
+                                        avatarUrl: true,
+                                    },
+                                },
+                            },
+                        },
+                        tags: {
+                            select: {
+                                id: true,
+                                label: true,
+                                color: true,
+                            },
+                        },
+                    },
+                },
+            },
         });
-        return result.sessions;
+        return sessions.map((session) => ({
+            id: session.id,
+            title: session.title,
+            notes: session.notes,
+            instruments: session.instruments.map((tag) => ({
+                id: tag.id,
+                label: tag.label,
+                color: tag.color,
+            })),
+            duration: session.duration,
+            isPublic: session.isPublic,
+            createdAt: session.createdAt.toISOString(),
+            musician: {
+                id: session.musician.id,
+                displayName: session.musician.displayName,
+                avatarUrl: session.musician.avatarUrl,
+            },
+            tags: session.tags.map((tag) => ({
+                id: tag.id,
+                label: tag.label,
+                color: tag.color,
+            })),
+            gasUps: session.gasUps.map((gasUp) => ({
+                musician: {
+                    id: gasUp.musician.id,
+                    displayName: gasUp.musician.displayName,
+                    avatarUrl: gasUp.musician.avatarUrl,
+                },
+            })),
+            comments: session.comments.map((comment) => ({
+                id: comment.id,
+                text: comment.text,
+                createdAt: comment.createdAt.toISOString(),
+                musician: {
+                    id: comment.musician.id,
+                    displayName: comment.musician.displayName,
+                    avatarUrl: comment.musician.avatarUrl,
+                },
+            })),
+            media: session.media.length > 0
+                ? [
+                    {
+                        url: session.media[0].url,
+                        type: session.media[0].type,
+                    },
+                ]
+                : [],
+            tasks: session.tasksInUse.map((taskInUse) => ({
+                id: taskInUse.id,
+                title: taskInUse.taskDefinition?.title || 'Session Task',
+                timeSpent: taskInUse.duration,
+                notes: taskInUse.notes,
+                taskDefinition: {
+                    id: taskInUse.taskDefinition?.id || 0,
+                    title: taskInUse.taskDefinition?.title || 'Session Task',
+                    description: taskInUse.taskDefinition?.description || '',
+                    instrument: taskInUse.taskDefinition?.musician?.displayName || 'Unknown',
+                    user: taskInUse.taskDefinition?.musician || {
+                        id: 0,
+                        displayName: 'Unknown',
+                        avatarUrl: null,
+                    },
+                    tags: taskInUse.tags.map((tag) => ({
+                        id: tag.id,
+                        label: tag.label,
+                        color: tag.color,
+                    })),
+                    checklist: taskInUse.taskDefinition?.checklist || [],
+                    savedCount: taskInUse.taskDefinition?.savedCount || 0,
+                    usedCount: taskInUse.taskDefinition?.usedCount || 0,
+                },
+            })),
+        }));
+    }
+    async getSessionsFromFollowedUsers(currentUserId, cursor) {
+        const take = 10;
+        const followedUsers = await this.prisma.follow.findMany({
+            where: { followerId: currentUserId },
+            select: { followingId: true },
+        });
+        const followedUserIds = followedUsers.map((follow) => follow.followingId);
+        if (followedUserIds.length === 0) {
+            return { sessions: [], nextCursor: undefined };
+        }
+        const sessions = await this.prisma.session.findMany({
+            take: take + 1,
+            cursor: cursor ? { id: parseInt(cursor) } : undefined,
+            orderBy: { id: 'desc' },
+            where: {
+                musicianId: {
+                    in: followedUserIds,
+                },
+                isPublic: true,
+            },
+            include: {
+                gasUps: {
+                    include: {
+                        musician: {
+                            select: {
+                                id: true,
+                                displayName: true,
+                                avatarUrl: true,
+                            },
+                        },
+                    },
+                },
+                comments: {
+                    include: {
+                        musician: {
+                            select: {
+                                id: true,
+                                displayName: true,
+                                avatarUrl: true,
+                            },
+                        },
+                    },
+                },
+                musician: {
+                    select: {
+                        id: true,
+                        displayName: true,
+                        avatarUrl: true,
+                    },
+                },
+                media: {
+                    select: {
+                        url: true,
+                        type: true,
+                    },
+                },
+                tags: {
+                    select: {
+                        id: true,
+                        label: true,
+                        color: true,
+                    },
+                },
+                instruments: {
+                    select: {
+                        id: true,
+                        label: true,
+                        color: true,
+                    },
+                },
+                tasksInUse: {
+                    include: {
+                        taskDefinition: {
+                            include: {
+                                musician: {
+                                    select: {
+                                        id: true,
+                                        displayName: true,
+                                        avatarUrl: true,
+                                    },
+                                },
+                            },
+                        },
+                        tags: {
+                            select: {
+                                id: true,
+                                label: true,
+                                color: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+        const hasMore = sessions.length > take;
+        const sessionsToReturn = hasMore ? sessions.slice(0, take) : sessions;
+        const nextCursor = hasMore
+            ? sessionsToReturn[sessionsToReturn.length - 1].id.toString()
+            : undefined;
+        const frontendSessionDto = sessionsToReturn.map((session) => ({
+            id: session.id,
+            title: session.title,
+            notes: session.notes,
+            instruments: session.instruments.map((tag) => ({
+                id: tag.id,
+                label: tag.label,
+                color: tag.color,
+            })),
+            duration: session.duration,
+            isPublic: session.isPublic,
+            createdAt: session.createdAt.toISOString(),
+            musician: {
+                id: session.musician.id,
+                displayName: session.musician.displayName,
+                avatarUrl: session.musician.avatarUrl,
+            },
+            tags: session.tags.map((tag) => ({
+                id: tag.id,
+                label: tag.label,
+                color: tag.color,
+            })),
+            gasUps: session.gasUps.map((gasUp) => ({
+                musician: {
+                    id: gasUp.musician.id,
+                    displayName: gasUp.musician.displayName,
+                    avatarUrl: gasUp.musician.avatarUrl,
+                },
+            })),
+            comments: session.comments.map((comment) => ({
+                id: comment.id,
+                text: comment.text,
+                createdAt: comment.createdAt.toISOString(),
+                musician: {
+                    id: comment.musician.id,
+                    displayName: comment.musician.displayName,
+                    avatarUrl: comment.musician.avatarUrl,
+                },
+            })),
+            media: session.media.length > 0
+                ? [
+                    {
+                        url: session.media[0].url,
+                        type: session.media[0].type,
+                    },
+                ]
+                : [],
+            tasks: session.tasksInUse.map((taskInUse) => ({
+                id: taskInUse.id,
+                title: taskInUse.taskDefinition?.title || 'Session Task',
+                timeSpent: taskInUse.duration,
+                notes: taskInUse.notes,
+                taskDefinition: {
+                    id: taskInUse.taskDefinition?.id || 0,
+                    title: taskInUse.taskDefinition?.title || 'Session Task',
+                    description: taskInUse.taskDefinition?.description || '',
+                    instrument: taskInUse.taskDefinition?.musician?.displayName || 'Unknown',
+                    user: taskInUse.taskDefinition?.musician || {
+                        id: 0,
+                        displayName: 'Unknown',
+                        avatarUrl: null,
+                    },
+                    tags: taskInUse.tags.map((tag) => ({
+                        id: tag.id,
+                        label: tag.label,
+                        color: tag.color,
+                    })),
+                    checklist: taskInUse.taskDefinition?.checklist || [],
+                    savedCount: taskInUse.taskDefinition?.savedCount || 0,
+                    usedCount: taskInUse.taskDefinition?.usedCount || 0,
+                },
+            })),
+        }));
+        return { sessions: frontendSessionDto, nextCursor };
     }
     async createSession(newSession) {
         try {
@@ -228,19 +553,19 @@ let SessionsService = class SessionsService {
                     },
                     include: {
                         musician: {
-                            select: { displayName: true, avatarUrl: true },
+                            select: { id: true, displayName: true, avatarUrl: true },
                         },
                         gasUps: {
                             include: {
                                 musician: {
-                                    select: { displayName: true, avatarUrl: true },
+                                    select: { id: true, displayName: true, avatarUrl: true },
                                 },
                             },
                         },
                         comments: {
                             include: {
                                 musician: {
-                                    select: { displayName: true, avatarUrl: true },
+                                    select: { id: true, displayName: true, avatarUrl: true },
                                 },
                             },
                         },
@@ -327,7 +652,7 @@ let SessionsService = class SessionsService {
                 await prisma.musician.update({
                     where: { id: newSession.musicianId },
                     data: {
-                        totalPracticeMinutes: {
+                        totalPracticeSeconds: {
                             increment: newSession.duration,
                         },
                         totalSessions: {
@@ -348,6 +673,7 @@ let SessionsService = class SessionsService {
                     isPublic: createdSession.isPublic,
                     createdAt: createdSession.createdAt.toISOString(),
                     musician: {
+                        id: newSession.musicianId,
                         displayName: createdSession.musician.displayName,
                         avatarUrl: createdSession.musician.avatarUrl,
                     },
@@ -356,12 +682,19 @@ let SessionsService = class SessionsService {
                         label: tag.label,
                         color: tag.color,
                     })),
-                    gasUps: createdSession.gasUps,
+                    gasUps: createdSession.gasUps.map((gasUp) => ({
+                        musician: {
+                            id: gasUp.musician.id,
+                            displayName: gasUp.musician.displayName,
+                            avatarUrl: gasUp.musician.avatarUrl,
+                        },
+                    })),
                     comments: createdSession.comments.map((comment) => ({
                         id: comment.id,
                         text: comment.text,
                         createdAt: comment.createdAt.toISOString(),
                         musician: {
+                            id: comment.musician.id,
                             displayName: comment.musician.displayName,
                             avatarUrl: comment.musician.avatarUrl,
                         },
