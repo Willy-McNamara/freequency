@@ -1,6 +1,15 @@
 "use client";
 
-import { Bar, BarChart, CartesianGrid, LabelList, XAxis } from "recharts";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  LabelList,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 import {
   Card,
@@ -9,12 +18,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
 
 // Props for the chart
 interface ChartBarLabelProps<T = Record<string, string | number>> {
@@ -32,13 +35,24 @@ export function ChartBarLabel<T extends Record<string, string | number>>({
   title = "Bar Chart",
   description = "",
 }: ChartBarLabelProps<T>) {
-  // Chart config for recharts
-  const chartConfig = {
-    [yAxisKey as string]: {
-      label: "Count",
-      color: "var(--chart-1)",
-    },
-  } satisfies ChartConfig;
+  console.log("[BarChart] Received data:", data);
+  console.log("[BarChart] Data length:", data.length);
+
+  if (!data || data.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>{title}</CardTitle>
+          <CardDescription>{description}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+            <p>No data available</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
@@ -47,49 +61,48 @@ export function ChartBarLabel<T extends Record<string, string | number>>({
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig}>
-          <BarChart
-            accessibilityLayer
-            data={data}
-            margin={{
-              top: 20,
-            }}
-          >
-            <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey={xAxisKey as string}
-              tickLine={false}
-              tickMargin={10}
-              axisLine={false}
-              tickFormatter={(value: string) => value.slice(0, 3)}
-            />
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent hideLabel />}
-            />
-            <Bar
-              dataKey={yAxisKey as string}
-              fill="var(--color-desktop)"
-              radius={8}
+        <div className="w-full h-[300px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={data}
+              margin={{
+                top: 20,
+                right: 30,
+                left: 20,
+                bottom: 5,
+              }}
             >
-              <LabelList
-                position="top"
-                offset={12}
-                className="fill-foreground"
-                fontSize={12}
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+              <XAxis
+                dataKey={xAxisKey as string}
+                tickLine={false}
+                tickMargin={10}
+                axisLine={false}
+                tickFormatter={(value: string) => value.slice(0, 3)}
               />
-            </Bar>
-          </BarChart>
-        </ChartContainer>
+              <YAxis tickLine={false} tickMargin={10} axisLine={false} />
+              <Tooltip
+                formatter={(value: number, name: string) => [
+                  typeof value === "number" ? value.toFixed(1) : value,
+                  name,
+                ]}
+              />
+              <Bar
+                dataKey={yAxisKey as string}
+                fill="#8884d8"
+                radius={[4, 4, 0, 0]}
+              >
+                <LabelList
+                  position="top"
+                  offset={12}
+                  className="fill-foreground"
+                  fontSize={12}
+                />
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </CardContent>
-      {/* <CardFooter className="flex-col items-start gap-2 text-sm">
-        <div className="flex gap-2 leading-none font-medium">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-        </div>
-        <div className="text-muted-foreground leading-none">
-          Showing total visitors for the last 6 months
-        </div>
-      </CardFooter> */}
     </Card>
   );
 }

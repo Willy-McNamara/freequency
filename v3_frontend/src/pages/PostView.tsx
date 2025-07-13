@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, MessageSquare, Heart, Clock, User } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/avatar";
 import { Badge } from "@/components/badge";
-import { RichText } from "@/components/rich-text";
+import { RichTextRenderer } from "@/components/rich-text";
 import { Button } from "@/components/ui/button";
 import { sessionService } from "@/services/sessions";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -385,7 +385,7 @@ export const PostView: React.FC = () => {
 
           {/* Notes */}
           <div className="text-left">
-            <RichText
+            <RichTextRenderer
               content={post.notes}
               className="font-['Inter',Helvetica] text-foreground text-sm font-normal leading-6"
             />
@@ -554,7 +554,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onViewTaskDefinition }) => {
           {/* Task Notes */}
           {task.notes && (
             <div className="mb-4 text-left">
-              <RichText
+              <RichTextRenderer
                 content={task.notes}
                 className="font-['Inter',Helvetica] text-foreground text-sm font-normal leading-6"
               />

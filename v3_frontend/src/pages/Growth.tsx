@@ -1,29 +1,4 @@
-import { ChartBarLabel } from "@/components/bar-chart";
-import { ChartPieDonutActive } from "@/components/pie-chart";
 import React, { useState, useEffect } from "react";
-import {
-  Card,
-  CardDescription,
-  CardTitle,
-  CardContent,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import {
-  ChevronDownIcon,
-  TagIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  PlusIcon,
-  EditIcon,
-  TrashIcon,
-} from "lucide-react";
 import {
   addWeeks,
   addMonths,
@@ -37,29 +12,23 @@ import {
   endOfYear,
   isWithinInterval,
   parseISO,
-  startOfDay,
-  endOfDay,
 } from "date-fns";
 import { useAuth } from "../components/auth/AuthProvider";
 import { apiConfig } from "../config/api";
-
-// NOTE: If you see a 'Cannot find module "date-fns"' error, run: npm install date-fns
+import {
+  TotalStatsView,
+  ChronologicalStatsView,
+  GoalsView,
+  GrowthMenuView,
+  formatMinutes,
+  calculateGoalProgress,
+  formatGoalSummary,
+  type TaskInUseMock,
+  type Goal,
+} from "./Growth/index";
 
 // Define the possible views as a union type
 type ViewType = "MENU" | "TOTAL" | "CHRONOLOGICAL" | "GOALS";
-
-// Goal types and interfaces
-type GoalType = "duration" | "frequency";
-type GoalTimeFrame = "daily" | "weekly" | "monthly" | "annually";
-
-interface Goal {
-  id: string;
-  tag: string; // "All Tags" or specific tag name
-  type: GoalType;
-  target: number; // minutes for duration, occurrences for frequency
-  timeFrame: GoalTimeFrame;
-  createdAt: string;
-}
 
 // Mock data for demo
 const weekData = [
@@ -109,402 +78,12 @@ type TimeRange = (typeof timeRanges)[number]["key"];
 type TotalTimeRange = (typeof totalTimeRanges)[number]["key"];
 type Metric = "occurrence" | "duration";
 
-// Mock data for tag breakdown (for demo)
-// Mock data for tag breakdown (for demo) - unused but kept for reference
-// const _tagTotalsMock = {
-//   day: [
-//     { tag: "Scales", minutes: 40, percent: 40 },
-//     { tag: "Arpeggios", minutes: 30, percent: 30 },
-//     { tag: "Sight Reading", minutes: 20, percent: 20 },
-//     { tag: "Improvisation", minutes: 10, percent: 10 },
-//     { tag: "Ear Training", minutes: 15, percent: 12 },
-//     { tag: "Transcription", minutes: 12, percent: 8 },
-//     { tag: "Repertoire", minutes: 18, percent: 15 },
-//     { tag: "Rhythm", minutes: 8, percent: 7 },
-//   ],
-//   week: [
-//     { tag: "Scales", minutes: 200, percent: 33 },
-//     { tag: "Arpeggios", minutes: 180, percent: 30 },
-//     { tag: "Sight Reading", minutes: 120, percent: 20 },
-//     { tag: "Improvisation", minutes: 100, percent: 17 },
-//     { tag: "Ear Training", minutes: 90, percent: 14 },
-//     { tag: "Transcription", minutes: 80, percent: 12 },
-//     { tag: "Repertoire", minutes: 110, percent: 18 },
-//     { tag: "Rhythm", minutes: 60, percent: 10 },
-//   ],
-//   month: [
-//     { tag: "Scales", minutes: 800, percent: 32 },
-//     { tag: "Arpeggios", minutes: 700, percent: 28 },
-//     { tag: "Sight Reading", minutes: 600, percent: 24 },
-//     { tag: "Improvisation", minutes: 400, percent: 16 },
-//     { tag: "Ear Training", minutes: 350, percent: 14 },
-//     { tag: "Transcription", minutes: 300, percent: 12 },
-//     { tag: "Repertoire", minutes: 420, percent: 17 },
-//     { tag: "Rhythm", minutes: 250, percent: 10 },
-//   ],
-//   year: [
-//     { tag: "Scales", minutes: 9000, percent: 30 },
-//     { tag: "Arpeggios", minutes: 8000, percent: 27 },
-//     { tag: "Sight Reading", minutes: 7000, percent: 23 },
-//     { tag: "Improvisation", minutes: 6000, percent: 20 },
-//     { tag: "Ear Training", minutes: 5500, percent: 18 },
-//     { tag: "Transcription", minutes: 5000, percent: 15 },
-//     { tag: "Repertoire", minutes: 6500, percent: 22 },
-//     { tag: "Rhythm", minutes: 4000, percent: 12 },
-//   ],
-// };
-
-// const pieChartColors = [
-//   "#60a5fa", // blue
-//   "#fbbf24", // yellow
-//   "#34d399", // green
-//   "#f472b6", // pink
-//   "#a78bfa", // purple
-//   "#f87171", // red
-//   "#facc15", // gold
-//   "#38bdf8", // sky
-// ];
-
-// const pieChartDataMock = {
-//   day: [
-//     { tag: "Scales", value: 40, fill: pieChartColors[0] },
-//     { tag: "Arpeggios", value: 30, fill: pieChartColors[1] },
-//     { tag: "Sight Reading", value: 20, fill: pieChartColors[2] },
-//     { tag: "Improvisation", value: 10, fill: pieChartColors[3] },
-//     { tag: "Ear Training", value: 15, fill: pieChartColors[4] },
-//     { tag: "Transcription", value: 12, fill: pieChartColors[5] },
-//     { tag: "Repertoire", value: 18, fill: pieChartColors[6] },
-//     { tag: "Rhythm", value: 8, fill: pieChartColors[7] },
-//   ],
-//   week: [
-//     { tag: "Scales", value: 200, fill: pieChartColors[0] },
-//     { tag: "Arpeggios", value: 180, fill: pieChartColors[1] },
-//     { tag: "Sight Reading", value: 120, fill: pieChartColors[2] },
-//     { tag: "Improvisation", value: 100, fill: pieChartColors[3] },
-//     { tag: "Ear Training", value: 90, fill: pieChartColors[4] },
-//     { tag: "Transcription", value: 80, fill: pieChartColors[5] },
-//     { tag: "Repertoire", value: 110, fill: pieChartColors[6] },
-//     { tag: "Rhythm", value: 60, fill: pieChartColors[7] },
-//   ],
-//   month: [
-//     { tag: "Scales", value: 800, fill: pieChartColors[0] },
-//     { tag: "Arpeggios", value: 700, fill: pieChartColors[1] },
-//     { tag: "Sight Reading", value: 600, fill: pieChartColors[2] },
-//     { tag: "Improvisation", value: 400, fill: pieChartColors[3] },
-//     { tag: "Ear Training", value: 350, fill: pieChartColors[4] },
-//     { tag: "Transcription", value: 300, fill: pieChartColors[5] },
-//     { tag: "Repertoire", value: 420, fill: pieChartColors[6] },
-//     { tag: "Rhythm", value: 250, fill: pieChartColors[7] },
-//   ],
-//   year: [
-//     { tag: "Scales", value: 9000, fill: pieChartColors[0] },
-//     { tag: "Arpeggios", value: 8000, fill: pieChartColors[1] },
-//     { tag: "Sight Reading", value: 7000, fill: pieChartColors[2] },
-//     { tag: "Improvisation", value: 6000, fill: pieChartColors[3] },
-//     { tag: "Ear Training", value: 5500, fill: pieChartColors[4] },
-//     { tag: "Transcription", value: 5000, fill: pieChartColors[5] },
-//     { tag: "Repertoire", value: 6500, fill: pieChartColors[6] },
-//     { tag: "Rhythm", value: 4000, fill: pieChartColors[7] },
-//   ],
-// };
-
-// Mock tag options for dropdown
-// Remove unused variable: tagOptions
-
-function formatMinutes(minutes: number) {
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return h > 0 ? `${h}h ${m}m` : `${m}m`;
-}
-
-// TagSelectDropdown component
-function TagSelectDropdown({
-  options,
-  value,
-  onChange,
-  className = "",
-}: {
-  options: { id: number; label: string; color?: string }[];
-  value: string;
-  onChange: (tag: string) => void;
-  className?: string;
-}) {
-  const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const filtered = options.filter((tag) =>
-    tag.label.toLowerCase().includes(search.toLowerCase())
-  );
-  return (
-    <>
-      <Button
-        variant="outline"
-        className={`flex items-center gap-2 min-w-[180px] justify-between ${className}`}
-        onClick={() => setOpen(true)}
-        type="button"
-      >
-        <span className="flex items-center gap-2">
-          <TagIcon className="w-4 h-4" />
-          {value}
-        </span>
-        <ChevronDownIcon className="w-4 h-4" />
-      </Button>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-[350px]">
-          <DialogHeader>
-            <DialogTitle>Select Tag</DialogTitle>
-          </DialogHeader>
-          <Input
-            placeholder="Search your tags..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="mb-2"
-          />
-          <div className="max-h-60 overflow-y-auto space-y-1">
-            {filtered.length === 0 && (
-              <div className="text-muted-foreground text-sm py-2 px-1">
-                No tags found
-              </div>
-            )}
-            {filtered.map((tag) => (
-              <button
-                key={tag.id}
-                className={`w-full text-left px-3 py-2 rounded-md hover:bg-muted transition-colors ${
-                  tag.label === value ? "bg-primary/10 font-semibold" : ""
-                }`}
-                onClick={() => {
-                  onChange(tag.label);
-                  setOpen(false);
-                }}
-                type="button"
-              >
-                {tag.label}
-              </button>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
-    </>
-  );
-}
-
-// Mock API data and functions
-// const mockTags = [
-//   { id: 1, label: "Scales", color: "#60a5fa" },
-//   { id: 2, label: "Arpeggios", color: "#fbbf24" },
-//   { id: 3, label: "Sight Reading", color: "#34d399" },
-//   { id: 4, label: "Improvisation", color: "#f472b6" },
-//   { id: 5, label: "Ear Training", color: "#a78bfa" },
-//   { id: 6, label: "Transcription", color: "#f87171" },
-//   { id: 7, label: "Repertoire", color: "#facc15" },
-//   { id: 8, label: "Rhythm", color: "#38bdf8" },
-// ];
-
-type TimeRangeKey = "week" | "month" | "year";
-type TaskInUseMock = {
-  label: string;
-  occurrence: number;
-  duration: number;
-  tags: string[];
-  createdAt: string; // ISO date string
-  sessionId: number; // Added for occurrence tracking
-};
-
 type TaskInUseApiResponse = {
   duration: number;
   tags: string[];
   createdAt: string;
-  sessionId: number; // Added for occurrence tracking
-  // ...other fields if needed
+  sessionId: number;
 };
-
-// Helper to get a date for a given week, month, or year bucket
-// function getDateForLabel(
-//   label: string,
-//   range: TimeRangeKey,
-//   baseDate: Date
-// ): Date {
-//   if (range === "week") {
-//     const days = [
-//       "Monday",
-//       "Tuesday",
-//       "Wednesday",
-//       "Thursday",
-//       "Friday",
-//       "Saturday",
-//       "Sunday",
-//     ];
-//     const idx = days.indexOf(label);
-//     return addDays(startOfWeek(baseDate, { weekStartsOn: 1 }), idx);
-//   }
-//   if (range === "month") {
-//     const weeks = ["W1", "W2", "W3", "W4"];
-//     const idx = weeks.indexOf(label);
-//     return addWeeks(startOfMonth(baseDate), idx);
-//   }
-//   if (range === "year") {
-//     const months = [
-//       "Jan",
-//       "Feb",
-//       "Mar",
-//       "Apr",
-//       "May",
-//       "Jun",
-//       "Jul",
-//       "Aug",
-//       "Sep",
-//       "Oct",
-//       "Nov",
-//       "Dec",
-//     ];
-//     const idx = months.indexOf(label);
-//     return addMonths(startOfYear(baseDate), idx);
-//   }
-//   return baseDate;
-// }
-
-// Generate mock tasks-in-use with createdAt dates for the last 8 weeks, 6 months, 2 years
-// function generateMockTasksInUse(): TaskInUseMock[] {
-//   const now = new Date();
-//   const tasks: TaskInUseMock[] = [];
-//   // Weeks
-//   for (let w = 0; w < 8; w++) {
-//     const weekStart = subWeeks(startOfWeek(now, { weekStartsOn: 1 }), w);
-//     [
-//       "Monday",
-//       "Tuesday",
-//       "Wednesday",
-//       "Thursday",
-//       "Friday",
-//       "Saturday",
-//       "Sunday",
-//     ].forEach((day, i) => {
-//       if (Math.random() > 0.6) return; // skip some days for realism
-//       const date = addDays(weekStart, i);
-//       tasks.push({
-//         label: day,
-//         occurrence: Math.floor(Math.random() * 8),
-//         duration: Math.floor(Math.random() * 60),
-//         tags: [mockTags[Math.floor(Math.random() * mockTags.length)].label],
-//         createdAt: date.toISOString(),
-//         sessionId: Math.floor(Math.random() * 100), // Mock sessionId
-//       });
-//     });
-//   }
-//   // Months
-//   for (let m = 0; m < 6; m++) {
-//     const monthStart = subMonths(startOfMonth(now), m);
-//     ["W1", "W2", "W3", "W4"].forEach((week, i) => {
-//       if (Math.random() > 0.5) return;
-//       const date = addWeeks(monthStart, i);
-//       tasks.push({
-//         label: week,
-//         occurrence: Math.floor(Math.random() * 20),
-//         duration: Math.floor(Math.random() * 200),
-//         tags: [mockTags[Math.floor(Math.random() * mockTags.length)].label],
-//         createdAt: date.toISOString(),
-//         sessionId: Math.floor(Math.random() * 100), // Mock sessionId
-//       });
-//     });
-//   }
-//   // Years
-//   for (let y = 0; y < 2; y++) {
-//     const yearStart = subYears(startOfYear(now), y);
-//     [
-//       "Jan",
-//       "Feb",
-//       "Mar",
-//       "Apr",
-//       "May",
-//       "Jun",
-//       "Jul",
-//       "Aug",
-//       "Sep",
-//       "Oct",
-//       "Nov",
-//       "Dec",
-//     ].forEach((month, i) => {
-//       if (Math.random() > 0.4) return;
-//       const date = addMonths(yearStart, i);
-//       tasks.push({
-//         label: month,
-//         occurrence: Math.floor(Math.random() * 50),
-//         duration: Math.floor(Math.random() * 500),
-//         tags: [mockTags[Math.floor(Math.random() * mockTags.length)].label],
-//         createdAt: date.toISOString(),
-//         sessionId: Math.floor(Math.random() * 100), // Mock sessionId
-//       });
-//     });
-//   }
-//   return tasks;
-// }
-
-// Goal calculation functions
-function calculateGoalProgress(
-  goal: Goal,
-  tasksInUse: TaskInUseMock[]
-): number {
-  const now = new Date();
-  let periodStart: Date, periodEnd: Date;
-
-  // Determine the current period based on goal timeFrame
-  switch (goal.timeFrame) {
-    case "daily":
-      periodStart = startOfDay(now);
-      periodEnd = endOfDay(now);
-      break;
-    case "weekly":
-      periodStart = startOfWeek(now, { weekStartsOn: 1 });
-      periodEnd = endOfWeek(now, { weekStartsOn: 1 });
-      break;
-    case "monthly":
-      periodStart = startOfMonth(now);
-      periodEnd = endOfMonth(now);
-      break;
-    case "annually":
-      periodStart = startOfYear(now);
-      periodEnd = endOfYear(now);
-      break;
-  }
-
-  // Filter tasks within the current period
-  const periodTasks = tasksInUse.filter((task) => {
-    const taskDate = parseISO(task.createdAt);
-    return isWithinInterval(taskDate, { start: periodStart, end: periodEnd });
-  });
-
-  // Filter by tag if goal is tag-specific
-  const relevantTasks =
-    goal.tag === "All Tags"
-      ? periodTasks
-      : periodTasks.filter((task) => task.tags.includes(goal.tag));
-
-  // Calculate progress based on goal type
-  if (goal.type === "duration") {
-    const totalMinutes = relevantTasks.reduce(
-      (sum, task) => sum + task.duration,
-      0
-    );
-    return Math.min(totalMinutes, goal.target);
-  } else {
-    const totalOccurrences = relevantTasks.reduce(
-      (sum, task) => sum + task.occurrence,
-      0
-    );
-    return Math.min(totalOccurrences, goal.target);
-  }
-}
-
-function formatGoalSummary(goal: Goal): string {
-  const tagDisplay =
-    goal.tag === "All Tags" ? "all tags" : goal.tag.toLowerCase();
-  const typeDisplay = goal.type === "duration" ? "minutes" : "sessions";
-  const timeFrameDisplay =
-    goal.timeFrame.charAt(0).toUpperCase() + goal.timeFrame.slice(1);
-
-  return `${tagDisplay} | ${goal.target} ${typeDisplay} | ${timeFrameDisplay}`;
-}
-
-// Mock API functions - removed duplicates, see updated versions inside component
 
 const Growth: React.FC = () => {
   const { user } = useAuth();
@@ -653,27 +232,29 @@ const Growth: React.FC = () => {
     );
   }, [selectedTimeRange, currentIndex, allTasksInUse]);
 
-  if (view === "TOTAL") {
+  // Calculate data for Total Stats view
+  const calculateTotalStatsData = () => {
     // Aggregate tag totals from allTasksInUse for the selected period
-    // 1. Group by tag, sum durations
+    // 1. Group by tag, sum durations (in seconds)
     const tagTotalsMap: Record<string, number> = {};
-    let totalMinutes = 0;
+    let totalSeconds = 0;
     allTasksInUse.forEach((task) => {
       (task.tags || ["Untagged"]).forEach((tag) => {
         tagTotalsMap[tag] = (tagTotalsMap[tag] || 0) + (task.duration || 0);
-        totalMinutes += task.duration || 0;
+        totalSeconds += task.duration || 0;
       });
     });
-    // 2. Build tagTotals array
+    // 2. Build tagTotals array (convert seconds to minutes for display)
     const tagTotals = Object.entries(tagTotalsMap)
-      .map(([tag, minutes]) => ({
+      .map(([tag, seconds]) => ({
         tag,
-        minutes,
+        minutes: Math.round(seconds / 60), // Convert seconds to minutes
+        seconds, // Keep original seconds for pie chart
         percent:
-          totalMinutes > 0 ? Math.round((minutes / totalMinutes) * 100) : 0,
+          totalSeconds > 0 ? Math.round((seconds / totalSeconds) * 100) : 0,
       }))
-      .sort((a, b) => b.minutes - a.minutes);
-    // 3. Build pie chart data
+      .sort((a, b) => b.seconds - a.seconds);
+    // 3. Build pie chart data (use seconds for accurate representation)
     const pieChartColors = [
       "#60a5fa", // blue
       "#fbbf24", // yellow
@@ -686,9 +267,10 @@ const Growth: React.FC = () => {
     ];
     const pieData = tagTotals.map((t, i) => ({
       tag: t.tag,
-      value: t.minutes,
+      value: t.seconds, // Use seconds for pie chart
       fill: pieChartColors[i % pieChartColors.length],
     }));
+
     // Map tag to color for indicator
     const tagColorMap: Record<string, string> = {};
     pieData.forEach((item) => {
@@ -696,72 +278,12 @@ const Growth: React.FC = () => {
         tagColorMap[item.tag] = item.fill;
       }
     });
-    return (
-      <div className="w-[75vw] mx-auto">
-        <div className="flex justify-start mb-2">
-          <Button
-            onClick={handleBack}
-            variant="ghost"
-            className="text-sm text-muted-foreground"
-          >
-            &larr; Back
-          </Button>
-        </div>
-        <h1 className="text-2xl font-bold text-center mb-4">Stats Totals</h1>
-        {/* Time range buttons */}
-        <div className="flex justify-center gap-3 mb-4">
-          {totalTimeRanges.map((range) => (
-            <Button
-              key={range.key}
-              onClick={() => setSelectedTotalRange(range.key)}
-              variant={selectedTotalRange === range.key ? "default" : "outline"}
-              className={
-                selectedTotalRange === range.key
-                  ? "font-semibold"
-                  : "font-normal"
-              }
-            >
-              {range.label}
-            </Button>
-          ))}
-        </div>
-        {/* Pie Chart */}
-        <div className="flex justify-center mb-8">
-          <ChartPieDonutActive data={pieData} />
-        </div>
-        {/* Tag breakdown cards */}
-        <div className="flex flex-col gap-4">
-          {tagTotals.map((tag) => (
-            <Card
-              key={tag.tag}
-              className="flex flex-row items-center justify-between p-4 group"
-            >
-              <div className="flex items-center gap-3">
-                {/* Color indicator */}
-                <span
-                  className="inline-block w-4 h-4 rounded-full border"
-                  style={{ backgroundColor: tagColorMap[tag.tag] || "#ccc" }}
-                />
-                <div>
-                  <CardTitle className="text-lg font-semibold mb-1">
-                    {tag.tag}
-                  </CardTitle>
-                  <CardDescription>
-                    Total: {formatMinutes(tag.minutes)}
-                  </CardDescription>
-                </div>
-              </div>
-              <div className="text-xl font-bold text-primary">
-                {tag.percent}%
-              </div>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
 
-  if (view === "CHRONOLOGICAL") {
+    return { tagTotals, pieData, tagColorMap };
+  };
+
+  // Calculate data for Chronological Stats view
+  const calculateChronologicalStatsData = () => {
     // Full label sets for each time range
     const fullLabels: Record<string, string[]> = {
       week: [
@@ -811,12 +333,13 @@ const Growth: React.FC = () => {
       return { ...entry, label };
     });
     const currentLabels = fullLabels[selectedTimeRange];
-    // Aggregate all records by label for duration
+    // Aggregate all records by label for duration (convert seconds to minutes)
     const dataByLabel = labeledData.reduce((acc, entry) => {
       if (!acc[entry.label]) {
         acc[entry.label] = { label: entry.label, occurrence: 0, duration: 0 };
       }
-      acc[entry.label].duration += entry.duration || 0;
+      // Convert seconds to minutes
+      acc[entry.label].duration += Math.round((entry.duration || 0) / 60);
       return acc;
     }, {} as Record<string, { label: string; occurrence: number; duration: number }>);
 
@@ -842,7 +365,7 @@ const Growth: React.FC = () => {
           : { label, occurrence: 0, duration: 0 };
       }
     });
-    console.log("[Chronological] chartData:", chartData);
+
     // Calculate total for selected metric
     const total = chartData.reduce(
       (sum, entry) => sum + (entry[selectedMetric] as number),
@@ -870,6 +393,7 @@ const Growth: React.FC = () => {
         ? "this month"
         : "this year";
     const chartDescription = `${totalString} total ${period}`;
+
     // Navigation logic
     // Find the earliest and latest periods with data
     const now = new Date();
@@ -919,396 +443,98 @@ const Growth: React.FC = () => {
       selectedMetric === "duration"
         ? `Time spent on ${tagDisplay}`
         : `Sessions including ${tagDisplay}`;
+
+    return {
+      chartData,
+      chartTitle,
+      chartDescription,
+      periodLabel,
+      canGoBack,
+      canGoForward,
+    };
+  };
+
+  // Render the appropriate view
+  if (view === "TOTAL") {
+    const { tagTotals, pieData, tagColorMap } = calculateTotalStatsData();
+
     return (
-      <div className="w-[75vw]">
-        <div className="flex justify-start mb-2">
-          <button
-            onClick={handleBack}
-            className="text-sm text-muted-foreground hover:underline"
-          >
-            &larr; Back
-          </button>
-        </div>
-        <h1 className="text-2xl font-bold text-center mb-4">
-          Chronological Stats
-        </h1>
-        {/* Tag filter dropdown */}
-        <div className="flex justify-center mb-4">
-          <TagSelectDropdown
-            options={[{ id: 0, label: "All Tags" }, ...userTags]}
-            value={selectedTag}
-            onChange={setSelectedTag}
-          />
-        </div>
-        {/* Time navigation */}
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <button
-            className="p-2 rounded-full border disabled:opacity-50"
-            onClick={() => setCurrentIndex((i) => i + 1)}
-            disabled={!canGoBack}
-            aria-label="Previous"
-          >
-            <ChevronLeftIcon className="w-5 h-5" />
-          </button>
-          <span className="font-semibold text-base min-w-[120px] text-center">
-            {periodLabel}
-          </span>
-          <button
-            className="p-2 rounded-full border disabled:opacity-50"
-            onClick={() => setCurrentIndex((i) => Math.max(i - 1, 0))}
-            disabled={!canGoForward}
-            aria-label="Next"
-          >
-            <ChevronRightIcon className="w-5 h-5" />
-          </button>
-        </div>
-        {/* Time range buttons */}
-        <div className="flex justify-center gap-3 mb-4">
-          {timeRanges.map((range) => (
-            <button
-              key={range.key}
-              onClick={() => {
-                setSelectedTimeRange(range.key as TimeRangeKey);
-                setCurrentIndex(0);
-              }}
-              className={`px-4 py-2 rounded-md border transition-colors duration-150 focus:outline-none ${
-                selectedTimeRange === range.key
-                  ? "border-primary bg-muted font-semibold"
-                  : "border-border bg-background font-normal hover:bg-muted/50"
-              }`}
-            >
-              {range.label}
-            </button>
-          ))}
-        </div>
-        {/* Chart */}
-        <ChartBarLabel
-          data={chartData}
-          xAxisKey="label"
-          yAxisKey={selectedMetric}
-          title={chartTitle}
-          description={chartDescription}
-        />
-        {/* Metric buttons */}
-        <div className="flex gap-3 mt-4 justify-center">
-          <button
-            onClick={() => setSelectedMetric("occurrence")}
-            className={`px-4 py-2 rounded-md border transition-colors duration-150 focus:outline-none ${
-              selectedMetric === "occurrence"
-                ? "border-primary bg-muted font-semibold"
-                : "border-border bg-background font-normal hover:bg-muted/50"
-            }`}
-          >
-            Occurrences
-          </button>
-          <button
-            onClick={() => setSelectedMetric("duration")}
-            className={`px-4 py-2 rounded-md border transition-colors duration-150 focus:outline-none ${
-              selectedMetric === "duration"
-                ? "border-primary bg-muted font-semibold"
-                : "border-border bg-background font-normal hover:bg-muted/50"
-            }`}
-          >
-            Duration (min)
-          </button>
-        </div>
-      </div>
+      <TotalStatsView
+        onBack={handleBack}
+        selectedTotalRange={selectedTotalRange}
+        onRangeChange={setSelectedTotalRange}
+        tagTotals={tagTotals}
+        pieData={pieData}
+        tagColorMap={tagColorMap}
+        formatMinutes={formatMinutes}
+        totalTimeRanges={totalTimeRanges}
+      />
+    );
+  }
+
+  if (view === "CHRONOLOGICAL") {
+    const {
+      chartData,
+      chartTitle,
+      chartDescription,
+      periodLabel,
+      canGoBack,
+      canGoForward,
+    } = calculateChronologicalStatsData();
+
+    return (
+      <ChronologicalStatsView
+        onBack={handleBack}
+        selectedTag={selectedTag}
+        onTagChange={setSelectedTag}
+        userTags={userTags}
+        selectedTimeRange={selectedTimeRange}
+        onTimeRangeChange={setSelectedTimeRange}
+        currentIndex={currentIndex}
+        onCurrentIndexChange={setCurrentIndex}
+        selectedMetric={selectedMetric}
+        onMetricChange={setSelectedMetric}
+        chartData={chartData}
+        chartTitle={chartTitle}
+        chartDescription={chartDescription}
+        periodLabel={periodLabel}
+        canGoBack={canGoBack}
+        canGoForward={canGoForward}
+        timeRanges={timeRanges}
+      />
     );
   }
 
   if (view === "GOALS") {
-    // Add Goal Button
-    const openCreateModal = () => {
-      setEditingGoal(null);
-      setIsGoalModalOpen(true);
-    };
-    const openEditModal = (goal: Goal) => {
-      setEditingGoal(goal);
-      setIsGoalModalOpen(true);
-    };
     return (
-      <div className="w-[75vw] mx-auto">
-        <div className="flex justify-start mb-2">
-          <Button
-            onClick={handleBack}
-            variant="ghost"
-            className="text-sm text-muted-foreground"
-          >
-            &larr; Back
-          </Button>
-        </div>
-        <h1 className="text-2xl font-bold text-center mb-4">Goals</h1>
-        {/* Add Goal Button */}
-        <div className="flex justify-center mb-6">
-          <Button onClick={openCreateModal} className="flex items-center gap-2">
-            <PlusIcon className="w-4 h-4" />
-            Add Goal
-          </Button>
-        </div>
-        {/* Goals List */}
-        <div className="space-y-4">
-          {goals.map((goal) => {
-            const progress = calculateGoalProgress(goal, allTasksInUse);
-            const progressPercentage = Math.min(
-              (progress / goal.target) * 100,
-              100
-            );
-            const isComplete = progress >= goal.target;
-            return (
-              <Card
-                key={goal.id}
-                className="cursor-pointer hover:bg-muted/50 transition-colors"
-                onClick={() => openEditModal(goal)}
-              >
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg font-semibold mb-2">
-                        {formatGoalSummary(goal)}
-                      </CardTitle>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span>
-                          Progress: {progress} / {goal.target}{" "}
-                          {goal.type === "duration" ? "minutes" : "sessions"}
-                        </span>
-                        <span
-                          className={`font-semibold ${
-                            isComplete ? "text-green-600" : "text-blue-600"
-                          }`}
-                        >
-                          {Math.round(progressPercentage)}%
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openEditModal(goal);
-                        }}
-                      >
-                        <EditIcon className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteGoal(goal.id);
-                        }}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <TrashIcon className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  {/* Progress Bar */}
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className={`h-2 rounded-full transition-all duration-300 ${
-                        isComplete ? "bg-green-500" : "bg-blue-500"
-                      }`}
-                      style={{ width: `${progressPercentage}%` }}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-        {/* Goal Modal */}
-        <Dialog open={isGoalModalOpen} onOpenChange={setIsGoalModalOpen}>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>
-                {editingGoal ? "Edit Goal" : "Create New Goal"}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              {/* Tag Selection */}
-              <div className="grid gap-2">
-                <label className="text-sm font-medium">Tag</label>
-                <select
-                  className="w-full p-2 border rounded-md"
-                  value={editingGoal?.tag || newGoal.tag}
-                  onChange={(e) => {
-                    if (editingGoal) {
-                      setEditingGoal({ ...editingGoal, tag: e.target.value });
-                    } else {
-                      setNewGoal({ ...newGoal, tag: e.target.value });
-                    }
-                  }}
-                >
-                  <option value="All Tags">All Tags</option>
-                  {userTags.map((tag) => (
-                    <option key={tag.id} value={tag.label}>
-                      {tag.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              {/* Goal Type */}
-              <div className="grid gap-2">
-                <label className="text-sm font-medium">Goal Type</label>
-                <select
-                  className="w-full p-2 border rounded-md"
-                  value={editingGoal?.type || newGoal.type}
-                  onChange={(e) => {
-                    if (editingGoal) {
-                      setEditingGoal({
-                        ...editingGoal,
-                        type: e.target.value as GoalType,
-                      });
-                    } else {
-                      setNewGoal({
-                        ...newGoal,
-                        type: e.target.value as GoalType,
-                      });
-                    }
-                  }}
-                >
-                  <option value="duration">Duration (minutes)</option>
-                  <option value="frequency">Frequency (sessions)</option>
-                </select>
-              </div>
-              {/* Target Amount */}
-              <div className="grid gap-2">
-                <label className="text-sm font-medium">Target Amount</label>
-                <Input
-                  type="number"
-                  min="1"
-                  value={editingGoal?.target || newGoal.target}
-                  onChange={(e) => {
-                    const value = parseInt(e.target.value) || 0;
-                    if (editingGoal) {
-                      setEditingGoal({ ...editingGoal, target: value });
-                    } else {
-                      setNewGoal({ ...newGoal, target: value });
-                    }
-                  }}
-                />
-              </div>
-              {/* Time Frame */}
-              <div className="grid gap-2">
-                <label className="text-sm font-medium">Time Frame</label>
-                <select
-                  className="w-full p-2 border rounded-md"
-                  value={editingGoal?.timeFrame || newGoal.timeFrame}
-                  onChange={(e) => {
-                    if (editingGoal) {
-                      setEditingGoal({
-                        ...editingGoal,
-                        timeFrame: e.target.value as GoalTimeFrame,
-                      });
-                    } else {
-                      setNewGoal({
-                        ...newGoal,
-                        timeFrame: e.target.value as GoalTimeFrame,
-                      });
-                    }
-                  }}
-                >
-                  <option value="daily">Daily</option>
-                  <option value="weekly">Weekly</option>
-                  <option value="monthly">Monthly</option>
-                  <option value="annually">Annually</option>
-                </select>
-              </div>
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setIsGoalModalOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={editingGoal ? handleEditGoal : handleCreateGoal}
-                disabled={
-                  editingGoal
-                    ? !editingGoal.target || editingGoal.target <= 0
-                    : !newGoal.target || newGoal.target <= 0
-                }
-              >
-                {editingGoal ? "Save Changes" : "Create Goal"}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
+      <GoalsView
+        onBack={handleBack}
+        goals={goals}
+        userTags={userTags}
+        isGoalModalOpen={isGoalModalOpen}
+        onGoalModalOpenChange={setIsGoalModalOpen}
+        editingGoal={editingGoal}
+        newGoal={newGoal}
+        onNewGoalChange={setNewGoal}
+        onEditingGoalChange={setEditingGoal}
+        onDeleteGoal={handleDeleteGoal}
+        onCreateGoal={handleCreateGoal}
+        onEditGoal={handleEditGoal}
+        formatGoalSummary={formatGoalSummary}
+        calculateGoalProgress={calculateGoalProgress}
+        allTasksInUse={allTasksInUse}
+      />
     );
   }
 
+  // Default menu view
   return (
-    <div className="w-[75vw] mx-auto">
-      <h1 className="text-2xl font-bold text-center mb-4">Growth</h1>
-      <p className="text-center text-muted-foreground mb-6">
-        Track your musical practice over time.
-      </p>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="p-6 text-center flex flex-col items-center justify-between">
-          <CardTitle className="text-lg font-semibold mb-2">
-            Total Practice Time
-          </CardTitle>
-          <p className="text-4xl font-bold text-primary mb-2">
-            {formatMinutes(
-              allTasksInUse.reduce((sum, task) => sum + task.duration, 0)
-            )}
-          </p>
-          <p className="text-sm text-muted-foreground mb-4">
-            Across all sessions
-          </p>
-          <Button onClick={() => setView("TOTAL")} className="mt-auto">
-            View Totals
-          </Button>
-        </Card>
-        <Card className="p-6 text-center flex flex-col items-center justify-between">
-          <CardTitle className="text-lg font-semibold mb-2">
-            Total Sessions
-          </CardTitle>
-          <p className="text-4xl font-bold text-primary mb-2">
-            {allTasksInUse.length}
-          </p>
-          <p className="text-sm text-muted-foreground mb-4">
-            For the selected period
-          </p>
-          <Button onClick={() => setView("CHRONOLOGICAL")} className="mt-auto">
-            View Chronological
-          </Button>
-        </Card>
-        <Card className="p-6 text-center flex flex-col items-center justify-between">
-          <CardTitle className="text-lg font-semibold mb-2">
-            Active Goals
-          </CardTitle>
-          <p className="text-4xl font-bold text-primary mb-2">{goals.length}</p>
-          <p className="text-sm text-muted-foreground mb-4">
-            Set for your practice
-          </p>
-          <Button onClick={() => setView("GOALS")} className="mt-auto">
-            Manage Goals
-          </Button>
-        </Card>
-      </div>
-      {/* Remove the row of buttons below the cards */}
-      {/*
-      <div className="mt-8 flex justify-center gap-4">
-        <Button onClick={() => setView("TOTAL")} className="w-full md:w-auto">
-          View Totals
-        </Button>
-        <Button
-          onClick={() => setView("CHRONOLOGICAL")}
-          className="w-full md:w-auto"
-        >
-          View Chronological
-        </Button>
-        <Button onClick={() => setView("GOALS")} className="w-full md:w-auto">
-          Manage Goals
-        </Button>
-      </div>
-      */}
-    </div>
+    <GrowthMenuView
+      allTasksInUse={allTasksInUse}
+      goals={goals}
+      onViewChange={setView}
+      formatMinutes={formatMinutes}
+    />
   );
 };
 

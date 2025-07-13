@@ -1,23 +1,14 @@
 "use client";
 
-import { TrendingUp } from "lucide-react";
-import { Pie, PieChart, Sector } from "recharts";
-import { PieSectorDataItem } from "recharts/types/polar/Pie";
+import { Pie, PieChart, ResponsiveContainer, Tooltip, Cell } from "recharts";
 
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
 
 export const description = "A donut chart with an active sector";
 
@@ -25,6 +16,7 @@ export const description = "A donut chart with an active sector";
 interface PieChartDataItem {
   [key: string]: string | number | undefined;
   fill?: string;
+  tag?: string;
 }
 interface ChartPieDonutActiveProps {
   data: PieChartDataItem[];
@@ -35,75 +27,81 @@ interface ChartPieDonutActiveProps {
   activeTag?: string | null;
 }
 
+// Helper function to format minutes from seconds
+function formatMinutesFromSeconds(seconds: number): string {
+  const minutes = Math.round(seconds / 60);
+  if (minutes >= 60) {
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    return `${hours}h ${remainingMinutes}m`;
+  }
+  return `${minutes}m`;
+}
+
 export function ChartPieDonutActive({
   data,
   dataKey = "value",
-  nameKey = "tag",
-  title = "Pie Chart - Donut Active",
+  title = "% of practice time by tag",
   description = "",
-  activeTag = null,
 }: ChartPieDonutActiveProps) {
-  // Generate chartConfig dynamically for each tag
-  const chartConfig: ChartConfig = {
-    [dataKey]: { label: title },
-    ...Object.fromEntries(
-      data.map((item) => [
-        item[nameKey],
-        { label: item[nameKey], color: item.fill },
-      ])
-    ),
-  };
+  console.log("[PieChart] Received data:", data);
+  console.log("[PieChart] Data length:", data.length);
 
-  // Find the index of the active tag
-  const activeIndex = activeTag
-    ? data.findIndex((item) => item[nameKey] === activeTag)
-    : undefined;
+  if (!data || data.length === 0) {
+    return (
+      <Card className="flex flex-col border-0 shadow-none">
+        <CardHeader className="items-center pb-0">
+          <CardTitle>{title}</CardTitle>
+          {description && <CardDescription>{description}</CardDescription>}
+        </CardHeader>
+        <CardContent className="flex-1 pb-0">
+          <div className="mx-auto w-full min-w-[300px] max-w-[500px] h-[300px] flex items-center justify-center text-muted-foreground">
+            <p>No data available</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
-    <Card className="flex flex-col">
+    <Card className="flex flex-col border-0 shadow-none">
       <CardHeader className="items-center pb-0">
         <CardTitle>{title}</CardTitle>
         {description && <CardDescription>{description}</CardDescription>}
       </CardHeader>
       <CardContent className="flex-1 pb-0">
-        <ChartContainer
-          config={chartConfig}
-          className="mx-auto aspect-square max-h-[250px]"
-        >
-          <PieChart>
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent hideLabel />}
-            />
-            <Pie
-              data={data}
-              dataKey={dataKey}
-              nameKey={nameKey}
-              innerRadius={60}
-              strokeWidth={5}
-              startAngle={90}
-              endAngle={-270}
-              {...(typeof activeIndex === "number" && activeIndex >= 0
-                ? { activeIndex }
-                : {})}
-              activeShape={({
-                outerRadius = 0,
-                ...props
-              }: PieSectorDataItem) => (
-                <Sector {...props} outerRadius={outerRadius + 10} />
-              )}
-            />
-          </PieChart>
-        </ChartContainer>
+        <div className="mx-auto w-full min-w-[300px] max-w-[500px] h-[300px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={data}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={false}
+                outerRadius={120}
+                innerRadius={60}
+                fill="#8884d8"
+                dataKey={dataKey}
+              >
+                {data.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.fill || "#8884d8"} />
+                ))}
+              </Pie>
+              <Tooltip
+                formatter={(
+                  value: number,
+                  name: string,
+                  props: { payload?: PieChartDataItem }
+                ) => [
+                  formatMinutesFromSeconds(value),
+                  props.payload?.tag || name,
+                ]}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
       </CardContent>
-      <CardFooter className="flex-col gap-2 text-sm">
-        <div className="flex items-center gap-2 leading-none font-medium">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-        </div>
-        <div className="text-muted-foreground leading-none">
-          Showing total visitors for the last 6 months
-        </div>
-      </CardFooter>
     </Card>
   );
 }
