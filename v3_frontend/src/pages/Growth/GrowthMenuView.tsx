@@ -16,6 +16,10 @@ export const GrowthMenuView: React.FC<GrowthMenuViewProps> = ({
   onViewChange,
   formatMinutes,
 }) => {
+  // Calculate unique sessions by counting distinct sessionIds
+  const uniqueSessions = new Set(allTasksInUse.map((task) => task.sessionId))
+    .size;
+
   return (
     <div className="w-[75vw] mx-auto">
       <h1 className="text-2xl font-bold text-center mb-4">Growth</h1>
@@ -44,7 +48,7 @@ export const GrowthMenuView: React.FC<GrowthMenuViewProps> = ({
             Total Sessions
           </CardTitle>
           <p className="text-4xl font-bold text-primary mb-2">
-            {allTasksInUse.length}
+            {uniqueSessions}
           </p>
           <p className="text-sm text-muted-foreground mb-4">
             For the selected period

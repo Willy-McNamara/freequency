@@ -235,25 +235,26 @@ const Growth: React.FC = () => {
   // Calculate data for Total Stats view
   const calculateTotalStatsData = () => {
     // Aggregate tag totals from allTasksInUse for the selected period
-    // 1. Group by tag, sum durations
+    // 1. Group by tag, sum durations (in seconds)
     const tagTotalsMap: Record<string, number> = {};
-    let totalMinutes = 0;
+    let totalSeconds = 0;
     allTasksInUse.forEach((task) => {
       (task.tags || ["Untagged"]).forEach((tag) => {
         tagTotalsMap[tag] = (tagTotalsMap[tag] || 0) + (task.duration || 0);
-        totalMinutes += task.duration || 0;
+        totalSeconds += task.duration || 0;
       });
     });
-    // 2. Build tagTotals array
+    // 2. Build tagTotals array (convert seconds to minutes for display)
     const tagTotals = Object.entries(tagTotalsMap)
-      .map(([tag, minutes]) => ({
+      .map(([tag, seconds]) => ({
         tag,
-        minutes,
+        minutes: Math.round(seconds / 60), // Convert seconds to minutes
+        seconds, // Keep original seconds for pie chart
         percent:
-          totalMinutes > 0 ? Math.round((minutes / totalMinutes) * 100) : 0,
+          totalSeconds > 0 ? Math.round((seconds / totalSeconds) * 100) : 0,
       }))
-      .sort((a, b) => b.minutes - a.minutes);
-    // 3. Build pie chart data
+      .sort((a, b) => b.seconds - a.seconds);
+    // 3. Build pie chart data (use seconds for accurate representation)
     const pieChartColors = [
       "#60a5fa", // blue
       "#fbbf24", // yellow
@@ -266,7 +267,7 @@ const Growth: React.FC = () => {
     ];
     const pieData = tagTotals.map((t, i) => ({
       tag: t.tag,
-      value: t.minutes,
+      value: t.seconds, // Use seconds for pie chart
       fill: pieChartColors[i % pieChartColors.length],
     }));
 

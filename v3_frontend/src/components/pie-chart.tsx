@@ -16,6 +16,7 @@ export const description = "A donut chart with an active sector";
 interface PieChartDataItem {
   [key: string]: string | number | undefined;
   fill?: string;
+  tag?: string;
 }
 interface ChartPieDonutActiveProps {
   data: PieChartDataItem[];
@@ -24,6 +25,17 @@ interface ChartPieDonutActiveProps {
   title?: string;
   description?: string;
   activeTag?: string | null;
+}
+
+// Helper function to format minutes from seconds
+function formatMinutesFromSeconds(seconds: number): string {
+  const minutes = Math.round(seconds / 60);
+  if (minutes >= 60) {
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    return `${hours}h ${remainingMinutes}m`;
+  }
+  return `${minutes}m`;
 }
 
 export function ChartPieDonutActive({
@@ -66,9 +78,7 @@ export function ChartPieDonutActive({
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, percent }) =>
-                  `${name} ${((percent || 0) * 100).toFixed(0)}%`
-                }
+                label={false}
                 outerRadius={120}
                 innerRadius={60}
                 fill="#8884d8"
@@ -79,9 +89,13 @@ export function ChartPieDonutActive({
                 ))}
               </Pie>
               <Tooltip
-                formatter={(value: number, name: string) => [
-                  `${value} minutes`,
-                  name,
+                formatter={(
+                  value: number,
+                  name: string,
+                  props: { payload?: PieChartDataItem }
+                ) => [
+                  formatMinutesFromSeconds(value),
+                  props.payload?.tag || name,
                 ]}
               />
             </PieChart>
