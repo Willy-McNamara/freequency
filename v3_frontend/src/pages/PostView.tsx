@@ -384,15 +384,31 @@ export const PostView: React.FC = () => {
           {/* Instruments and Tags */}
           <div className="flex flex-wrap gap-2 mb-4">
             {post.instruments.map((instrument) => (
-              <Badge key={instrument.id} variant="default">
+              <Badge
+                key={instrument.id}
+                variant="default"
+                className="!hover:bg-none !hover:bg-transparent"
+              >
                 {instrument.label}
               </Badge>
             ))}
-            {post.tags.map((tag) => (
-              <Badge key={tag.id} variant="secondary">
-                {tag.label}
-              </Badge>
-            ))}
+            {post.tags
+              .filter(
+                (tag) =>
+                  !post.instruments.some(
+                    (instrument) =>
+                      instrument.label.toLowerCase() === tag.label.toLowerCase()
+                  )
+              )
+              .map((tag) => (
+                <Badge
+                  key={tag.id}
+                  variant="secondary"
+                  className="!hover:bg-none !hover:bg-transparent"
+                >
+                  {tag.label}
+                </Badge>
+              ))}
           </div>
 
           {/* Session Title */}
@@ -564,7 +580,11 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onViewTaskDefinition }) => {
           {task.taskDefinition.tags && task.taskDefinition.tags.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-4">
               {task.taskDefinition.tags.map((tag) => (
-                <Badge key={tag.id} variant="secondary" className="text-xs">
+                <Badge
+                  key={tag.id}
+                  variant="secondary"
+                  className="text-xs !hover:bg-none !hover:bg-transparent"
+                >
                   {tag.label}
                 </Badge>
               ))}

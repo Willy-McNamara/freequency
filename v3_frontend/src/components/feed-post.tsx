@@ -107,6 +107,23 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
     return Array.from(tagMap.values());
   }, [postData.tags, postData.tasks]);
 
+  // Separate instruments from regular tags
+  const { instruments, regularTags } = useMemo(() => {
+    const instrumentLabels = postData.instruments.map((instr) =>
+      instr.label.toLowerCase()
+    );
+
+    const instruments = allTags.filter((tag) =>
+      instrumentLabels.includes(tag.label.toLowerCase())
+    );
+
+    const regularTags = allTags.filter(
+      (tag) => !instrumentLabels.includes(tag.label.toLowerCase())
+    );
+
+    return { instruments, regularTags };
+  }, [allTags, postData.instruments]);
+
   // Data for engagement metrics
   const engagementData = [
     {
@@ -147,19 +164,29 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
         </div>
 
         <div className="flex items-center gap-[17px]">
-          {allTags.map(
+          {instruments.map(
             (
               tag: { id: number; label: string; color: string | null },
               index: number
             ) => (
               <Badge
                 key={index}
-                className={`h-5 px-3 py-2 rounded-md ${
-                  tag.color
-                    ? "bg-slate-700 text-slate-50"
-                    : "bg-slate-200 text-[#0f172a]"
-                }`}
-                variant="outline"
+                className={`h-5 px-3 py-2 rounded-md !hover:bg-none !hover:bg-transparent`}
+                variant="default"
+              >
+                <span className="font-small">{tag.label}</span>
+              </Badge>
+            )
+          )}
+          {regularTags.map(
+            (
+              tag: { id: number; label: string; color: string | null },
+              index: number
+            ) => (
+              <Badge
+                key={index}
+                className={`h-5 px-3 py-2 rounded-md !hover:bg-none !hover:bg-transparent`}
+                variant="secondary"
               >
                 <span className="font-small">{tag.label}</span>
               </Badge>

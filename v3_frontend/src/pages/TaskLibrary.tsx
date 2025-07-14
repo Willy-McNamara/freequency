@@ -24,6 +24,8 @@ import { Pause, Timer, Plus } from "lucide-react";
 import { apiConfig } from "../config/api";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "../components/auth/AuthProvider";
+import { ALL_INSTRUMENTS } from "../types/instruments.types";
+import { Badge } from "@/components/ui/badge";
 
 const TaskLibrary: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -65,12 +67,11 @@ const TaskLibrary: React.FC = () => {
       {
         type: "instrument",
         isSelected: false,
-        options: [
-          { id: "guitar", label: "Guitar", checked: false },
-          { id: "piano", label: "Piano", checked: false },
-          { id: "drums", label: "Drums", checked: false },
-          { id: "bass", label: "Bass", checked: false },
-        ],
+        options: ALL_INSTRUMENTS.map((instrument) => ({
+          id: instrument.label.toLowerCase(),
+          label: instrument.label,
+          checked: false,
+        })),
       },
       { type: "saved", isSelected: false },
     ];
@@ -504,7 +505,26 @@ const TaskLibrary: React.FC = () => {
               onUseInCurrentSession={
                 hasActiveSession ? handleUseInCurrentSession : undefined
               }
-            />
+            >
+              {task.instruments.map((instrument) => (
+                <Badge
+                  key={instrument.id}
+                  variant="default"
+                  className="!hover:bg-none !hover:bg-transparent"
+                >
+                  {instrument.label}
+                </Badge>
+              ))}
+              {task.tags.map((tag) => (
+                <Badge
+                  key={tag.id}
+                  variant="secondary"
+                  className="!hover:bg-none !hover:bg-transparent"
+                >
+                  {tag.label}
+                </Badge>
+              ))}
+            </TaskListItem>
           </div>
         ))}
       </div>

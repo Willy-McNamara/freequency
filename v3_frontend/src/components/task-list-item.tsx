@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Badge } from "./badge";
 import { cn } from "../lib/utils";
+import { Button } from "@/components/ui/button";
 
 export interface Task {
   id: number;
@@ -146,13 +147,20 @@ export function TaskListItem({
               </h4>
               <div className="flex flex-wrap gap-2 justify-start">
                 {/* Always show instrument tag first */}
-                <Badge variant="default" className="text-xs">
+                <Badge
+                  variant="default"
+                  className="!hover:bg-none !hover:bg-transparent"
+                >
                   {task.instrument}
                 </Badge>
 
                 {/* Show other tags */}
                 {task.tags.map((tag) => (
-                  <Badge key={tag.id} variant="secondary" className="text-xs">
+                  <Badge
+                    key={tag.id}
+                    variant="secondary"
+                    className="!hover:bg-none !hover:bg-transparent"
+                  >
                     {tag.label}
                   </Badge>
                 ))}
@@ -168,13 +176,14 @@ export function TaskListItem({
 
           {/* View Details and Use in Session Buttons */}
           <div className="flex justify-end pt-2 gap-2">
-            <button
+            <Button
               onClick={handleViewDetails}
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+              variant="outline"
+              className="flex items-center gap-2 text-foreground"
             >
               View Details
               <ArrowRight className="w-4 h-4" />
-            </button>
+            </Button>
             {hasActiveSession && onUseInCurrentSession && (
               <button
                 onClick={(e) => {

@@ -1,4 +1,5 @@
-import * as React from "react";
+import React from "react";
+import { ALL_INSTRUMENTS } from "../types/instruments.types";
 import { X, Plus, Trash2 } from "lucide-react";
 import { Badge } from "./badge";
 import { cn } from "../lib/utils";
@@ -231,15 +232,11 @@ export function CreateTaskModal({
               required
             >
               <option value="">Select an instrument</option>
-              <option value="Guitar">Guitar</option>
-              <option value="Piano">Piano</option>
-              <option value="Drums">Drums</option>
-              <option value="Bass">Bass</option>
-              <option value="Violin">Violin</option>
-              <option value="Saxophone">Saxophone</option>
-              <option value="Trumpet">Trumpet</option>
-              <option value="Flute">Flute</option>
-              <option value="Clarinet">Clarinet</option>
+              {ALL_INSTRUMENTS.map((instrument) => (
+                <option key={instrument.id} value={instrument.label}>
+                  {instrument.label}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -268,7 +265,7 @@ export function CreateTaskModal({
                   <Badge
                     key={index}
                     variant="secondary"
-                    className="flex items-center gap-1"
+                    className="flex items-center gap-1 !hover:bg-none !hover:bg-transparent"
                   >
                     {tag}
                     <button
