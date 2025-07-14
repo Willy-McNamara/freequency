@@ -16,6 +16,7 @@ interface Post {
   title: string;
   notes: string;
   createdAt: string;
+  duration: number;
   musician: {
     displayName: string;
     avatarUrl: string | null;
@@ -528,11 +529,16 @@ const Feed = () => {
               // Last element - attach ref for infinite scroll
               return (
                 <div key={post.id || index} ref={lastPostElementRef}>
-                  <FeedPost postData={post} />
+                  <FeedPost postData={{ ...post, duration: post.duration }} />
                 </div>
               );
             } else {
-              return <FeedPost key={post.id || index} postData={post} />;
+              return (
+                <FeedPost
+                  key={post.id || index}
+                  postData={{ ...post, duration: post.duration }}
+                />
+              );
             }
           })
         )}
