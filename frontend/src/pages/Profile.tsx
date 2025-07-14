@@ -78,7 +78,7 @@ const Profile = () => {
             </ListItem>
             <ListItem>
               <ListIcon as={FaClock} color="blue.500" />
-              Spent {musician.totalPracticeMinutes} minutes practicing
+              Spent {Math.round(musician.totalPracticeSeconds / 60)} minutes practicing
             </ListItem>
             <ListItem>
               <ListIcon as={ImFire} color="red.500" />

@@ -20,6 +20,7 @@ export class AppController {
     // switch req.user.id to a number (4 for root) when commenting out the jwtGuard
     const musicianData = await this.musiciansService.getMusicianById(
       req.user.id,
+      req.user.id,
     );
     const sessionsData = await this.sessionsService.getFiveSessions();
     const combinedData = this.appService.formatRenderPayload(

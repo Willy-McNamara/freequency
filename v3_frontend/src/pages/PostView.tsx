@@ -40,6 +40,7 @@ interface PostViewData {
   createdAt: string;
   duration: number;
   musician: {
+    id: number;
     displayName: string;
     avatarUrl: string | null;
   };
@@ -55,6 +56,7 @@ interface PostViewData {
   }>;
   gasUps: Array<{
     musician: {
+      id: number;
       displayName: string;
       avatarUrl: string | null;
     };
@@ -64,6 +66,7 @@ interface PostViewData {
     text: string;
     createdAt: string;
     musician: {
+      id: number;
       displayName: string;
       avatarUrl: string | null;
     };
@@ -116,6 +119,7 @@ export const PostView: React.FC = () => {
             createdAt: new Date().toISOString(),
             duration: 3600, // 1 hour in seconds
             musician: {
+              id: 1, // Mock ID
               displayName: "Dev User",
               avatarUrl: null,
             },
@@ -128,15 +132,15 @@ export const PostView: React.FC = () => {
               { id: 2, label: "Repertoire", color: "#ef4444" },
             ],
             gasUps: [
-              { musician: { displayName: "User 1", avatarUrl: null } },
-              { musician: { displayName: "User 2", avatarUrl: null } },
+              { musician: { id: 1, displayName: "User 1", avatarUrl: null } },
+              { musician: { id: 2, displayName: "User 2", avatarUrl: null } },
             ],
             comments: [
               {
                 id: 1,
                 text: "Great session! Keep up the good work.",
                 createdAt: new Date().toISOString(),
-                musician: { displayName: "User 1", avatarUrl: null },
+                musician: { id: 1, displayName: "User 1", avatarUrl: null },
               },
             ],
             tasks: [
@@ -246,6 +250,7 @@ export const PostView: React.FC = () => {
               text: newCommentData.text,
               createdAt: newCommentData.createdAt,
               musician: {
+                id: newCommentData.musician.id,
                 displayName: newCommentData.musician.displayName,
                 avatarUrl: newCommentData.musician.avatarUrl,
               },
@@ -282,6 +287,7 @@ export const PostView: React.FC = () => {
             ...prevPost.gasUps,
             {
               musician: {
+                id: newGasUpData.musician.id,
                 displayName: newGasUpData.musician.displayName,
                 avatarUrl: newGasUpData.musician.avatarUrl,
               },
@@ -296,6 +302,10 @@ export const PostView: React.FC = () => {
 
   const handleViewTaskDefinition = (taskDefinitionId: number) => {
     navigate(`/task-library?task=${taskDefinitionId}`);
+  };
+
+  const handleMusicianClick = (musicianId: number) => {
+    navigate(`/profile?user=${musicianId}`);
   };
 
   if (loading) {
@@ -352,7 +362,10 @@ export const PostView: React.FC = () => {
                   {post.musician.displayName[0]}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-lg font-medium">
+              <span
+                className="text-lg font-medium cursor-pointer hover:text-primary hover:underline transition-all duration-200"
+                onClick={() => handleMusicianClick(post.musician.id)}
+              >
                 {post.musician.displayName}
               </span>
             </div>
@@ -461,7 +474,12 @@ export const PostView: React.FC = () => {
                     </Avatar>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium text-sm">
+                        <span
+                          className="font-medium text-sm cursor-pointer hover:text-primary hover:underline transition-all duration-200"
+                          onClick={() =>
+                            handleMusicianClick(comment.musician.id)
+                          }
+                        >
                           {comment.musician.displayName}
                         </span>
                         <span className="text-xs text-muted-foreground">

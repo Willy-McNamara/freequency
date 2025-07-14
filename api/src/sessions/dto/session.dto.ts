@@ -65,6 +65,7 @@ export type NewFrontendSessionDTO = {
   isPublic: boolean;
   createdAt: string; // or Date, depending if you serialize dates
   musician: {
+    id: number;
     displayName: string;
     avatarUrl: string | null;
   };
@@ -75,6 +76,7 @@ export type NewFrontendSessionDTO = {
   tags: TagDTO[];
   gasUps: {
     musician: {
+      id: number;
       displayName: string;
       avatarUrl: string | null;
     };
@@ -84,6 +86,7 @@ export type NewFrontendSessionDTO = {
     text: string;
     createdAt: string;
     musician: {
+      id: number;
       displayName: string;
       avatarUrl: string | null;
     };
@@ -99,6 +102,7 @@ export type NewFrontendSessionDTO = {
       description: string;
       instrument: string;
       user: {
+        id: number;
         displayName: string;
         avatarUrl: string | null;
       };

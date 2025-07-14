@@ -14,6 +14,7 @@ async function main() {
     await prisma.taskInUse.deleteMany();
     await prisma.taskDefinition.deleteMany();
     await prisma.session.deleteMany();
+    await prisma.goal.deleteMany();
     await prisma.musician.deleteMany();
     await prisma.tag.deleteMany();
     const instrumentLabels = [
@@ -81,7 +82,7 @@ async function main() {
             bio: 'Passionate jazz pianist exploring bebop and modal jazz.',
             avatarUrl: 'https://via.placeholder.com/150/FFD700/000000?text=JD',
             totalSessions: 12,
-            totalPracticeMinutes: 720,
+            totalPracticeSeconds: 43200,
             totalGasUpsGiven: 8,
             totalGasUpsReceived: 10,
             instruments: {
@@ -135,7 +136,7 @@ async function main() {
             bio: 'Classical violinist with a love for contemporary music.',
             avatarUrl: 'https://via.placeholder.com/150/8A2BE2/FFFFFF?text=SC',
             totalSessions: 8,
-            totalPracticeMinutes: 480,
+            totalPracticeSeconds: 28800,
             totalGasUpsGiven: 5,
             totalGasUpsReceived: 7,
             instruments: {
@@ -189,7 +190,7 @@ async function main() {
             bio: 'Rock guitarist and session musician.',
             avatarUrl: 'https://via.placeholder.com/150/ADFF2F/000000?text=MR',
             totalSessions: 15,
-            totalPracticeMinutes: 900,
+            totalPracticeSeconds: 54000,
             totalGasUpsGiven: 12,
             totalGasUpsReceived: 15,
             instruments: {
@@ -243,7 +244,7 @@ async function main() {
             bio: 'Jazz saxophonist and composer.',
             avatarUrl: 'https://via.placeholder.com/150/FF6347/FFFFFF?text=EW',
             totalSessions: 10,
-            totalPracticeMinutes: 600,
+            totalPracticeSeconds: 36000,
             totalGasUpsGiven: 7,
             totalGasUpsReceived: 9,
             instruments: {
@@ -297,7 +298,7 @@ async function main() {
             bio: 'Funk and jazz bassist, loves groove and walking bass lines.',
             avatarUrl: 'https://via.placeholder.com/150/4169E1/FFFFFF?text=AT',
             totalSessions: 14,
-            totalPracticeMinutes: 840,
+            totalPracticeSeconds: 50400,
             totalGasUpsGiven: 9,
             totalGasUpsReceived: 11,
             instruments: {
@@ -351,7 +352,7 @@ async function main() {
             bio: 'Drummer specializing in jazz and fusion.',
             avatarUrl: 'https://via.placeholder.com/150/FF4500/FFFFFF?text=LP',
             totalSessions: 11,
-            totalPracticeMinutes: 660,
+            totalPracticeSeconds: 39600,
             totalGasUpsGiven: 6,
             totalGasUpsReceived: 8,
             instruments: {
@@ -971,6 +972,50 @@ async function main() {
                 musicianId: musician6.id,
                 sessionId: sessions[13].id,
                 tags: { connect: [{ id: drumsTag.id }] },
+            },
+        }),
+    ]);
+    const devUser = await prisma.musician.create({
+        data: {
+            googleId: 'dev-google-id',
+            displayName: 'Dev User',
+            givenName: 'Dev',
+            familyName: 'User',
+            email: 'dev@example.com',
+            bio: 'Development user for testing.',
+            avatarUrl: 'https://via.placeholder.com/150/808080/FFFFFF?text=DEV',
+            totalSessions: 5,
+            totalPracticeSeconds: 18000,
+            totalGasUpsGiven: 3,
+            totalGasUpsReceived: 4,
+            instruments: {
+                connect: [{ id: pianoTag.id }],
+            },
+        },
+    });
+    await Promise.all([
+        prisma.follow.create({
+            data: {
+                followerId: devUser.id,
+                followingId: musician1.id,
+            },
+        }),
+        prisma.follow.create({
+            data: {
+                followerId: devUser.id,
+                followingId: musician2.id,
+            },
+        }),
+        prisma.follow.create({
+            data: {
+                followerId: musician1.id,
+                followingId: musician3.id,
+            },
+        }),
+        prisma.follow.create({
+            data: {
+                followerId: musician2.id,
+                followingId: musician1.id,
             },
         }),
     ]);

@@ -26,6 +26,7 @@ import {
   type TaskInUseMock,
   type Goal,
 } from "./Growth/index";
+import { createGoal, deleteGoal } from "../services/musicians";
 
 // Define the possible views as a union type
 type ViewType = "MENU" | "TOTAL" | "CHRONOLOGICAL" | "GOALS";
@@ -107,7 +108,7 @@ const Growth: React.FC = () => {
   const [newGoal, setNewGoal] = useState<Omit<Goal, "id" | "createdAt">>({
     tag: "All Tags",
     type: "duration",
-    target: 30,
+    target: 1,
     timeFrame: "daily",
   });
 
@@ -115,18 +116,20 @@ const Growth: React.FC = () => {
   const handleBack = () => setView("MENU");
 
   // Place these handlers inside the Growth component:
-  function handleDeleteGoal(goalId: string) {
+  async function handleDeleteGoal(goalId: string) {
+    if (!user?.id) return;
+    await deleteGoal(user.id, goalId);
     setGoals((prevGoals) => prevGoals.filter((goal) => goal.id !== goalId));
-    console.log(`Deleting goal with ID: ${goalId}`);
+    console.log(`Deleted goal with ID: ${goalId}`);
   }
-  function handleCreateGoal() {
-    const newGoalWithId = {
-      ...newGoal,
-      id: String(Date.now()),
-      createdAt: new Date().toISOString(),
-    };
-    setGoals((prevGoals) => [...prevGoals, newGoalWithId]);
-    console.log("Creating new goal:", newGoalWithId);
+  async function handleCreateGoal() {
+    if (!user?.id) return;
+    const created = await createGoal(user.id, newGoal);
+    setGoals((prevGoals) => [
+      ...prevGoals,
+      { ...created, id: String(created.id) },
+    ]);
+    console.log("Created new goal:", created);
     setIsGoalModalOpen(false);
   }
   function handleEditGoal() {

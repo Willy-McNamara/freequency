@@ -77,10 +77,11 @@ export function calculateGoalProgress(
 
   // Calculate progress based on goal type
   if (goal.type === "duration") {
-    const totalMinutes = relevantTasks.reduce(
+    const totalSeconds = relevantTasks.reduce(
       (sum, task) => sum + task.duration,
       0
     );
+    const totalMinutes = Math.round(totalSeconds / 60);
     return Math.min(totalMinutes, goal.target);
   } else {
     const totalOccurrences = relevantTasks.reduce(
@@ -95,8 +96,7 @@ export function formatGoalSummary(goal: Goal): string {
   const tagDisplay =
     goal.tag === "All Tags" ? "all tags" : goal.tag.toLowerCase();
   const typeDisplay = goal.type === "duration" ? "minutes" : "sessions";
-  const timeFrameDisplay =
-    goal.timeFrame.charAt(0).toUpperCase() + goal.timeFrame.slice(1);
+  const timeFrameDisplay = goal.timeFrame.toLowerCase();
 
   return `${tagDisplay} | ${goal.target} ${typeDisplay} | ${timeFrameDisplay}`;
 }

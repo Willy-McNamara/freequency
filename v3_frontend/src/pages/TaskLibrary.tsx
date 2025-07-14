@@ -1,4 +1,11 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, {
+  useState,
+  useEffect,
+  useContext,
+  useRef,
+  useCallback,
+} from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   FilterBar,
   FilterState,
@@ -13,10 +20,13 @@ import {
 } from "../components/create-task-modal";
 import { useNavigate } from "react-router";
 import { SessionContext } from "@/components/SessionContext";
-import { Pause, Timer } from "lucide-react";
+import { Pause, Timer, Plus } from "lucide-react";
 import { apiConfig } from "../config/api";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "../components/auth/AuthProvider";
 
 const TaskLibrary: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,29 +35,46 @@ const TaskLibrary: React.FC = () => {
   const [modifyTaskData, setModifyTaskData] = useState<
     CreateTaskData | undefined
   >(undefined);
+  const isSettingFromUrl = useRef(false);
+  const previousFilterState = useRef<string>("");
+  const hasProcessedUrlParam = useRef(false);
+  const shouldFetchAfterUrlParam = useRef(false);
+  const { user } = useAuth();
 
-  const [activeFilters, setActiveFilters] = useState<FilterState[]>([
-    {
-      type: "user",
-      isSelected: false,
-      options: [
-        { id: "user1", label: "John Doe", checked: false },
-        { id: "user2", label: "Jane Smith", checked: false },
-        { id: "user3", label: "Bob Johnson", checked: false },
-      ],
-    },
-    {
-      type: "instrument",
-      isSelected: false,
-      options: [
-        { id: "guitar", label: "Guitar", checked: false },
-        { id: "piano", label: "Piano", checked: false },
-        { id: "drums", label: "Drums", checked: false },
-        { id: "bass", label: "Bass", checked: false },
-      ],
-    },
-    { type: "saved", isSelected: false },
-  ]);
+  const [activeFilters, setActiveFilters] = useState<FilterState[]>(() => {
+    const userOptions = [
+      { id: "user1", label: "John Doe", checked: false },
+      { id: "user2", label: "Jane Smith", checked: false },
+      { id: "user3", label: "Bob Johnson", checked: false },
+    ];
+
+    // Add the "Following" option if user is authenticated
+    const allUserOptions = user
+      ? [
+          ...userOptions,
+          { id: "following", label: "Following", checked: false },
+        ]
+      : userOptions;
+
+    return [
+      {
+        type: "user",
+        isSelected: false,
+        options: allUserOptions,
+      },
+      {
+        type: "instrument",
+        isSelected: false,
+        options: [
+          { id: "guitar", label: "Guitar", checked: false },
+          { id: "piano", label: "Piano", checked: false },
+          { id: "drums", label: "Drums", checked: false },
+          { id: "bass", label: "Bass", checked: false },
+        ],
+      },
+      { type: "saved", isSelected: false },
+    ];
+  });
 
   // Get task ID from URL query parameter
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
@@ -55,29 +82,70 @@ const TaskLibrary: React.FC = () => {
   const navigate = useNavigate();
 
   // Fetch tasks from API
-  useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  const fetchTasks = useCallback(async (filters?: FilterState[]) => {
+    try {
+      setLoading(true);
+      setError(null);
 
-        const response = await fetch(apiConfig.endpoints.tasks);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+      const params = new URLSearchParams();
+      const currentFilters = filters || activeFilters;
+
+      const userFilter = currentFilters.find((f) => f.type === "user");
+      if (userFilter?.isSelected && userFilter.options) {
+        const selectedUsers = userFilter.options
+          .filter((option) => option.checked)
+          .map((option) => option.label);
+
+        // Check if "Following" is selected
+        const followingSelected = selectedUsers.includes("Following");
+        if (followingSelected) {
+          params.append("following", "true");
+        } else if (selectedUsers.length > 0) {
+          // Only add users param if not using following filter
+          params.append("users", selectedUsers.join(","));
         }
-
-        const data = await response.json();
-        setTasks(data);
-      } catch (err) {
-        console.error("Error fetching tasks:", err);
-        setError(err instanceof Error ? err.message : "Failed to fetch tasks");
-      } finally {
-        setLoading(false);
       }
-    };
 
-    fetchTasks();
+      const instrumentFilter = currentFilters.find(
+        (f) => f.type === "instrument"
+      );
+      if (instrumentFilter?.isSelected && instrumentFilter.options) {
+        const selectedInstruments = instrumentFilter.options
+          .filter((option) => option.checked)
+          .map((option) => option.label);
+        if (selectedInstruments.length > 0) {
+          params.append("instruments", selectedInstruments.join(","));
+        }
+      }
+
+      const savedFilter = currentFilters.find((f) => f.type === "saved");
+      if (savedFilter?.isSelected) {
+        params.append("saved", "true");
+      }
+
+      const url = `${apiConfig.endpoints.tasks}?${params.toString()}`;
+
+      const response = await fetch(url, {
+        credentials: "include",
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setTasks(data);
+    } catch (err) {
+      console.error("Error fetching tasks:", err);
+      setError(err instanceof Error ? err.message : "Failed to fetch tasks");
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchTasks();
+  }, [fetchTasks]);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -114,81 +182,96 @@ const TaskLibrary: React.FC = () => {
     );
   };
 
-  // Apply filters to tasks
-  const filteredTasks = tasks.filter((task) => {
-    // User filter
-    const userFilter = activeFilters.find((f) => f.type === "user");
-    if (userFilter?.isSelected && userFilter.options) {
-      const selectedUsers = userFilter.options
-        .filter((option) => option.checked)
-        .map((option) => option.label);
-      if (
-        selectedUsers.length > 0 &&
-        !selectedUsers.includes(task.user.displayName)
-      ) {
-        return false;
-      }
-    }
+  // Tasks are now filtered server-side, so we use tasks directly
 
-    // Instrument filter
-    const instrumentFilter = activeFilters.find((f) => f.type === "instrument");
-    if (instrumentFilter?.isSelected && instrumentFilter.options) {
-      const selectedInstruments = instrumentFilter.options
-        .filter((option) => option.checked)
-        .map((option) => option.label);
-      if (
-        selectedInstruments.length > 0 &&
-        !selectedInstruments.includes(task.instrument)
-      ) {
-        return false;
-      }
-    }
-
-    // Saved filter (show only tasks with savedCount > 0)
-    const savedFilter = activeFilters.find((f) => f.type === "saved");
-    if (savedFilter?.isSelected && task.savedCount === 0) {
-      return false;
-    }
-
-    return true;
-  });
-
-  // Update filter options based on available data
+  // Trigger fetch when filters change
   useEffect(() => {
-    if (tasks.length > 0) {
-      // Get unique users from tasks
-      const uniqueUsers = [
-        ...new Set(tasks.map((task) => task.user.displayName)),
-      ];
-      const userOptions = uniqueUsers.map((user) => ({
-        id: user.toLowerCase().replace(/\s+/g, ""),
-        label: user,
-        checked: false,
-      }));
+    // Create a string representation of the current filter state for comparison
+    const currentFilterState = JSON.stringify(
+      activeFilters.map((filter) => ({
+        type: filter.type,
+        isSelected: filter.isSelected,
+        selectedOptions:
+          filter.options
+            ?.filter((opt) => opt.checked)
+            .map((opt) => opt.label) || [],
+      }))
+    );
 
-      // Get unique instruments from tasks
-      const uniqueInstruments = [
-        ...new Set(tasks.map((task) => task.instrument)),
-      ];
-      const instrumentOptions = uniqueInstruments.map((instrument) => ({
-        id: instrument.toLowerCase(),
-        label: instrument,
-        checked: false,
-      }));
+    // Check if we need to fetch after setting URL parameter
+    if (shouldFetchAfterUrlParam.current) {
+      shouldFetchAfterUrlParam.current = false;
+      fetchTasks(activeFilters);
+      return;
+    }
 
-      setActiveFilters((prev) =>
-        prev.map((filter) => {
+    // Fetch tasks when filters change (but not on initial load)
+    if (
+      previousFilterState.current &&
+      previousFilterState.current !== currentFilterState
+    ) {
+      if (isSettingFromUrl.current) {
+        isSettingFromUrl.current = false;
+      } else {
+        fetchTasks(activeFilters);
+      }
+    }
+
+    // Update the previous filter state
+    previousFilterState.current = currentFilterState;
+  }, [activeFilters, fetchTasks]);
+
+  // Handle user parameter from URL - set filter only
+  useEffect(() => {
+    const userParam = searchParams.get("user");
+
+    if (userParam && !hasProcessedUrlParam.current) {
+      hasProcessedUrlParam.current = true;
+      const userLabel = decodeURIComponent(userParam);
+
+      // Set the filter immediately without checking if it's already set
+      isSettingFromUrl.current = true;
+      setActiveFilters((prev) => {
+        return prev.map((filter) => {
           if (filter.type === "user") {
-            return { ...filter, options: userOptions };
-          }
-          if (filter.type === "instrument") {
-            return { ...filter, options: instrumentOptions };
+            // Check if the user is already in the options
+            const userExists = filter.options?.some(
+              (opt) => opt.label === userLabel
+            );
+            let updatedOptions = filter.options || [];
+
+            // If user doesn't exist in options, add them
+            if (!userExists) {
+              updatedOptions = [
+                ...updatedOptions,
+                {
+                  id: userLabel.toLowerCase().replace(/\s+/g, ""),
+                  label: userLabel,
+                  checked: true,
+                },
+              ];
+            } else {
+              // If user exists, update their checked status
+              updatedOptions = updatedOptions.map((opt) => ({
+                ...opt,
+                checked: opt.label === userLabel,
+              }));
+            }
+
+            return {
+              ...filter,
+              isSelected: true,
+              options: updatedOptions,
+            };
           }
           return filter;
-        })
-      );
+        });
+      });
+
+      // Signal that we need to fetch after setting the filter
+      shouldFetchAfterUrlParam.current = true;
     }
-  }, [tasks]);
+  }, [searchParams]); // Removed fetchTasks from dependencies
 
   const handleTaskClick = () => {
     // No-op for now
@@ -197,7 +280,6 @@ const TaskLibrary: React.FC = () => {
   const handleUseInCurrentSession = (task: Task) => {
     if (!session) return;
     // Add the task to the session if not already present
-    console.log("logging checklist in handleUseInSesh :", task.checklist);
     if (!session.tasks.some((t) => t.id === String(task.id))) {
       session.setTasks([
         ...session.tasks,
@@ -237,6 +319,7 @@ const TaskLibrary: React.FC = () => {
     try {
       const response = await fetch(apiConfig.endpoints.tasks, {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -252,7 +335,6 @@ const TaskLibrary: React.FC = () => {
       // Add the new task to the beginning of the list
       setTasks((prev) => [newTask, ...prev]);
 
-      console.log("Task created successfully:", newTask);
       setIsCreateModalOpen(false);
     } catch (err) {
       console.error("Error creating task:", err);
@@ -261,7 +343,6 @@ const TaskLibrary: React.FC = () => {
   };
 
   const handleModifyTask = (task: Task) => {
-    console.log("Modifying task:", task);
     // Convert Task to CreateTaskData format
     const modifyData: CreateTaskData = {
       title: task.title,
@@ -276,10 +357,9 @@ const TaskLibrary: React.FC = () => {
 
   const handleModifySubmit = async (taskData: CreateTaskData) => {
     try {
-      console.log("Submitting modified task:", taskData);
-
       const response = await fetch(apiConfig.endpoints.tasks, {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -295,7 +375,6 @@ const TaskLibrary: React.FC = () => {
       // Add the new task to the beginning of the list
       setTasks((prev) => [newTask, ...prev]);
 
-      console.log("Modified task created successfully:", newTask);
       setIsModifyModalOpen(false);
       setModifyTaskData(undefined);
     } catch (err) {
@@ -403,9 +482,19 @@ const TaskLibrary: React.FC = () => {
           </button>
         </div>
       )}
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Task Library</h1>
+        <Button
+          onClick={() => setIsCreateModalOpen(true)}
+          className="flex items-center gap-2"
+        >
+          <Plus className="w-4 h-4" />
+          Create Task
+        </Button>
+      </div>
       <FilterBar filters={activeFilters} onFilterChange={handleFilterChange} />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {filteredTasks.map((task) => (
+        {tasks.map((task) => (
           <div key={task.id} className="relative">
             <TaskListItem
               task={task}

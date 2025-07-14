@@ -90,6 +90,7 @@ export class AuthController {
 
     const musicianData = await this.musiciansService.getMusicianById(
       req.user.id,
+      req.user.id,
     );
     console.log('Musician data found:', musicianData);
 

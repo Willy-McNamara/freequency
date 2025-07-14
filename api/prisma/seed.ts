@@ -16,6 +16,7 @@ async function main() {
   await prisma.taskInUse.deleteMany();
   await prisma.taskDefinition.deleteMany();
   await prisma.session.deleteMany();
+  await prisma.goal.deleteMany();
   await prisma.musician.deleteMany();
   await prisma.tag.deleteMany();
 
@@ -97,7 +98,7 @@ async function main() {
       bio: 'Passionate jazz pianist exploring bebop and modal jazz.',
       avatarUrl: 'https://via.placeholder.com/150/FFD700/000000?text=JD',
       totalSessions: 12,
-      totalPracticeMinutes: 720,
+      totalPracticeSeconds: 43200, // 720 minutes * 60 = 43,200 seconds (12 hours)
       totalGasUpsGiven: 8,
       totalGasUpsReceived: 10,
       instruments: {
@@ -153,7 +154,7 @@ async function main() {
       bio: 'Classical violinist with a love for contemporary music.',
       avatarUrl: 'https://via.placeholder.com/150/8A2BE2/FFFFFF?text=SC',
       totalSessions: 8,
-      totalPracticeMinutes: 480,
+      totalPracticeSeconds: 28800, // 480 minutes * 60 = 28,800 seconds (8 hours)
       totalGasUpsGiven: 5,
       totalGasUpsReceived: 7,
       instruments: {
@@ -209,7 +210,7 @@ async function main() {
       bio: 'Rock guitarist and session musician.',
       avatarUrl: 'https://via.placeholder.com/150/ADFF2F/000000?text=MR',
       totalSessions: 15,
-      totalPracticeMinutes: 900,
+      totalPracticeSeconds: 54000, // 900 minutes * 60 = 54,000 seconds (15 hours)
       totalGasUpsGiven: 12,
       totalGasUpsReceived: 15,
       instruments: {
@@ -265,7 +266,7 @@ async function main() {
       bio: 'Jazz saxophonist and composer.',
       avatarUrl: 'https://via.placeholder.com/150/FF6347/FFFFFF?text=EW',
       totalSessions: 10,
-      totalPracticeMinutes: 600,
+      totalPracticeSeconds: 36000, // 600 minutes * 60 = 36,000 seconds (10 hours)
       totalGasUpsGiven: 7,
       totalGasUpsReceived: 9,
       instruments: {
@@ -321,7 +322,7 @@ async function main() {
       bio: 'Funk and jazz bassist, loves groove and walking bass lines.',
       avatarUrl: 'https://via.placeholder.com/150/4169E1/FFFFFF?text=AT',
       totalSessions: 14,
-      totalPracticeMinutes: 840,
+      totalPracticeSeconds: 50400, // 840 minutes * 60 = 50,400 seconds (14 hours)
       totalGasUpsGiven: 9,
       totalGasUpsReceived: 11,
       instruments: {
@@ -377,7 +378,7 @@ async function main() {
       bio: 'Drummer specializing in jazz and fusion.',
       avatarUrl: 'https://via.placeholder.com/150/FF4500/FFFFFF?text=LP',
       totalSessions: 11,
-      totalPracticeMinutes: 660,
+      totalPracticeSeconds: 39600, // 660 minutes * 60 = 39,600 seconds (11 hours)
       totalGasUpsGiven: 6,
       totalGasUpsReceived: 8,
       instruments: {
@@ -1061,6 +1062,57 @@ async function main() {
         musicianId: musician6.id,
         sessionId: sessions[13].id,
         tags: { connect: [{ id: drumsTag.id }] },
+      },
+    }),
+  ]);
+
+  // Create Dev User for development
+  const devUser = await prisma.musician.create({
+    data: {
+      googleId: 'dev-google-id',
+      displayName: 'Dev User',
+      givenName: 'Dev',
+      familyName: 'User',
+      email: 'dev@example.com',
+      bio: 'Development user for testing.',
+      avatarUrl: 'https://via.placeholder.com/150/808080/FFFFFF?text=DEV',
+      totalSessions: 5,
+      totalPracticeSeconds: 18000, // 5 hours in seconds
+      totalGasUpsGiven: 3,
+      totalGasUpsReceived: 4,
+      instruments: {
+        connect: [{ id: pianoTag.id }],
+      },
+    },
+  });
+
+  // Create follow relationships for testing
+  await Promise.all([
+    // Dev User follows John Doe and Sarah Chen
+    prisma.follow.create({
+      data: {
+        followerId: devUser.id,
+        followingId: musician1.id, // John Doe
+      },
+    }),
+    prisma.follow.create({
+      data: {
+        followerId: devUser.id,
+        followingId: musician2.id, // Sarah Chen
+      },
+    }),
+    // John Doe follows Mike Rodriguez
+    prisma.follow.create({
+      data: {
+        followerId: musician1.id, // John Doe
+        followingId: musician3.id, // Mike Rodriguez
+      },
+    }),
+    // Sarah Chen follows John Doe
+    prisma.follow.create({
+      data: {
+        followerId: musician2.id, // Sarah Chen
+        followingId: musician1.id, // John Doe
       },
     }),
   ]);

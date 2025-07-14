@@ -24,7 +24,7 @@ export class MusicianDto {
   instruments: string[];
   profilePictureUrl: string | null;
   totalSessions: number;
-  totalPracticeMinutes: number;
+  totalPracticeSeconds: number;
   totalGasUpsGiven: number;
   totalGasUpsReceived: number;
   longestStreak: number;
@@ -49,10 +49,14 @@ export class MusicianFrontendDTO {
   instruments: TagDTO[];
   profilePictureUrl: string | null;
   totalSessions: number;
-  totalPracticeMinutes: number;
+  totalPracticeSeconds: number;
   totalGasUpsGiven: number;
   totalGasUpsReceived: number;
   createdAt: Date;
+  goals: GoalDto[];
+  isFollowing?: boolean;
+  followerCount?: number;
+  followingCount?: number;
 }
 
 export class MusicianUpdateDto {
@@ -60,6 +64,12 @@ export class MusicianUpdateDto {
   updatedDisplayName: string;
   updatedBio: string;
   updatedInstruments: string[];
+}
+
+export class ProfileUpdateDto {
+  displayName: string;
+  bio: string;
+  instruments: TagDTO[];
 }
 
 export class SessionDto {
@@ -120,4 +130,17 @@ export class GoalDto {
   target: number;
   timeFrame: 'daily' | 'weekly' | 'monthly' | 'annually';
   createdAt: Date;
+}
+
+export class FollowDto {
+  id: number;
+  followerId: number;
+  followingId: number;
+  createdAt: Date;
+}
+
+export class FollowStatusDto {
+  isFollowing: boolean;
+  followerCount: number;
+  followingCount: number;
 }

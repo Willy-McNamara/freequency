@@ -39,12 +39,15 @@ export class SessionsController {
   ) {}
 
   @Get()
+  @UseGuards(JwtAuthGuard)
   async getSessionsOnRender(
+    @Req() req: any,
     @Query('cursor') cursor?: string,
     @Query('users') users?: string,
     @Query('instruments') instruments?: string,
     @Query('tags') tags?: string,
     @Query('saved') saved?: string,
+    @Query('following') following?: string,
   ): Promise<{ sessions: NewFrontendSessionDTO[]; nextCursor?: string }> {
     console.log('Sessions endpoint called with filters:', {
       cursor,
@@ -52,7 +55,16 @@ export class SessionsController {
       instruments,
       tags,
       saved,
+      following,
     });
+
+    // If following filter is enabled, get sessions from followed users
+    if (following === 'true') {
+      return this.sessionsService.getSessionsFromFollowedUsers(
+        req.user.id,
+        cursor,
+      );
+    }
 
     const filters = {
       users: users ? users.split(',') : [],

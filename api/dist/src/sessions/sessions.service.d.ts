@@ -15,6 +15,10 @@ export declare class SessionsService {
         nextCursor?: string;
     }>;
     getFiveSessions(): Promise<NewFrontendSessionDTO[]>;
+    getSessionsFromFollowedUsers(currentUserId: number, cursor?: string): Promise<{
+        sessions: NewFrontendSessionDTO[];
+        nextCursor?: string;
+    }>;
     createSession(newSession: CreateSessionDto): Promise<NewFrontendSessionDTO>;
     addComment(newComment: NewCommentDto): Promise<CreatedCommentDto>;
     addGasUp(newGasUp: NewGasUpDto): Promise<CreatedGasUpDto>;

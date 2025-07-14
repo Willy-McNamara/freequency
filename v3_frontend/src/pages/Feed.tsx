@@ -83,6 +83,8 @@ const Feed = () => {
   const [allUsers, setAllUsers] = useState<string[]>([]);
   const [allTags, setAllTags] = useState<string[]>([]);
   const [allInstruments, setAllInstruments] = useState<string[]>([]);
+  const isSettingFromUrl = useRef(false);
+  const previousFilterState = useRef<string>("");
 
   // Check for my-sessions filter in URL
   const isMySessionsFilter = searchParams.get("filter") === "my-sessions";
@@ -112,11 +114,18 @@ const Feed = () => {
       const params = new URLSearchParams();
 
       const userFilter = activeFilters.find((f) => f.type === "user");
+
       if (userFilter?.isSelected && userFilter.options) {
         const selectedUsers = userFilter.options
           .filter((option) => option.checked)
           .map((option) => option.label);
-        if (selectedUsers.length > 0) {
+
+        // Check if "following" is selected
+        const followingSelected = selectedUsers.includes("Following");
+        if (followingSelected) {
+          params.append("following", "true");
+        } else if (selectedUsers.length > 0) {
+          // Only add users param if not using following filter
           params.append("users", selectedUsers.join(","));
         }
       }
@@ -264,21 +273,49 @@ const Feed = () => {
 
   // New useEffect to trigger fetch when filters change
   useEffect(() => {
-    // Only fetch if filters have been initialized and at least one filter is selected
+    // Create a string representation of the current filter state for comparison
+    const currentFilterState = JSON.stringify(
+      activeFilters.map((filter) => ({
+        type: filter.type,
+        isSelected: filter.isSelected,
+        selectedOptions:
+          filter.options
+            ?.filter((opt) => opt.checked)
+            .map((opt) => opt.label) || [],
+      }))
+    );
+
+    // Fetch if filters have been initialized and either:
+    // 1. At least one filter is selected, OR
+    // 2. This is a filter change after initial load (to handle clearing filters)
     if (
       filtersInitialized.current &&
       hasFetchedOnce.current &&
-      activeFilters.some(
+      (activeFilters.some(
         (filter) =>
           filter.isSelected &&
           (filter.options ? filter.options.some((opt) => opt.checked) : true)
-      )
+      ) ||
+        // Also trigger fetch when filters are being cleared (previous state had filters, current doesn't)
+        (previousFilterState.current &&
+          previousFilterState.current !== currentFilterState &&
+          activeFilters.every(
+            (filter) =>
+              !filter.isSelected ||
+              (filter.options && !filter.options.some((opt) => opt.checked))
+          )))
     ) {
+      if (isSettingFromUrl.current) {
+        isSettingFromUrl.current = false;
+      }
       setPosts([]);
       setNextCursor(undefined);
       setHasMore(true);
       fetchSessions(true, null);
     }
+
+    // Update the previous filter state
+    previousFilterState.current = currentFilterState;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeFilters]);
 
@@ -313,6 +350,21 @@ const Feed = () => {
           false,
       }));
 
+      // Add the "Following" option if user is authenticated
+      const followingOption = {
+        id: "following",
+        label: "Following",
+        checked:
+          activeFilters
+            .find((f) => f.type === "user")
+            ?.options?.some((opt) => opt.id === "following" && opt.checked) ||
+          false,
+      };
+
+      const allUserOptions = user
+        ? [...userOptions, followingOption]
+        : userOptions;
+
       const instrumentOptions = allInstruments.map((instrument) => ({
         id: instrument.toLowerCase(),
         label: instrument,
@@ -333,9 +385,9 @@ const Feed = () => {
       }));
 
       // If my-sessions filter is active, automatically select the current user
-      let updatedUserOptions = userOptions;
+      let updatedUserOptions = allUserOptions;
       if (isMySessionsFilter && user?.displayName) {
-        updatedUserOptions = userOptions.map((option) => ({
+        updatedUserOptions = allUserOptions.map((option) => ({
           ...option,
           checked: option.label === user.displayName,
         }));
@@ -379,12 +431,55 @@ const Feed = () => {
       allInstruments.length > 0 &&
       allTags.length > 0
     ) {
-      fetchSessions(true);
-      hasFetchedOnce.current = true;
-      filtersInitialized.current = true;
+      // Don't do initial fetch if there's a user parameter in URL
+      const userParam = searchParams.get("user");
+      if (!userParam) {
+        fetchSessions(true);
+        hasFetchedOnce.current = true;
+        filtersInitialized.current = true;
+      } else {
+        hasFetchedOnce.current = true;
+        filtersInitialized.current = true;
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allUsers, allInstruments, allTags]);
+  }, [allUsers, allInstruments, allTags, searchParams]);
+
+  // Handle user parameter from URL - set filter only
+  useEffect(() => {
+    const userParam = searchParams.get("user");
+    if (userParam && allUsers.length > 0 && filtersInitialized.current) {
+      const userLabel = allUsers.find((u) => u === userParam);
+      if (userLabel) {
+        const userFilter = activeFilters.find((f) => f.type === "user");
+        const isAlreadySet =
+          userFilter?.isSelected &&
+          userFilter.options?.some(
+            (opt) => opt.label === userLabel && opt.checked
+          );
+        if (!isAlreadySet) {
+          isSettingFromUrl.current = true;
+          setActiveFilters((prev) =>
+            prev.map((filter) => {
+              if (filter.type === "user") {
+                return {
+                  ...filter,
+                  isSelected: true,
+                  options: filter.options
+                    ? filter.options.map((opt) => ({
+                        ...opt,
+                        checked: opt.label === userLabel,
+                      }))
+                    : [],
+                };
+              }
+              return filter;
+            })
+          );
+        }
+      }
+    }
+  }, [searchParams, allUsers, filtersInitialized, activeFilters]);
 
   if (loading) {
     return (
