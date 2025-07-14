@@ -329,7 +329,9 @@ export const PostView: React.FC = () => {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-red-600 mb-4">Error</h1>
           <p className="text-gray-600 mb-4">{error || "Post not found"}</p>
-          <Button onClick={handleBack}>Back to Feed</Button>
+          <Button variant="outline" onClick={handleBack}>
+            Back to Feed
+          </Button>
         </div>
       </div>
     );
@@ -340,10 +342,10 @@ export const PostView: React.FC = () => {
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
           onClick={handleBack}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 text-foreground hover:text-foreground"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Feed
