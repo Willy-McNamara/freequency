@@ -4,6 +4,7 @@ import { X, Plus, Trash2 } from "lucide-react";
 import { Badge } from "./badge";
 import { cn } from "../lib/utils";
 import { TagModal } from "./TagModal";
+import { Button } from "./ui/button";
 
 export interface CreateTaskData {
   title: string;
@@ -168,12 +169,15 @@ export function CreateTaskModal({
           <h2 className="text-xl font-semibold text-foreground text-left">
             {isModifying ? "Modify Task" : "Create New Task"}
           </h2>
-          <button
+          <Button
+            type="button"
             onClick={handleClose}
-            className="p-2 hover:bg-accent rounded-lg transition-colors"
+            variant="outline"
+            size="icon"
+            className="rounded-lg"
           >
             <X className="w-5 h-5" />
-          </button>
+          </Button>
         </div>
 
         {/* Form */}

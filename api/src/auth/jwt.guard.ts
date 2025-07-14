@@ -29,7 +29,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') implements CanActivate {
   ): any {
     // In debug mode, return a mock user object regardless of JWT validation
     if (process.env.DEBUG === 'TRUE') {
-      return { id: 51, email: 'dev@example.com', displayName: 'Dev User' };
+      return { id: 81, email: 'dev@example.com', displayName: 'Dev User' };
     }
 
     if (err || !user) {

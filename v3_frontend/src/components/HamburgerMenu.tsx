@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import { Button } from "./button";
 import { cn } from "../lib/utils";
 
@@ -8,14 +8,35 @@ interface HamburgerMenuProps {
 
 export function HamburgerMenu({ children }: HamburgerMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const handleChildClick = () => {
     setIsOpen(false);
   };
 
+  useEffect(() => {
+    if (!isOpen) return;
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+
   return (
     <div className="fixed top-4 left-4 z-50">
       <Button
+        ref={buttonRef}
         variant="outline"
         size="icon"
         onClick={() => setIsOpen(!isOpen)}
@@ -43,6 +64,7 @@ export function HamburgerMenu({ children }: HamburgerMenuProps) {
       </Button>
 
       <div
+        ref={menuRef}
         className={cn(
           "fixed top-0 left-0 h-screen w-64 bg-background border-r border-border shadow-lg transition-transform duration-200 ease-in-out",
           isOpen ? "translate-x-0" : "-translate-x-full"

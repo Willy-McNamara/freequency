@@ -57,6 +57,7 @@ export class TasksService {
     const tasks = await this.prisma.taskDefinition.findMany({
       where,
       include: {
+        tags: true,
         musician: {
           select: {
             displayName: true,
@@ -88,10 +89,10 @@ export class TasksService {
         displayName: task.musician.displayName,
         avatarUrl: task.musician.avatarUrl,
       },
-      tags: task.musician.instruments.map((instrument) => ({
-        id: instrument.id,
-        label: instrument.label,
-        color: instrument.color,
+      tags: task.tags.map((tag) => ({
+        id: tag.id,
+        label: tag.label,
+        color: tag.color,
       })),
       checklist: task.checklist,
       savedCount: task.savedCount,
@@ -112,6 +113,7 @@ export class TasksService {
     const task = await this.prisma.taskDefinition.findUnique({
       where: { id },
       include: {
+        tags: true,
         musician: {
           select: {
             displayName: true,
@@ -141,10 +143,10 @@ export class TasksService {
         displayName: task.musician.displayName,
         avatarUrl: task.musician.avatarUrl,
       },
-      tags: task.musician.instruments.map((instrument) => ({
-        id: instrument.id,
-        label: instrument.label,
-        color: instrument.color,
+      tags: task.tags.map((tag) => ({
+        id: tag.id,
+        label: tag.label,
+        color: tag.color,
       })),
       checklist: task.checklist,
       savedCount: task.savedCount,

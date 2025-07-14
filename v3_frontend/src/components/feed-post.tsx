@@ -2,7 +2,7 @@ import { JSX } from "react";
 import { useNavigate } from "react-router";
 import { Avatar, AvatarFallback } from "./avatar";
 import { Badge } from "./badge";
-import { MessageSquareIcon, ThumbsUpIcon } from "lucide-react";
+import { MessageSquareIcon, ThumbsUpIcon, Clock } from "lucide-react";
 import { RichTextRenderer } from "./rich-text";
 import { useMemo } from "react";
 
@@ -61,6 +61,7 @@ interface PostData {
       usedCount: number;
     };
   }>;
+  duration: number;
 }
 
 export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
@@ -145,24 +146,37 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
     });
   };
 
+  const formatDuration = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
+  };
+
   return (
     <div
       className="cursor-pointer hover:bg-accent/50 transition-colors duration-200 rounded-lg p-4 -m-4"
       onClick={handlePostClick}
     >
       <div className="flex w-[70vw] flex-col items-start gap-2.5 mb-2">
-        <div className="flex items-center w-full">
-          <Avatar className="h-10 w-10 bg-slate-200 rounded-[20px]">
-            <AvatarFallback className="font-p text-slate-900">
-              {postData.musician.displayName[0]}
-            </AvatarFallback>
-          </Avatar>
-
-          <span className="ml-[11px] font-large text-black">
-            {postData.musician.displayName}
-          </span>
+        <div className="flex items-center w-full justify-between">
+          <div className="flex items-center">
+            <Avatar className="h-10 w-10 bg-slate-200 rounded-[20px]">
+              <AvatarFallback className="font-p text-slate-900">
+                {postData.musician.displayName[0]}
+              </AvatarFallback>
+            </Avatar>
+            <span className="ml-[11px] font-large text-black">
+              {postData.musician.displayName}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Clock className="w-4 h-4" />
+            <span>{formatDuration(postData.duration)}</span>
+          </div>
         </div>
-
         <div className="flex items-center gap-[17px]">
           {instruments.map(
             (
@@ -197,14 +211,12 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
       {/* splicing in metadata */}
       {/* media would go here */}
       <div className="flex flex-col items-start text-left gap-2 w-full mb-2">
-        <p className="font-subtle text-black text-[14px] leading-[20px] font-normal">
+        <span className="font-subtle text-black text-[14px] leading-[20px] font-normal mb-1">
           {sessionData.date}
-        </p>
-
+        </span>
         <h4 className="font-h-4 text-black text-[20px] leading-[28px] font-semibold tracking-[-0.1px]">
           {sessionData.title}
         </h4>
-
         <RichTextRenderer
           content={sessionData.description}
           maxLength={300}

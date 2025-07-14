@@ -25,7 +25,6 @@ import { apiConfig } from "../config/api";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "../components/auth/AuthProvider";
 import { ALL_INSTRUMENTS } from "../types/instruments.types";
-import { Badge } from "@/components/ui/badge";
 
 const TaskLibrary: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -134,7 +133,7 @@ const TaskLibrary: React.FC = () => {
       }
 
       const data = await response.json();
-      setTasks(data);
+      setTasks(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Error fetching tasks:", err);
       setError(err instanceof Error ? err.message : "Failed to fetch tasks");
@@ -495,38 +494,25 @@ const TaskLibrary: React.FC = () => {
       </div>
       <FilterBar filters={activeFilters} onFilterChange={handleFilterChange} />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {tasks.map((task) => (
-          <div key={task.id} className="relative">
-            <TaskListItem
-              task={task}
-              onTaskClick={handleTaskClick}
-              onViewDetails={handleViewDetails}
-              hasActiveSession={hasActiveSession}
-              onUseInCurrentSession={
-                hasActiveSession ? handleUseInCurrentSession : undefined
-              }
-            >
-              {task.instruments.map((instrument) => (
-                <Badge
-                  key={instrument.id}
-                  variant="default"
-                  className="!hover:bg-none !hover:bg-transparent"
-                >
-                  {instrument.label}
-                </Badge>
-              ))}
-              {task.tags.map((tag) => (
-                <Badge
-                  key={tag.id}
-                  variant="secondary"
-                  className="!hover:bg-none !hover:bg-transparent"
-                >
-                  {tag.label}
-                </Badge>
-              ))}
-            </TaskListItem>
-          </div>
-        ))}
+        {tasks.map((task) => {
+          // Infer instruments from tags (no longer used for badges below)
+          // const instrumentLabels = ALL_INSTRUMENTS.map((i) => i.label.toLowerCase());
+          // const instrumentTags = (task.tags || []).filter((tag) => instrumentLabels.includes(tag.label.toLowerCase()));
+          // const regularTags = (task.tags || []).filter((tag) => !instrumentLabels.includes(tag.label.toLowerCase()));
+          return (
+            <div key={task.id} className="relative">
+              <TaskListItem
+                task={task}
+                onTaskClick={handleTaskClick}
+                onViewDetails={handleViewDetails}
+                hasActiveSession={hasActiveSession}
+                onUseInCurrentSession={
+                  hasActiveSession ? handleUseInCurrentSession : undefined
+                }
+              />
+            </div>
+          );
+        })}
       </div>
 
       {/* Create Task Modal - Always rendered */}

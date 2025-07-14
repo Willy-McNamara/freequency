@@ -180,6 +180,9 @@ async function main() {
             savedCount: 8,
             usedCount: 12,
             musicianId: baeThoven.id,
+            tags: {
+                connect: [{ id: listeningTag.id }, { id: musicianshipTag.id }],
+            },
         },
     });
     const baeTask2 = await prisma.taskDefinition.create({
@@ -195,6 +198,9 @@ async function main() {
             savedCount: 5,
             usedCount: 8,
             musicianId: baeThoven.id,
+            tags: {
+                connect: [{ id: listeningTag.id }, { id: musicianshipTag.id }],
+            },
         },
     });
     const baeTask3 = await prisma.taskDefinition.create({
@@ -209,6 +215,9 @@ async function main() {
             savedCount: 3,
             usedCount: 6,
             musicianId: baeThoven.id,
+            tags: {
+                connect: [{ id: listeningTag.id }, { id: musicianshipTag.id }],
+            },
         },
     });
     const moeTask1 = await prisma.taskDefinition.create({
@@ -225,6 +234,9 @@ async function main() {
             savedCount: 10,
             usedCount: 15,
             musicianId: moeTissart.id,
+            tags: {
+                connect: [{ id: pianoTag.id }, { id: repertoireTag.id }],
+            },
         },
     });
     const moeTask2 = await prisma.taskDefinition.create({
@@ -244,6 +256,9 @@ async function main() {
             savedCount: 6,
             usedCount: 9,
             musicianId: moeTissart.id,
+            tags: {
+                connect: [{ id: pianoTag.id }, { id: repertoireTag.id }],
+            },
         },
     });
     const moeTask3 = await prisma.taskDefinition.create({
@@ -260,6 +275,13 @@ async function main() {
             savedCount: 7,
             usedCount: 11,
             musicianId: moeTissart.id,
+            tags: {
+                connect: [
+                    { id: pianoTag.id },
+                    { id: repertoireTag.id },
+                    { id: jazzTag.id },
+                ],
+            },
         },
     });
     const kilometersTask1 = await prisma.taskDefinition.create({
@@ -276,6 +298,15 @@ async function main() {
             savedCount: 12,
             usedCount: 18,
             musicianId: kilometersDavis.id,
+            tags: {
+                connect: [
+                    { id: pianoTag.id },
+                    { id: jazzTag.id },
+                    { id: repertoireTag.id },
+                    { id: musicianshipTag.id },
+                    { id: scalesTag.id },
+                ],
+            },
         },
     });
     const mandyTask1 = await prisma.taskDefinition.create({
@@ -290,6 +321,9 @@ async function main() {
             savedCount: 9,
             usedCount: 14,
             musicianId: mandyLin.id,
+            tags: {
+                connect: [{ id: guitarTag.id }, { id: bluegrassTag.id }],
+            },
         },
     });
     const mandyTask2 = await prisma.taskDefinition.create({
@@ -305,6 +339,9 @@ async function main() {
             savedCount: 4,
             usedCount: 7,
             musicianId: mandyLin.id,
+            tags: {
+                connect: [{ id: guitarTag.id }],
+            },
         },
     });
     await Promise.all([
@@ -609,171 +646,142 @@ async function main() {
             },
         }),
     ]);
-    await Promise.all([
-        prisma.taskInUse.create({
+    const sessionTaskMap = [
+        {
+            sessionIdx: 0,
+            task: baeTask1,
+            duration: 1500,
+            notes: 'Form analysis',
+            tags: [listeningTag.id, musicianshipTag.id],
+        },
+        {
+            sessionIdx: 1,
+            task: baeTask2,
+            duration: 1500,
+            notes: 'Transcription focus',
+            tags: [listeningTag.id, musicianshipTag.id],
+        },
+        {
+            sessionIdx: 2,
+            task: baeTask3,
+            duration: 900,
+            notes: 'Transposing melody',
+            tags: [listeningTag.id, musicianshipTag.id],
+        },
+        {
+            sessionIdx: 3,
+            task: baeTask1,
+            duration: 1000,
+            notes: 'Classical listening',
+            tags: [listeningTag.id, musicianshipTag.id],
+        },
+        {
+            sessionIdx: 4,
+            task: moeTask1,
+            duration: 2000,
+            notes: 'Basic progression',
+            tags: [pianoTag.id, repertoireTag.id],
+        },
+        {
+            sessionIdx: 5,
+            task: moeTask2,
+            duration: 2200,
+            notes: 'Advanced memorization',
+            tags: [pianoTag.id, repertoireTag.id],
+        },
+        {
+            sessionIdx: 6,
+            task: moeTask3,
+            duration: 1500,
+            notes: 'Jazz jam prep',
+            tags: [pianoTag.id, repertoireTag.id, jazzTag.id],
+        },
+        {
+            sessionIdx: 7,
+            task: moeTask1,
+            duration: 1200,
+            notes: 'Guitar melody',
+            tags: [guitarTag.id, repertoireTag.id],
+        },
+        {
+            sessionIdx: 8,
+            task: kilometersTask1,
+            duration: 3000,
+            notes: 'Big scale exercise',
+            tags: [pianoTag.id, jazzTag.id, scalesTag.id],
+        },
+        {
+            sessionIdx: 9,
+            task: kilometersTask1,
+            duration: 2000,
+            notes: 'Modal practice',
+            tags: [pianoTag.id, jazzTag.id, scalesTag.id],
+        },
+        {
+            sessionIdx: 10,
+            task: moeTask2,
+            duration: 1200,
+            notes: 'Jazz standards',
+            tags: [pianoTag.id, jazzTag.id, repertoireTag.id],
+        },
+        {
+            sessionIdx: 11,
+            task: mandyTask1,
+            duration: 1500,
+            notes: 'Alternate picking',
+            tags: [guitarTag.id, bluegrassTag.id],
+        },
+        {
+            sessionIdx: 12,
+            task: mandyTask2,
+            duration: 1000,
+            notes: 'Chromatic picking',
+            tags: [guitarTag.id],
+        },
+        {
+            sessionIdx: 13,
+            task: mandyTask1,
+            duration: 900,
+            notes: 'Bluegrass tune',
+            tags: [guitarTag.id, bluegrassTag.id],
+        },
+    ];
+    for (const entry of sessionTaskMap) {
+        await prisma.taskInUse.create({
             data: {
-                duration: 1800,
-                notes: 'Focused on form analysis and instrumentation',
-                isSessionTask: true,
-                checklistCompletions: [
-                    'the form',
-                    'the instrumentation',
-                    "what you liked/didn't like and why",
-                ],
-                taskDefinitionId: baeTask1.id,
-                musicianId: baeThoven.id,
-                sessionId: sessions[0].id,
-                tags: {
-                    connect: [{ id: listeningTag.id }, { id: musicianshipTag.id }],
-                },
+                duration: entry.duration,
+                notes: entry.notes,
+                isSessionTask: false,
+                checklistCompletions: [],
+                taskDefinitionId: entry.task.id,
+                musicianId: entry.task.musicianId,
+                sessionId: sessions[entry.sessionIdx].id,
+                tags: { connect: entry.tags.map((id) => ({ id })) },
             },
-        }),
-        prisma.taskInUse.create({
-            data: {
-                duration: 1800,
-                notes: 'Working on matching pitches and timing',
-                isSessionTask: true,
-                checklistCompletions: [
-                    'Matching the pitches',
-                    'Replicating the feel, timing',
-                    'At reduced tempo',
-                ],
-                taskDefinitionId: baeTask2.id,
-                musicianId: baeThoven.id,
-                sessionId: sessions[1].id,
-                tags: {
-                    connect: [{ id: listeningTag.id }, { id: musicianshipTag.id }],
-                },
-            },
-        }),
-        prisma.taskInUse.create({
-            data: {
-                duration: 900,
-                notes: 'Transposing melody to different keys',
-                isSessionTask: true,
-                checklistCompletions: [
-                    'Understand the song form',
-                    'Sing the scale degrees',
-                    'Apply the scale degrees to other keys',
-                ],
-                taskDefinitionId: baeTask3.id,
-                musicianId: baeThoven.id,
-                sessionId: sessions[2].id,
-                tags: {
-                    connect: [{ id: listeningTag.id }, { id: musicianshipTag.id }],
-                },
-            },
-        }),
-        prisma.taskInUse.create({
-            data: {
-                duration: 2400,
-                notes: 'Working through basic progression',
-                isSessionTask: true,
-                checklistCompletions: [
-                    'Bass',
-                    'Melody',
-                    'Bass + Melody',
-                    'Bass + Root Position',
-                ],
-                taskDefinitionId: moeTask1.id,
-                musicianId: moeTissart.id,
-                sessionId: sessions[4].id,
-                tags: { connect: [{ id: pianoTag.id }, { id: repertoireTag.id }] },
-            },
-        }),
-        prisma.taskInUse.create({
-            data: {
-                duration: 2700,
-                notes: 'Advanced memorization techniques',
-                isSessionTask: true,
-                checklistCompletions: [
-                    'Play bass while singing melody',
-                    'Sing melody with scale degrees',
-                    'Play bass while singing melody with scale degrees',
-                ],
-                taskDefinitionId: moeTask2.id,
-                musicianId: moeTissart.id,
-                sessionId: sessions[5].id,
-                tags: { connect: [{ id: pianoTag.id }, { id: repertoireTag.id }] },
-            },
-        }),
-        prisma.taskInUse.create({
-            data: {
-                duration: 1800,
-                notes: 'Jazz jam preparation',
-                isSessionTask: true,
-                checklistCompletions: [
-                    'RH Rootless',
-                    'Bass + Rootless',
-                    'LH Rootless',
-                    'Rootless + Melody',
-                ],
-                taskDefinitionId: moeTask3.id,
-                musicianId: moeTissart.id,
-                sessionId: sessions[6].id,
-                tags: {
-                    connect: [
-                        { id: pianoTag.id },
-                        { id: repertoireTag.id },
-                        { id: jazzTag.id },
-                    ],
-                },
-            },
-        }),
-        prisma.taskInUse.create({
-            data: {
-                duration: 3600,
-                notes: 'Big scale exercise with bebop alterations',
-                isSessionTask: true,
-                checklistCompletions: [
-                    '(prereq) Play all chord scale options out of time for each change',
-                    '(prereq) Play each chord scale from the root in time',
-                    'Starting at a random place in the scale and switching directions randomly, play through selected chord scale combinations over the song form in time. Swing even 8ths.',
-                ],
-                taskDefinitionId: kilometersTask1.id,
-                musicianId: kilometersDavis.id,
-                sessionId: sessions[8].id,
-                tags: {
-                    connect: [
-                        { id: pianoTag.id },
-                        { id: jazzTag.id },
-                        { id: scalesTag.id },
-                    ],
-                },
-            },
-        }),
-        prisma.taskInUse.create({
-            data: {
-                duration: 1800,
-                notes: 'Basic alternate picking patterns',
-                isSessionTask: true,
-                checklistCompletions: [
-                    'With open strings, alternate pick 1-2 1-3 1-4 etc, 2-2 2-3 etc … 6-5 6-4 etc',
-                    'With a chord shape underneath, alternate pick 12312313, 12412414,125 etc.',
-                ],
-                taskDefinitionId: mandyTask1.id,
-                musicianId: mandyLin.id,
-                sessionId: sessions[11].id,
-                tags: { connect: [{ id: guitarTag.id }, { id: bluegrassTag.id }] },
-            },
-        }),
-        prisma.taskInUse.create({
-            data: {
-                duration: 1200,
-                notes: 'Chromatic picking with metronome',
-                isSessionTask: true,
-                checklistCompletions: [
-                    'Pick 01234 from low to high strings, then back 43210',
-                    'Work your way up the neck',
-                    'Use a metronome',
-                ],
-                taskDefinitionId: mandyTask2.id,
-                musicianId: mandyLin.id,
-                sessionId: sessions[12].id,
-                tags: { connect: [{ id: guitarTag.id }] },
-            },
-        }),
-    ]);
+        });
+    }
+    await prisma.taskInUse.create({
+        data: {
+            duration: 500,
+            notes: 'Free practice time',
+            isSessionTask: true,
+            checklistCompletions: [],
+            musicianId: moeTissart.id,
+            sessionId: sessions[5].id,
+            tags: { connect: [{ id: pianoTag.id }, { id: repertoireTag.id }] },
+        },
+    });
+    await prisma.taskInUse.create({
+        data: {
+            duration: 200,
+            notes: 'Free practice time',
+            isSessionTask: true,
+            checklistCompletions: [],
+            musicianId: mandyLin.id,
+            sessionId: sessions[12].id,
+            tags: { connect: [{ id: guitarTag.id }] },
+        },
+    });
     await Promise.all([
         prisma.comment.create({
             data: {

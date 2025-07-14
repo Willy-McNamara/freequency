@@ -9,6 +9,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Badge } from "./badge";
+import { ALL_INSTRUMENTS } from "../types/instruments.types";
 import { cn } from "../lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -140,27 +141,30 @@ export function TaskListItem({
           </div>
 
           {/* Tags */}
-          {task.tags.length > 0 && (
-            <div>
-              <h4 className="text-sm font-medium text-muted-foreground mb-2 text-left">
-                Tags
-              </h4>
-              <div className="flex flex-wrap gap-2 justify-start">
-                {/* Always show instrument tag first */}
-                <Badge
-                  variant="default"
-                  className="!hover:bg-none !hover:bg-transparent"
-                >
-                  {task.instrument}
-                </Badge>
-
-                {/* Show other tags, filtering out instrument */}
-                {task.tags
-                  .filter(
-                    (tag) =>
-                      tag.label.toLowerCase() !== task.instrument.toLowerCase()
-                  )
-                  .map((tag) => (
+          {task.tags && task.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 justify-start mt-2">
+              {/* Instrument tags first, then regular tags */}
+              {(() => {
+                const instrumentLabels = ALL_INSTRUMENTS.map((i) =>
+                  i.label.toLowerCase()
+                );
+                const instrumentTags = task.tags.filter((tag) =>
+                  instrumentLabels.includes(tag.label.toLowerCase())
+                );
+                const regularTags = task.tags.filter(
+                  (tag) => !instrumentLabels.includes(tag.label.toLowerCase())
+                );
+                return [
+                  ...instrumentTags.map((tag) => (
+                    <Badge
+                      key={tag.id}
+                      variant="default"
+                      className="!hover:bg-none !hover:bg-transparent"
+                    >
+                      {tag.label}
+                    </Badge>
+                  )),
+                  ...regularTags.map((tag) => (
                     <Badge
                       key={tag.id}
                       variant="secondary"
@@ -168,8 +172,9 @@ export function TaskListItem({
                     >
                       {tag.label}
                     </Badge>
-                  ))}
-              </div>
+                  )),
+                ];
+              })()}
             </div>
           )}
 

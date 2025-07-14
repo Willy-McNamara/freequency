@@ -42,6 +42,7 @@ model TaskDefinition {
   parentTask       TaskDefinition? @relation("TaskHierarchy", fields: [parentTaskId], references: [id])
   subTasks         TaskDefinition[] @relation("TaskHierarchy")
   tasksInUse       TaskInUse[]
+  tags         Tag[] @relation("TaskDefinitionTags")
 }
 
 model TaskInUse {
@@ -139,6 +140,7 @@ model Tag {
   tasks     TaskInUse[] @relation("TaskTags")
   musicians Musician[] @relation("MusicianTags")
   sessionInstruments Session[] @relation("SessionInstruments")
+  taskDefinitions TaskDefinition[] @relation("TaskDefinitionTags")
 }
 
 // Add enums for goal type and time frame
