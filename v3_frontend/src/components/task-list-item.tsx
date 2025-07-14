@@ -154,16 +154,21 @@ export function TaskListItem({
                   {task.instrument}
                 </Badge>
 
-                {/* Show other tags */}
-                {task.tags.map((tag) => (
-                  <Badge
-                    key={tag.id}
-                    variant="secondary"
-                    className="!hover:bg-none !hover:bg-transparent"
-                  >
-                    {tag.label}
-                  </Badge>
-                ))}
+                {/* Show other tags, filtering out instrument */}
+                {task.tags
+                  .filter(
+                    (tag) =>
+                      tag.label.toLowerCase() !== task.instrument.toLowerCase()
+                  )
+                  .map((tag) => (
+                    <Badge
+                      key={tag.id}
+                      variant="secondary"
+                      className="!hover:bg-none !hover:bg-transparent"
+                    >
+                      {tag.label}
+                    </Badge>
+                  ))}
               </div>
             </div>
           )}

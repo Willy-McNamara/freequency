@@ -97,14 +97,26 @@ export function TaskDetail({
             Tags
           </h3>
           <div className="flex flex-wrap gap-2">
-            <Badge variant="default" className="text-sm">
+            <Badge
+              variant="default"
+              className="text-sm !hover:bg-none !hover:bg-transparent"
+            >
               {task.instrument}
             </Badge>
-            {task.tags.map((tag) => (
-              <Badge key={tag.id} variant="secondary" className="text-sm">
-                {tag.label}
-              </Badge>
-            ))}
+            {task.tags
+              .filter(
+                (tag) =>
+                  tag.label.toLowerCase() !== task.instrument.toLowerCase()
+              )
+              .map((tag) => (
+                <Badge
+                  key={tag.id}
+                  variant="secondary"
+                  className="text-sm !hover:bg-none !hover:bg-transparent"
+                >
+                  {tag.label}
+                </Badge>
+              ))}
           </div>
         </div>
 
