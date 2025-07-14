@@ -10,6 +10,7 @@ import {
 import { Badge } from "./badge";
 import { cn } from "../lib/utils";
 import { Task } from "./task-list-item";
+import { Button } from "./ui/button";
 
 export interface TaskDetailProps {
   task: Task;
@@ -64,13 +65,14 @@ export function TaskDetail({
     >
       {/* Header with back button */}
       <div className="flex items-center gap-4 mb-6">
-        <button
+        <Button
           onClick={onBack}
-          className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          variant="outline"
+          className="flex items-center gap-2 text-foreground"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Task Library
-        </button>
+        </Button>
       </div>
 
       {/* Single Task Section */}
@@ -95,14 +97,26 @@ export function TaskDetail({
             Tags
           </h3>
           <div className="flex flex-wrap gap-2">
-            <Badge variant="default" className="text-sm">
+            <Badge
+              variant="default"
+              className="text-sm !hover:bg-none !hover:bg-transparent"
+            >
               {task.instrument}
             </Badge>
-            {task.tags.map((tag) => (
-              <Badge key={tag.id} variant="secondary" className="text-sm">
-                {tag.label}
-              </Badge>
-            ))}
+            {task.tags
+              .filter(
+                (tag) =>
+                  tag.label.toLowerCase() !== task.instrument.toLowerCase()
+              )
+              .map((tag) => (
+                <Badge
+                  key={tag.id}
+                  variant="secondary"
+                  className="text-sm !hover:bg-none !hover:bg-transparent"
+                >
+                  {tag.label}
+                </Badge>
+              ))}
           </div>
         </div>
 
@@ -143,27 +157,29 @@ export function TaskDetail({
 
           <div className="flex items-center gap-2">
             {/* Modify Button */}
-            <button
+            <Button
               onClick={handleModifyTask}
-              className="flex items-center gap-2 px-3 py-2 border border-border rounded-lg hover:bg-accent transition-colors"
+              variant="outline"
+              className="flex items-center gap-2 text-foreground"
             >
               <Edit className="w-4 h-4" />
               Make it your own
-            </button>
+            </Button>
 
             {/* Archive Button */}
-            <button
+            <Button
               onClick={handleToggleSave}
+              variant={isSaved ? "default" : "outline"}
               className={cn(
-                "flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-colors",
+                "flex items-center gap-2 font-medium text-foreground",
                 isSaved
                   ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                  : "border border-border hover:bg-accent"
+                  : "border border-border"
               )}
             >
               <BookmarkIcon className="w-4 h-4" />
               {isSaved ? "Saved" : "Save"}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

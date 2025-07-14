@@ -24,6 +24,7 @@ import { Pause, Timer, Plus } from "lucide-react";
 import { apiConfig } from "../config/api";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "../components/auth/AuthProvider";
+import { ALL_INSTRUMENTS } from "../types/instruments.types";
 
 const TaskLibrary: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -65,12 +66,11 @@ const TaskLibrary: React.FC = () => {
       {
         type: "instrument",
         isSelected: false,
-        options: [
-          { id: "guitar", label: "Guitar", checked: false },
-          { id: "piano", label: "Piano", checked: false },
-          { id: "drums", label: "Drums", checked: false },
-          { id: "bass", label: "Bass", checked: false },
-        ],
+        options: ALL_INSTRUMENTS.map((instrument) => ({
+          id: instrument.label.toLowerCase(),
+          label: instrument.label,
+          checked: false,
+        })),
       },
       { type: "saved", isSelected: false },
     ];
@@ -133,7 +133,7 @@ const TaskLibrary: React.FC = () => {
       }
 
       const data = await response.json();
-      setTasks(data);
+      setTasks(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Error fetching tasks:", err);
       setError(err instanceof Error ? err.message : "Failed to fetch tasks");
@@ -494,19 +494,25 @@ const TaskLibrary: React.FC = () => {
       </div>
       <FilterBar filters={activeFilters} onFilterChange={handleFilterChange} />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {tasks.map((task) => (
-          <div key={task.id} className="relative">
-            <TaskListItem
-              task={task}
-              onTaskClick={handleTaskClick}
-              onViewDetails={handleViewDetails}
-              hasActiveSession={hasActiveSession}
-              onUseInCurrentSession={
-                hasActiveSession ? handleUseInCurrentSession : undefined
-              }
-            />
-          </div>
-        ))}
+        {tasks.map((task) => {
+          // Infer instruments from tags (no longer used for badges below)
+          // const instrumentLabels = ALL_INSTRUMENTS.map((i) => i.label.toLowerCase());
+          // const instrumentTags = (task.tags || []).filter((tag) => instrumentLabels.includes(tag.label.toLowerCase()));
+          // const regularTags = (task.tags || []).filter((tag) => !instrumentLabels.includes(tag.label.toLowerCase()));
+          return (
+            <div key={task.id} className="relative">
+              <TaskListItem
+                task={task}
+                onTaskClick={handleTaskClick}
+                onViewDetails={handleViewDetails}
+                hasActiveSession={hasActiveSession}
+                onUseInCurrentSession={
+                  hasActiveSession ? handleUseInCurrentSession : undefined
+                }
+              />
+            </div>
+          );
+        })}
       </div>
 
       {/* Create Task Modal - Always rendered */}

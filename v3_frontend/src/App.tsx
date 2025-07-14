@@ -35,7 +35,7 @@ function App() {
                 </p>
               </div>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 onClick={logout}
                 className="text-xs"

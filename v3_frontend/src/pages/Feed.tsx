@@ -9,6 +9,7 @@ import {
 } from "../components/filter-bar";
 import { apiConfig } from "../config/api";
 import { useAuth } from "../components/auth/AuthProvider";
+import { ALL_INSTRUMENTS } from "../types/instruments.types";
 
 interface Post {
   id: number;
@@ -82,7 +83,6 @@ const Feed = () => {
   const filtersInitialized = useRef(false);
   const [allUsers, setAllUsers] = useState<string[]>([]);
   const [allTags, setAllTags] = useState<string[]>([]);
-  const [allInstruments, setAllInstruments] = useState<string[]>([]);
   const isSettingFromUrl = useRef(false);
   const previousFilterState = useRef<string>("");
 
@@ -324,9 +324,6 @@ const Feed = () => {
     fetch(apiConfig.endpoints.musicians.allDisplayNames)
       .then((res) => res.json())
       .then((data) => setAllUsers(data));
-    fetch(apiConfig.endpoints.instruments.all)
-      .then((res) => res.json())
-      .then((data) => setAllInstruments(data));
     fetch(apiConfig.endpoints.tags.all)
       .then((res) => res.json())
       .then((data) => setAllTags(data));
@@ -334,12 +331,8 @@ const Feed = () => {
 
   // Update filter options based on available data
   useEffect(() => {
-    // Use allUsers, allInstruments, allTags for filter options
-    if (
-      allUsers.length > 0 &&
-      allInstruments.length > 0 &&
-      allTags.length > 0
-    ) {
+    // Use allUsers, ALL_INSTRUMENTS, allTags for filter options
+    if (allUsers.length > 0 && allTags.length > 0) {
       const userOptions = allUsers.map((user) => ({
         id: user.toLowerCase().replace(/\s+/g, ""),
         label: user,
@@ -365,14 +358,15 @@ const Feed = () => {
         ? [...userOptions, followingOption]
         : userOptions;
 
-      const instrumentOptions = allInstruments.map((instrument) => ({
-        id: instrument.toLowerCase(),
-        label: instrument,
+      const instrumentOptions = ALL_INSTRUMENTS.map((instrument) => ({
+        id: instrument.label.toLowerCase(),
+        label: instrument.label,
         checked:
           activeFilters
             .find((f) => f.type === "instrument")
-            ?.options?.some((opt) => opt.label === instrument && opt.checked) ||
-          false,
+            ?.options?.some(
+              (opt) => opt.label === instrument.label && opt.checked
+            ) || false,
       }));
 
       const tagOptions = allTags.map((tag) => ({
@@ -415,22 +409,11 @@ const Feed = () => {
         })
       );
     }
-  }, [
-    allUsers,
-    allInstruments,
-    allTags,
-    isMySessionsFilter,
-    user?.displayName,
-  ]);
+  }, [allUsers, allTags, isMySessionsFilter, user?.displayName]);
 
   // Initial data fetch: only after all filter options are loaded
   useEffect(() => {
-    if (
-      !hasFetchedOnce.current &&
-      allUsers.length > 0 &&
-      allInstruments.length > 0 &&
-      allTags.length > 0
-    ) {
+    if (!hasFetchedOnce.current && allUsers.length > 0 && allTags.length > 0) {
       // Don't do initial fetch if there's a user parameter in URL
       const userParam = searchParams.get("user");
       if (!userParam) {
@@ -443,7 +426,7 @@ const Feed = () => {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allUsers, allInstruments, allTags, searchParams]);
+  }, [allUsers, allTags, searchParams]);
 
   // Handle user parameter from URL - set filter only
   useEffect(() => {

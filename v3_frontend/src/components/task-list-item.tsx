@@ -9,7 +9,9 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Badge } from "./badge";
+import { ALL_INSTRUMENTS } from "../types/instruments.types";
 import { cn } from "../lib/utils";
+import { Button } from "@/components/ui/button";
 
 export interface Task {
   id: number;
@@ -139,24 +141,40 @@ export function TaskListItem({
           </div>
 
           {/* Tags */}
-          {task.tags.length > 0 && (
-            <div>
-              <h4 className="text-sm font-medium text-muted-foreground mb-2 text-left">
-                Tags
-              </h4>
-              <div className="flex flex-wrap gap-2 justify-start">
-                {/* Always show instrument tag first */}
-                <Badge variant="default" className="text-xs">
-                  {task.instrument}
-                </Badge>
-
-                {/* Show other tags */}
-                {task.tags.map((tag) => (
-                  <Badge key={tag.id} variant="secondary" className="text-xs">
-                    {tag.label}
-                  </Badge>
-                ))}
-              </div>
+          {task.tags && task.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 justify-start mt-2">
+              {/* Instrument tags first, then regular tags */}
+              {(() => {
+                const instrumentLabels = ALL_INSTRUMENTS.map((i) =>
+                  i.label.toLowerCase()
+                );
+                const instrumentTags = task.tags.filter((tag) =>
+                  instrumentLabels.includes(tag.label.toLowerCase())
+                );
+                const regularTags = task.tags.filter(
+                  (tag) => !instrumentLabels.includes(tag.label.toLowerCase())
+                );
+                return [
+                  ...instrumentTags.map((tag) => (
+                    <Badge
+                      key={tag.id}
+                      variant="default"
+                      className="!hover:bg-none !hover:bg-transparent"
+                    >
+                      {tag.label}
+                    </Badge>
+                  )),
+                  ...regularTags.map((tag) => (
+                    <Badge
+                      key={tag.id}
+                      variant="secondary"
+                      className="!hover:bg-none !hover:bg-transparent"
+                    >
+                      {tag.label}
+                    </Badge>
+                  )),
+                ];
+              })()}
             </div>
           )}
 
@@ -168,13 +186,14 @@ export function TaskListItem({
 
           {/* View Details and Use in Session Buttons */}
           <div className="flex justify-end pt-2 gap-2">
-            <button
+            <Button
               onClick={handleViewDetails}
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+              variant="outline"
+              className="flex items-center gap-2 text-foreground"
             >
               View Details
               <ArrowRight className="w-4 h-4" />
-            </button>
+            </Button>
             {hasActiveSession && onUseInCurrentSession && (
               <button
                 onClick={(e) => {

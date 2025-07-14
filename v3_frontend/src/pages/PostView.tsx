@@ -329,7 +329,9 @@ export const PostView: React.FC = () => {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-red-600 mb-4">Error</h1>
           <p className="text-gray-600 mb-4">{error || "Post not found"}</p>
-          <Button onClick={handleBack}>Back to Feed</Button>
+          <Button variant="outline" onClick={handleBack}>
+            Back to Feed
+          </Button>
         </div>
       </div>
     );
@@ -340,10 +342,10 @@ export const PostView: React.FC = () => {
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
           onClick={handleBack}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 text-foreground hover:text-foreground"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Feed
@@ -382,15 +384,31 @@ export const PostView: React.FC = () => {
           {/* Instruments and Tags */}
           <div className="flex flex-wrap gap-2 mb-4">
             {post.instruments.map((instrument) => (
-              <Badge key={instrument.id} variant="default">
+              <Badge
+                key={instrument.id}
+                variant="default"
+                className="!hover:bg-none !hover:bg-transparent"
+              >
                 {instrument.label}
               </Badge>
             ))}
-            {post.tags.map((tag) => (
-              <Badge key={tag.id} variant="secondary">
-                {tag.label}
-              </Badge>
-            ))}
+            {post.tags
+              .filter(
+                (tag) =>
+                  !post.instruments.some(
+                    (instrument) =>
+                      instrument.label.toLowerCase() === tag.label.toLowerCase()
+                  )
+              )
+              .map((tag) => (
+                <Badge
+                  key={tag.id}
+                  variant="secondary"
+                  className="!hover:bg-none !hover:bg-transparent"
+                >
+                  {tag.label}
+                </Badge>
+              ))}
           </div>
 
           {/* Session Title */}
@@ -562,7 +580,11 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onViewTaskDefinition }) => {
           {task.taskDefinition.tags && task.taskDefinition.tags.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-4">
               {task.taskDefinition.tags.map((tag) => (
-                <Badge key={tag.id} variant="secondary" className="text-xs">
+                <Badge
+                  key={tag.id}
+                  variant="secondary"
+                  className="text-xs !hover:bg-none !hover:bg-transparent"
+                >
                   {tag.label}
                 </Badge>
               ))}

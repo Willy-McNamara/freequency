@@ -1,8 +1,10 @@
-import * as React from "react";
+import React from "react";
+import { ALL_INSTRUMENTS } from "../types/instruments.types";
 import { X, Plus, Trash2 } from "lucide-react";
 import { Badge } from "./badge";
 import { cn } from "../lib/utils";
 import { TagModal } from "./TagModal";
+import { Button } from "./ui/button";
 
 export interface CreateTaskData {
   title: string;
@@ -167,12 +169,15 @@ export function CreateTaskModal({
           <h2 className="text-xl font-semibold text-foreground text-left">
             {isModifying ? "Modify Task" : "Create New Task"}
           </h2>
-          <button
+          <Button
+            type="button"
             onClick={handleClose}
-            className="p-2 hover:bg-accent rounded-lg transition-colors"
+            variant="outline"
+            size="icon"
+            className="rounded-lg"
           >
             <X className="w-5 h-5" />
-          </button>
+          </Button>
         </div>
 
         {/* Form */}
@@ -231,15 +236,11 @@ export function CreateTaskModal({
               required
             >
               <option value="">Select an instrument</option>
-              <option value="Guitar">Guitar</option>
-              <option value="Piano">Piano</option>
-              <option value="Drums">Drums</option>
-              <option value="Bass">Bass</option>
-              <option value="Violin">Violin</option>
-              <option value="Saxophone">Saxophone</option>
-              <option value="Trumpet">Trumpet</option>
-              <option value="Flute">Flute</option>
-              <option value="Clarinet">Clarinet</option>
+              {ALL_INSTRUMENTS.map((instrument) => (
+                <option key={instrument.id} value={instrument.label}>
+                  {instrument.label}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -268,7 +269,7 @@ export function CreateTaskModal({
                   <Badge
                     key={index}
                     variant="secondary"
-                    className="flex items-center gap-1"
+                    className="flex items-center gap-1 !hover:bg-none !hover:bg-transparent"
                   >
                     {tag}
                     <button
