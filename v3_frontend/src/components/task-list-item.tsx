@@ -12,6 +12,7 @@ import { Badge } from "./badge";
 import { ALL_INSTRUMENTS } from "../types/instruments.types";
 import { cn } from "../lib/utils";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "./avatar";
 
 export interface Task {
   id: number;
@@ -99,13 +100,17 @@ export function TaskListItem({
         <div className="flex items-center gap-3 flex-shrink-0">
           {/* User */}
           <div className="flex items-center gap-2">
-            {task.user.avatarUrl && (
-              <img
-                src={task.user.avatarUrl}
-                alt={task.user.displayName}
-                className="w-6 h-6 rounded-full object-cover"
-              />
-            )}
+            <Avatar className="w-6 h-6">
+              {task.user.avatarUrl ? (
+                <AvatarImage
+                  src={task.user.avatarUrl}
+                  alt={task.user.displayName}
+                />
+              ) : null}
+              <AvatarFallback>
+                {task.user.displayName?.[0] || "?"}
+              </AvatarFallback>
+            </Avatar>
             <span className="text-sm text-muted-foreground truncate max-w-[100px]">
               {task.user.displayName}
             </span>
