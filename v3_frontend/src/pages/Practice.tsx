@@ -113,41 +113,36 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
     }
   };
 
-  // Sync state when selectedTask changes
+  // Fix useEffect: Only set timer when selectedTaskId changes, not selectedTask (which can change on every keystroke)
   useEffect(() => {
-    if (selectedTaskId && selectedTask) {
-      console.log(
-        "use effect to setChecklist, timer, notes, ran. here is selectedTask and selectedTask.checklist :",
-        selectedTask,
-        selectedTask.checklist
-      );
-      setTaskTimer(selectedTask.timeSpent || 0);
-      setChecklist(selectedTask.checklist || []);
+    if (selectedTaskId) {
+      const foundTask = session.tasks.find((t) => t.id === selectedTaskId);
+      setTaskTimer(foundTask?.timeSpent || 0);
+      setChecklist(foundTask?.checklist || []);
       setTaskTimerRunning(true);
 
       // Only update if the task or notes actually changed
       if (
         lastTaskRef.current.id !== selectedTaskId ||
-        lastTaskRef.current.notes !== (selectedTask.notes || "")
+        lastTaskRef.current.notes !== (foundTask?.notes || "")
       ) {
-        setTaskNotes(selectedTask.notes || "");
+        setTaskNotes(foundTask?.notes || "");
         lastTaskRef.current = {
           id: selectedTaskId,
-          notes: selectedTask.notes || "",
+          notes: foundTask?.notes || "",
         };
       }
 
       // Track time already added to session timer
-      timeAlreadyAddedToSession.current = selectedTask.timeSpent || 0;
+      timeAlreadyAddedToSession.current = foundTask?.timeSpent || 0;
 
       // Pause session timer
       if (session.sessionTimerRunning) {
         session.setSessionTimerRunning(false);
       }
     }
-    // Do NOT set taskNotes to "" when no task is selected
     // eslint-disable-next-line
-  }, [selectedTaskId, selectedTask?.notes]);
+  }, [selectedTaskId]);
 
   // Timer logic for Task-in-Session (independent from session timer)
   useEffect(() => {
@@ -283,6 +278,14 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
     }
   };
 
+  const handleDeleteTask = (taskId: string) => {
+    session.setTasks(session.tasks.filter((t) => t.id !== taskId));
+    if (selectedTaskId === taskId) {
+      setSelectedTaskId(null);
+      localStorage.removeItem("practiceSelectedTaskId");
+    }
+  };
+
   // Main Practice view
   return (
     <div className="w-[70vw] min-h-screen">
@@ -333,11 +336,25 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                 onRunningChange={setTaskTimerRunning}
               />
             </div>
+            <RichTextEditor value={taskNotes} onChange={setTaskNotes} />
             {/* Task Tags */}
             <div className="w-full mb-4">
               <PracticeTagList
                 tags={selectedTask.tags || []}
                 onAddTag={() => setTagModalOpen(true)}
+                onRemoveTag={(tagId) => {
+                  // Remove tag from selected task's tags
+                  const updatedTags = (selectedTask.tags || []).filter(
+                    (t) => t.id !== tagId
+                  );
+                  session.setTasks(
+                    session.tasks.map((task) =>
+                      task.id === selectedTask.id
+                        ? { ...task, tags: updatedTags }
+                        : task
+                    )
+                  );
+                }}
               />
             </div>
             {/* Tag Modal for Task Tags */}
@@ -362,10 +379,9 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                 }
               }}
             />
-            <RichTextEditor value={taskNotes} onChange={setTaskNotes} />
             {/* Checklist */}
             <div className="mt-6 w-full">
-              <h4 className="font-semibold mb-2">Checklist</h4>
+              <h4 className="font-semibold mb-2 text-left">Checklist</h4>
               {checklist.length === 0 && (
                 <div className="text-muted-foreground text-sm">
                   No checklist items.
@@ -374,17 +390,19 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
               {checklist.map((item, idx) => (
                 <label
                   key={idx}
-                  className="flex items-center mb-2 cursor-pointer"
+                  className="flex items-start mb-2 cursor-pointer text-left"
                 >
                   <input
                     type="checkbox"
                     checked={item.checked}
                     onChange={() => toggleChecklistItem(idx)}
-                    className="mr-2"
+                    className="mr-2 mt-1.5"
                   />
                   <span
                     className={
-                      item.checked ? "line-through text-muted-foreground" : ""
+                      item.checked
+                        ? "line-through text-muted-foreground text-left"
+                        : "text-left"
                     }
                   >
                     {item.item}
@@ -393,27 +411,13 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
               ))}
             </div>
             {/* Remove Task from Session Button */}
-            <button
+            <Button
               type="button"
-              className="mt-6 px-6 py-2 rounded-lg bg-destructive text-destructive-foreground font-semibold shadow hover:bg-destructive/80 transition-colors focus:outline-none focus:ring-2 focus:ring-destructive focus:ring-offset-2"
-              onClick={() => {
-                if (
-                  window.confirm(
-                    "Are you sure you want to remove this task from the session?"
-                  )
-                ) {
-                  // Remove the task from the session
-                  session.setTasks(
-                    session.tasks.filter((t) => t.id !== selectedTask.id)
-                  );
-                  // If this was the selected task, clear selection and localStorage
-                  localStorage.removeItem("practiceSelectedTaskId");
-                  setSelectedTaskId(null);
-                }
-              }}
+              className="mt-6 px-6 py-2 rounded-lg bg-green-600 text-white font-semibold shadow hover:bg-green-700 transition-colors focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2"
+              onClick={handleBack}
             >
-              Remove Task from Session
-            </button>
+              Save
+            </Button>
           </div>
         </div>
       ) : (
@@ -455,6 +459,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
               localStorage.setItem("practiceSelectedTaskId", id);
               setSelectedTaskId(id);
             }}
+            onDeleteTask={handleDeleteTask}
           />
           <PracticeTagList
             tags={tags}
