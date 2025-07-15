@@ -20,7 +20,7 @@ import {
 } from "../components/create-task-modal";
 import { useNavigate } from "react-router";
 import { SessionContext } from "@/components/SessionContext";
-import { Pause, Timer, Plus, Play } from "lucide-react";
+import { Timer, Plus, Play } from "lucide-react";
 import { apiConfig } from "../config/api";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "../components/auth/AuthProvider";
@@ -286,6 +286,7 @@ const TaskLibrary: React.FC = () => {
         {
           id: String(task.id),
           title: task.title,
+          description: task.description,
           tags:
             task.tags?.map((tag) => ({
               id: String(tag.id),

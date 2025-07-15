@@ -315,6 +315,16 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
     }
   };
 
+  // Type guard for description
+  function hasDescription(task: unknown): task is { description: string } {
+    return (
+      !!task &&
+      "description" in task &&
+      typeof (task as { description?: unknown }).description === "string" &&
+      (task as { description: string }).description.length > 0
+    );
+  }
+
   // Main Practice view
   return (
     <div className="w-[70vw] min-h-screen">
@@ -365,6 +375,17 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                 onRunningChange={setTaskTimerRunning}
               />
             </div>
+            {/* Task Description */}
+            {hasDescription(selectedTask) && (
+              <div className="w-full mb-4">
+                <h4 className="text-sm font-semibold mb-1 text-left">
+                  Description
+                </h4>
+                <p className="text-sm text-foreground leading-relaxed text-left">
+                  {selectedTask.description}
+                </p>
+              </div>
+            )}
             <RichTextEditor value={taskNotes} onChange={setTaskNotes} />
             {/* Task Tags */}
             <div className="w-full mb-4">

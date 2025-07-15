@@ -7,6 +7,7 @@ export interface SessionTask {
   checklist?: { item: string; checked: boolean }[];
   timeSpent?: number; // in seconds
   tags?: { id: string; label: string }[];
+  description?: string; // <-- added this line
 }
 
 export interface SessionTag {
