@@ -70,6 +70,27 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
     setSelectedTaskId(stored);
   }, []);
 
+  // Helper to get day and time of day
+  function getDefaultSessionTitle() {
+    const now = new Date();
+    const days = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+    const day = days[now.getDay()];
+    const hour = now.getHours();
+    let timeOfDay = "morning";
+    if (hour >= 5 && hour < 12) timeOfDay = "morning";
+    else if (hour >= 12 && hour < 17) timeOfDay = "afternoon";
+    else timeOfDay = "evening";
+    return `${day} ${timeOfDay} practice session`;
+  }
+
   // Fetch user instruments and auto-populate tags on mount
   useEffect(() => {
     if (user && user.id) {
@@ -94,6 +115,14 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
     }
     // eslint-disable-next-line
   }, [user]);
+
+  // In PracticeInner, useEffect to autopopulate session title if empty or 'Untitled Session'
+  useEffect(() => {
+    if (!sessionTitle || sessionTitle === "Untitled Session") {
+      setSessionTitle(getDefaultSessionTitle());
+    }
+    // eslint-disable-next-line
+  }, []);
 
   // Remove tag handler
   const handleRemoveTag = (id: string) => {
