@@ -12,6 +12,16 @@ import type {
 } from "@/components/SessionContext";
 import { ArrowLeft, Trash2 } from "lucide-react";
 import { sessionService } from "../services/sessions";
+import { useAuth } from "../components/auth/AuthProvider";
+import { apiConfig } from "../config/api";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   session,
@@ -30,6 +40,12 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   const selectedTask = session.tasks.find(
     (t: SessionTask) => t.id === selectedTaskId
   );
+  const { user } = useAuth();
+  const [userInstruments, setUserInstruments] = useState<
+    { id: number; label: string }[]
+  >([]);
+  const [showInstrumentTagModal, setShowInstrumentTagModal] = useState(false);
+  const [showDeleteSessionModal, setShowDeleteSessionModal] = useState(false);
 
   const {
     sessionTitle,
@@ -53,6 +69,36 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
     const stored = localStorage.getItem("practiceSelectedTaskId");
     setSelectedTaskId(stored);
   }, []);
+
+  // Fetch user instruments and auto-populate tags on mount
+  useEffect(() => {
+    if (user && user.id) {
+      fetch(apiConfig.endpoints.musicians.profile(user.id))
+        .then((res) => res.json())
+        .then((profile) => {
+          if (profile && Array.isArray(profile.instruments)) {
+            type InstrumentTag = { id: number; label: string };
+            setUserInstruments(
+              profile.instruments.map((inst: InstrumentTag) => ({
+                id: inst.id,
+                label: inst.label,
+              }))
+            );
+            // Auto-populate tags with only the first instrument if not present
+            if (session.tags.length === 0 && profile.instruments.length > 0) {
+              const first = profile.instruments[0];
+              session.setTags([{ id: String(first.id), label: first.label }]);
+            }
+          }
+        });
+    }
+    // eslint-disable-next-line
+  }, [user]);
+
+  // Remove tag handler
+  const handleRemoveTag = (id: string) => {
+    session.setTags(session.tags.filter((tag) => tag.id !== id));
+  };
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value;
@@ -170,6 +216,15 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   };
 
   const handleSaveSession = async () => {
+    // Validate: must have at least one instrument tag
+    const instrumentLabels = userInstruments.map((i) => i.label.toLowerCase());
+    const hasInstrumentTag = session.tags.some((tag) =>
+      instrumentLabels.includes(tag.label.toLowerCase())
+    );
+    if (!hasInstrumentTag) {
+      setShowInstrumentTagModal(true);
+      return;
+    }
     try {
       // Explicitly type sessionData to match backend DTO
       const sessionData: {
@@ -231,6 +286,29 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   // Main Practice view
   return (
     <div className="w-[70vw] min-h-screen">
+      {/* Instrument Tag Required Modal */}
+      <Dialog
+        open={showInstrumentTagModal}
+        onOpenChange={setShowInstrumentTagModal}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Instrument Tag Required</DialogTitle>
+            <DialogDescription>
+              You must have at least one instrument tag to save a session.
+              Please add an instrument tag before saving.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setShowInstrumentTagModal(false)}
+            >
+              OK
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
       {selectedTask ? (
         <div className="flex flex-col items-center justify-center w-[90vw] min-h-screen bg-background px-4 py-8">
           <div className="w-full max-w-xl bg-card rounded-xl shadow-lg p-8 flex flex-col items-center relative">
@@ -378,7 +456,11 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
               setSelectedTaskId(id);
             }}
           />
-          <PracticeTagList tags={tags} onAddTag={() => setTagModalOpen(true)} />
+          <PracticeTagList
+            tags={tags}
+            onAddTag={() => setTagModalOpen(true)}
+            onRemoveTag={handleRemoveTag}
+          />
           <TagModal
             isOpen={tagModalOpen}
             onClose={() => setTagModalOpen(false)}
@@ -392,27 +474,51 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
             >
               Save Session
             </button>
+            <Dialog
+              open={showDeleteSessionModal}
+              onOpenChange={setShowDeleteSessionModal}
+            >
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Delete Practice Session?</DialogTitle>
+                  <DialogDescription>
+                    Are you sure you want to delete this session? All data from
+                    this session will be lost. This action cannot be undone.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="flex justify-end gap-2 mt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowDeleteSessionModal(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={() => {
+                      // Reset all session data
+                      session.setSessionTitle("Untitled Session");
+                      session.setTags([]);
+                      session.setTasks([]);
+                      session.setIsActive(false);
+                      session.setSessionTimerSeconds(0);
+                      session.setSessionTimerRunning(false);
+                      session.setSessionNotes("");
+                      localStorage.removeItem("practiceSession");
+                      localStorage.removeItem("practiceSelectedTaskId");
+                      setShowDeleteSessionModal(false);
+                    }}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
             <button
               type="button"
               className="p-2 rounded-md bg-destructive text-destructive-foreground hover:bg-destructive/80 transition-colors focus:outline-none focus:ring-2 focus:ring-destructive focus:ring-offset-2"
               aria-label="Reset Session"
-              onClick={() => {
-                if (
-                  window.confirm(
-                    "Are you sure you want to reset and delete this session? This cannot be undone."
-                  )
-                ) {
-                  // Reset all session data
-                  session.setSessionTitle("Untitled Session");
-                  session.setTags([]);
-                  session.setTasks([]);
-                  session.setIsActive(false);
-                  session.setSessionTimerSeconds(0);
-                  session.setSessionTimerRunning(false);
-                  localStorage.removeItem("practiceSession");
-                  localStorage.removeItem("practiceSelectedTaskId");
-                }
-              }}
+              onClick={() => setShowDeleteSessionModal(true)}
             >
               <Trash2 className="w-5 h-5" />
             </button>
