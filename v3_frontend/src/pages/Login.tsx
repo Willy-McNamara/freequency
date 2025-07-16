@@ -28,11 +28,11 @@ const Login: React.FC = () => {
     <div className="min-h-screen w-full flex flex-col items-center justify-center p-4">
       {/* <Card className="w-full max-w-md"> */}
       <CardHeader className="text-center space-y-4">
-        <div className="mx-auto flex flex-col items-center">
+        <div className="mx-auto flex flex-col items-center pb-5">
           <img
             src={FreequencyLogo}
             alt="Freequency logo"
-            className="w-60 h-auto mb-2"
+            className="w-80 h-auto mb-2"
           />
           <p className="text-sm text-gray-600 mt-1">celebrate practice</p>
         </div>
