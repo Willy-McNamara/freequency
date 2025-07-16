@@ -29,6 +29,11 @@ export class MusiciansController {
     return this.musiciansService.getAllDisplayNames();
   }
 
+  @Get('all-id-names')
+  async getAllIdNames(): Promise<{ id: number; displayName: string }[]> {
+    return this.musiciansService.getAllIdNames();
+  }
+
   @Get(':id')
   async getMusicianById(
     @Param('id') id: string,

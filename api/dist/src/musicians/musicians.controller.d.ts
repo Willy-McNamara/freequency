@@ -4,6 +4,10 @@ export declare class MusiciansController {
     private readonly musiciansService;
     constructor(musiciansService: MusiciansService);
     getAllDisplayNames(): Promise<string[]>;
+    getAllIdNames(): Promise<{
+        id: number;
+        displayName: string;
+    }[]>;
     getMusicianById(id: string, req: any): Promise<MusicianFrontendDTO | null>;
     getGoalsForMusician(id: string): Promise<GoalDto[]>;
     createGoalForMusician(id: string, goalDto: GoalDto): Promise<GoalDto>;

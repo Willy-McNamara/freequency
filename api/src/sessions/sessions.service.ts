@@ -18,7 +18,7 @@ import {
 import { Prisma } from '@prisma/client';
 
 interface SessionFilters {
-  users: string[];
+  userIds: number[];
   instruments: string[];
   tags: string[];
   saved: boolean;
@@ -37,12 +37,10 @@ export class SessionsService {
     // Build where conditions based on filters
     const whereConditions: Prisma.SessionWhereInput = {};
 
-    // User filter
-    if (filters.users.length > 0) {
-      whereConditions.musician = {
-        displayName: {
-          in: filters.users,
-        },
+    // User filter (by userId)
+    if (filters.userIds.length > 0) {
+      whereConditions.musicianId = {
+        in: filters.userIds,
       };
     }
 
@@ -68,11 +66,13 @@ export class SessionsService {
       };
     }
 
-    // Saved filter (sessions with gasUps)
+    // Saved filter
     if (filters.saved) {
-      whereConditions.gasUps = {
-        some: {},
-      };
+      // TODO: Implement proper saved sessions logic if/when a join table or model exists
+      // For now, fallback to sessions created by the user (if userIds is set)
+      if (filters.userIds.length > 0) {
+        whereConditions.musicianId = filters.userIds[0];
+      }
     }
 
     // Query sessions with filters and pagination
@@ -591,6 +591,22 @@ export class SessionsService {
     );
 
     return { sessions: frontendSessionDto, nextCursor };
+  }
+
+  async getFollowedUserDisplayNames(currentUserId: number): Promise<string[]> {
+    const followed = await this.prisma.follow.findMany({
+      where: { followerId: currentUserId },
+      select: { following: { select: { displayName: true } } },
+    });
+    return followed.map((f) => f.following.displayName);
+  }
+
+  async getFollowedUserIds(currentUserId: number): Promise<number[]> {
+    const followed = await this.prisma.follow.findMany({
+      where: { followerId: currentUserId },
+      select: { followingId: true },
+    });
+    return followed.map((f) => f.followingId);
   }
 
   // async getSessionsChunk(cursorId?: number): Promise<FrontendSessionDto[]> {

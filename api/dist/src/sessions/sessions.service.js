@@ -19,11 +19,9 @@ let SessionsService = class SessionsService {
     async getSessionsWithFilters(filters, cursor) {
         const take = 10;
         const whereConditions = {};
-        if (filters.users.length > 0) {
-            whereConditions.musician = {
-                displayName: {
-                    in: filters.users,
-                },
+        if (filters.userIds.length > 0) {
+            whereConditions.musicianId = {
+                in: filters.userIds,
             };
         }
         if (filters.instruments.length > 0) {
@@ -45,9 +43,9 @@ let SessionsService = class SessionsService {
             };
         }
         if (filters.saved) {
-            whereConditions.gasUps = {
-                some: {},
-            };
+            if (filters.userIds.length > 0) {
+                whereConditions.musicianId = filters.userIds[0];
+            }
         }
         const sessions = await this.prisma.session.findMany({
             take: take + 1,
@@ -531,6 +529,20 @@ let SessionsService = class SessionsService {
             })),
         }));
         return { sessions: frontendSessionDto, nextCursor };
+    }
+    async getFollowedUserDisplayNames(currentUserId) {
+        const followed = await this.prisma.follow.findMany({
+            where: { followerId: currentUserId },
+            select: { following: { select: { displayName: true } } },
+        });
+        return followed.map((f) => f.following.displayName);
+    }
+    async getFollowedUserIds(currentUserId) {
+        const followed = await this.prisma.follow.findMany({
+            where: { followerId: currentUserId },
+            select: { followingId: true },
+        });
+        return followed.map((f) => f.followingId);
     }
     async createSession(newSession) {
         try {

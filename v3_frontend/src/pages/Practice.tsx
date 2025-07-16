@@ -319,6 +319,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   function hasDescription(task: unknown): task is { description: string } {
     return (
       !!task &&
+      typeof task === "object" &&
       "description" in task &&
       typeof (task as { description?: unknown }).description === "string" &&
       (task as { description: string }).description.length > 0

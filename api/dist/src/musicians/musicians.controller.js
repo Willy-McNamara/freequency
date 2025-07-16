@@ -24,6 +24,9 @@ let MusiciansController = class MusiciansController {
     async getAllDisplayNames() {
         return this.musiciansService.getAllDisplayNames();
     }
+    async getAllIdNames() {
+        return this.musiciansService.getAllIdNames();
+    }
     async getMusicianById(id, req) {
         const currentUserId = req.user?.id;
         return this.musiciansService.getMusicianById(Number(id), currentUserId);
@@ -63,6 +66,12 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], MusiciansController.prototype, "getAllDisplayNames", null);
+__decorate([
+    (0, common_1.Get)('all-id-names'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], MusiciansController.prototype, "getAllIdNames", null);
 __decorate([
     (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Param)('id')),
