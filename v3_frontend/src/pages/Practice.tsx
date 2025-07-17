@@ -24,6 +24,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Section } from "@/components/layout/Section";
 // import { Container } from "@/components/layout/Container";
+import { TaskTagList } from "../components/TaskTagList";
+import { InstrumentModal } from "../components/InstrumentModal";
+import { ALL_INSTRUMENTS } from "../types/instruments.types";
+import { Badge } from "../components/badge";
 
 const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   session,
@@ -48,6 +52,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   >([]);
   const [showInstrumentTagModal, setShowInstrumentTagModal] = useState(false);
   const [showDeleteSessionModal, setShowDeleteSessionModal] = useState(false);
+  const [instrumentModalOpen, setInstrumentModalOpen] = useState(false);
 
   const {
     sessionTitle,
@@ -125,11 +130,6 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
     }
     // eslint-disable-next-line
   }, []);
-
-  // Remove tag handler
-  const handleRemoveTag = (id: string) => {
-    session.setTags(session.tags.filter((tag) => tag.id !== id));
-  };
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value;
@@ -491,7 +491,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
         </Section>
       ) : (
         <>
-          <Section spacing="xl">
+          <Section spacing={{ base: "md", sm: "lg", md: "xl" }}>
             <div className="flex flex-col w-full items-center justify-center">
               <PracticeTimer
                 ref={sessionTimerRef}
@@ -515,7 +515,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
               />
             </div>
           </Section>
-          <Section spacing="md">
+          <Section spacing={{ base: "sm", sm: "md", md: "lg" }}>
             <div className="w-full">
               <RichTextEditor
                 value={sessionNotes || ""}
@@ -523,7 +523,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
               />
             </div>
           </Section>
-          <Section spacing="md">
+          <Section spacing={{ base: "sm", sm: "md", md: "lg" }}>
             <div className="w-full">
               <PracticeTaskList
                 tasks={session.tasks}
@@ -540,21 +540,108 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
               />
             </div>
           </Section>
-          <Section spacing="md">
+          <Section spacing={{ base: "sm", sm: "md", md: "lg" }}>
             <div className="w-full">
-              <PracticeTagList
-                tags={tags}
-                onAddTag={() => setTagModalOpen(true)}
-                onRemoveTag={handleRemoveTag}
-              />
-              <TagModal
-                isOpen={tagModalOpen}
-                onClose={() => setTagModalOpen(false)}
-                onTagSelected={handleTagSelected}
+              {/* Instrument Section */}
+              <h3 className="font-bold text-base mb-1">Instrument</h3>
+              <div className="flex items-center gap-2 mb-2 min-h-[32px]">
+                {/* Show selected instrument badge if present */}
+                {(() => {
+                  const instrumentLabels = ALL_INSTRUMENTS.map((i) => i.label);
+                  const instrumentTag = tags.find((tag) =>
+                    instrumentLabels.includes(tag.label)
+                  );
+                  return instrumentTag ? (
+                    <Badge
+                      variant="default"
+                      className="h-5 px-3 py-2 rounded-md !hover:bg-none !hover:bg-transparent"
+                    >
+                      {instrumentTag.label}
+                    </Badge>
+                  ) : null;
+                })()}
+                <button
+                  type="button"
+                  onClick={() => setInstrumentModalOpen(true)}
+                  className="text-xs underline text-muted-foreground hover:text-foreground"
+                >
+                  {(() => {
+                    const instrumentLabels = ALL_INSTRUMENTS.map(
+                      (i) => i.label
+                    );
+                    const instrumentTag = tags.find((tag) =>
+                      instrumentLabels.includes(tag.label)
+                    );
+                    return instrumentTag ? "Change" : "Select";
+                  })()}
+                  {/* Hidden input for browser validation */}
+                  <input
+                    type="text"
+                    value={(() => {
+                      const instrumentLabels = ALL_INSTRUMENTS.map(
+                        (i) => i.label
+                      );
+                      const instrumentTag = tags.find((tag) =>
+                        instrumentLabels.includes(tag.label)
+                      );
+                      return instrumentTag ? instrumentTag.label : "";
+                    })()}
+                    required
+                    tabIndex={-1}
+                    autoComplete="off"
+                    style={{ opacity: 0, width: "1px" }}
+                    onChange={() => {}}
+                  />
+                </button>
+              </div>
+              <InstrumentModal
+                isOpen={instrumentModalOpen}
+                onClose={() => setInstrumentModalOpen(false)}
+                onInstrumentSelected={(inst) => {
+                  // Remove any previous instrument from tags, then add the new one if not present
+                  const instrumentLabels = ALL_INSTRUMENTS.map((i) => i.label);
+                  const nonInstrumentTags = tags.filter(
+                    (tag) => !instrumentLabels.includes(tag.label)
+                  );
+                  setTags([
+                    ...nonInstrumentTags,
+                    { id: inst.id.toString(), label: inst.label },
+                  ]);
+                  setInstrumentModalOpen(false);
+                }}
               />
             </div>
           </Section>
-          <Section spacing="xl">
+          <Section spacing={{ base: "sm", sm: "md", md: "lg" }}>
+            {/* Tags Section */}
+            <h3 className="font-bold text-base mb-1">Tags</h3>
+            <div className="flex flex-wrap gap-2 mb-3 items-center">
+              <button
+                type="button"
+                onClick={() => setTagModalOpen(true)}
+                className="focus:outline-none"
+              >
+                <Badge
+                  variant="secondary"
+                  className="max-h-[1.2rem] flex items-center px-2.5 cursor-pointer select-none"
+                >
+                  + add
+                </Badge>
+              </button>
+              <TaskTagList
+                tags={tags.map((t) => t.label)}
+                onRemoveTag={(tagLabel) => {
+                  setTags(tags.filter((t) => t.label !== tagLabel));
+                }}
+              />
+            </div>
+            <TagModal
+              isOpen={tagModalOpen}
+              onClose={() => setTagModalOpen(false)}
+              onTagSelected={handleTagSelected}
+            />
+          </Section>
+          <Section spacing={{ base: "sm", sm: "md", md: "lg" }}>
             <div className="flex flex-col sm:flex-row justify-center items-center gap-4 w-full">
               <button
                 type="button"

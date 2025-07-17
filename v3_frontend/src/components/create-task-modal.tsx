@@ -6,6 +6,7 @@ import { TagModal } from "./TagModal";
 import { Button } from "./ui/button";
 import { InstrumentModal } from "./InstrumentModal";
 import { ALL_INSTRUMENTS } from "../types/instruments.types";
+import { TaskTagList } from "./TaskTagList";
 
 export interface CreateTaskData {
   title: string;
@@ -299,52 +300,7 @@ export function CreateTaskModal({
                   + add
                 </Badge>
               </button>
-              {formData.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {(() => {
-                    const instrumentLabels = ALL_INSTRUMENTS.map(
-                      (i: { id: number; label: string }) => i.label
-                    );
-                    const instrumentTag = formData.tags.find((tag) =>
-                      instrumentLabels.includes(tag)
-                    );
-                    const regularTags = formData.tags.filter(
-                      (tag) => !instrumentLabels.includes(tag)
-                    );
-                    return [
-                      instrumentTag && (
-                        <span key={instrumentTag} className="relative group">
-                          <Badge
-                            variant="default"
-                            className="mb-1 max-h-[1.2rem] flex items-center px-2.5"
-                          >
-                            <span>{instrumentTag}</span>
-                          </Badge>
-                        </span>
-                      ),
-                      ...regularTags.map((tag) => (
-                        <span key={tag} className="relative group">
-                          <Badge
-                            variant="secondary"
-                            className="mb-1 max-h-[1.2rem] flex items-center px-2.5"
-                          >
-                            <span>{tag}</span>
-                            <button
-                              type="button"
-                              onClick={() => removeTag(tag)}
-                              className="ml-1 p-0 bg-transparent border-none outline-none focus:outline-none flex items-center"
-                              style={{ pointerEvents: "auto" }}
-                              aria-label={`Remove tag ${tag}`}
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          </Badge>
-                        </span>
-                      )),
-                    ];
-                  })()}
-                </div>
-              )}
+              <TaskTagList tags={formData.tags} onRemoveTag={removeTag} />
             </div>
             <TagModal
               isOpen={tagModalOpen}
