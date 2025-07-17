@@ -1,10 +1,11 @@
 import React from "react";
-import { ALL_INSTRUMENTS } from "../types/instruments.types";
 import { X, Plus, Trash2 } from "lucide-react";
 import { Badge } from "./badge";
 import { cn } from "../lib/utils";
 import { TagModal } from "./TagModal";
 import { Button } from "./ui/button";
+import { InstrumentModal } from "./InstrumentModal";
+import { ALL_INSTRUMENTS } from "../types/instruments.types";
 
 export interface CreateTaskData {
   title: string;
@@ -42,6 +43,7 @@ export function CreateTaskModal({
   const [newChecklistItem, setNewChecklistItem] = React.useState("");
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [tagModalOpen, setTagModalOpen] = React.useState(false);
+  const [instrumentModalOpen, setInstrumentModalOpen] = React.useState(false);
 
   // Initialize form data when modal opens or initialData changes
   React.useEffect(() => {
@@ -151,6 +153,7 @@ export function CreateTaskModal({
     setNewChecklistItem("");
     setIsSubmitting(false);
     setTagModalOpen(false);
+    setInstrumentModalOpen(false);
     onClose();
   };
 
@@ -229,20 +232,53 @@ export function CreateTaskModal({
             >
               Instrument *
             </label>
-            <select
-              id="instrument"
-              value={formData.instrument}
-              onChange={(e) => handleInputChange("instrument", e.target.value)}
-              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-left"
-              required
-            >
-              <option value="">Select an instrument</option>
-              {ALL_INSTRUMENTS.map((instrument) => (
-                <option key={instrument.id} value={instrument.label}>
-                  {instrument.label}
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center gap-2 mb-2 min-h-[32px]">
+              {formData.instrument ? (
+                <Badge
+                  variant="default"
+                  className="h-5 px-3 py-2 rounded-md !hover:bg-none !hover:bg-transparent"
+                >
+                  {formData.instrument}
+                </Badge>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => setInstrumentModalOpen(true)}
+                className="text-xs underline text-muted-foreground hover:text-foreground"
+              >
+                {formData.instrument ? "Change" : "Select"}
+                {/* Hidden input for browser validation */}
+                <input
+                  type="text"
+                  value={formData.instrument}
+                  required
+                  tabIndex={-1}
+                  autoComplete="off"
+                  style={{ opacity: 0, width: "1px" }}
+                  onChange={() => {}}
+                />
+              </button>
+            </div>
+            <InstrumentModal
+              isOpen={instrumentModalOpen}
+              onClose={() => setInstrumentModalOpen(false)}
+              onInstrumentSelected={(inst) => {
+                handleInputChange("instrument", inst.label);
+                setInstrumentModalOpen(false);
+                // Remove any previous instrument from tags, then add the new one if not present
+                const instrumentLabels = ALL_INSTRUMENTS.map(
+                  (i: { id: number; label: string }) => i.label
+                );
+                const nonInstrumentTags = formData.tags.filter(
+                  (tag) => !instrumentLabels.includes(tag)
+                );
+                if (!nonInstrumentTags.includes(inst.label)) {
+                  handleInputChange("tags", [...nonInstrumentTags, inst.label]);
+                } else {
+                  handleInputChange("tags", nonInstrumentTags);
+                }
+              }}
+            />
           </div>
 
           {/* Tags */}
@@ -250,7 +286,7 @@ export function CreateTaskModal({
             <label className="block text-sm font-medium text-foreground mb-2 text-left">
               Tags
             </label>
-            <div className="flex flex-wrap gap-2 mb-3">
+            <div className="flex flex-wrap gap-2 mb-3 items-center">
               <button
                 type="button"
                 onClick={() => setTagModalOpen(true)}
@@ -258,29 +294,55 @@ export function CreateTaskModal({
               >
                 <Badge
                   variant="secondary"
-                  className="mb-1 cursor-pointer select-none"
+                  className="max-h-[1.2rem] flex items-center px-2.5 cursor-pointer select-none"
                 >
                   + add
                 </Badge>
               </button>
               {formData.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2">
-                  {formData.tags.map((tag, index) => (
-                    <Badge
-                      key={index}
-                      variant="secondary"
-                      className="flex items-center gap-1 !hover:bg-none !hover:bg-transparent"
-                    >
-                      {tag}
-                      <button
-                        type="button"
-                        onClick={() => removeTag(tag)}
-                        className="hover:text-destructive"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </Badge>
-                  ))}
+                  {(() => {
+                    const instrumentLabels = ALL_INSTRUMENTS.map(
+                      (i: { id: number; label: string }) => i.label
+                    );
+                    const instrumentTag = formData.tags.find((tag) =>
+                      instrumentLabels.includes(tag)
+                    );
+                    const regularTags = formData.tags.filter(
+                      (tag) => !instrumentLabels.includes(tag)
+                    );
+                    return [
+                      instrumentTag && (
+                        <span key={instrumentTag} className="relative group">
+                          <Badge
+                            variant="default"
+                            className="mb-1 max-h-[1.2rem] flex items-center px-2.5"
+                          >
+                            <span>{instrumentTag}</span>
+                          </Badge>
+                        </span>
+                      ),
+                      ...regularTags.map((tag) => (
+                        <span key={tag} className="relative group">
+                          <Badge
+                            variant="secondary"
+                            className="mb-1 max-h-[1.2rem] flex items-center px-2.5"
+                          >
+                            <span>{tag}</span>
+                            <button
+                              type="button"
+                              onClick={() => removeTag(tag)}
+                              className="ml-1 p-0 bg-transparent border-none outline-none focus:outline-none flex items-center"
+                              style={{ pointerEvents: "auto" }}
+                              aria-label={`Remove tag ${tag}`}
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </Badge>
+                        </span>
+                      )),
+                    ];
+                  })()}
                 </div>
               )}
             </div>
