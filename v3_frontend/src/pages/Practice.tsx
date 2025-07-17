@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Section } from "@/components/layout/Section";
-import { Container } from "@/components/layout/Container";
+// import { Container } from "@/components/layout/Container";
 
 const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   session,
