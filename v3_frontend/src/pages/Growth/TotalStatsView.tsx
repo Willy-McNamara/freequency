@@ -2,6 +2,8 @@ import React from "react";
 import { ChartPieDonutActive } from "@/components/pie-chart";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Section } from "@/components/layout/Section";
+import { Container } from "@/components/layout/Container";
 
 interface TotalStatsViewProps {
   onBack: () => void;
@@ -37,16 +39,18 @@ export const TotalStatsView: React.FC<TotalStatsViewProps> = ({
   totalTimeRanges,
 }) => {
   return (
-    <div className="w-[70vw] mx-auto">
-      <div className="flex justify-start mb-2">
-        <Button
-          onClick={onBack}
-          variant="ghost"
-          className="text-sm text-muted-foreground"
-        >
-          &larr; Back
-        </Button>
-      </div>
+    <Container size="lg" className="w-full px-4 sm:px-6 lg:px-8">
+      <Section>
+        <div className="flex justify-start mb-2">
+          <Button
+            onClick={onBack}
+            variant="outline"
+            className="text-sm text-muted-foreground"
+          >
+            &larr; Back
+          </Button>
+        </div>
+      </Section>
       <h1 className="text-2xl font-bold text-center mb-4">Total Stats</h1>
       {/* Time range buttons */}
       <div className="flex justify-center gap-3 mb-4">
@@ -107,6 +111,6 @@ export const TotalStatsView: React.FC<TotalStatsViewProps> = ({
           </div>
         )}
       </div>
-    </div>
+    </Container>
   );
 };

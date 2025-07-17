@@ -19,6 +19,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+import { Container } from "@/components/layout/Container";
+
 // Props for the chart
 interface ChartBarLabelProps<T = Record<string, string | number>> {
   data: T[];
@@ -55,54 +57,68 @@ export function ChartBarLabel<T extends Record<string, string | number>>({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="w-full h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={data}
-              margin={{
-                top: 20,
-                right: 30,
-                left: 20,
-                bottom: 5,
-              }}
-            >
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis
-                dataKey={xAxisKey as string}
-                tickLine={false}
-                tickMargin={10}
-                axisLine={false}
-                tickFormatter={(value: string) => value.slice(0, 3)}
-              />
-              <YAxis tickLine={false} tickMargin={10} axisLine={false} />
-              <Tooltip
-                formatter={(value: number, name: string) => [
-                  typeof value === "number" ? value.toFixed(1) : value,
-                  name,
-                ]}
-              />
-              <Bar
-                dataKey={yAxisKey as string}
-                fill="#8884d8"
-                radius={[4, 4, 0, 0]}
+    <Container size="lg" className="w-full">
+      <Card>
+        <CardHeader className="text-center">
+          <CardTitle className="text-center">{title}</CardTitle>
+          <CardDescription className="text-center">
+            {description}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="px-2 pt-0 pb-6">
+          <div className="w-full min-w-[300px] max-w-full h-[350px]">
+            <ResponsiveContainer width="99%" height="100%">
+              <BarChart
+                data={data}
+                margin={{
+                  top: 20,
+                  right: 30,
+                  left: 20,
+                  bottom: 5,
+                }}
               >
-                <LabelList
-                  position="top"
-                  offset={12}
-                  className="fill-foreground"
-                  fontSize={12}
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis
+                  dataKey={xAxisKey as string}
+                  tickLine={false}
+                  tickMargin={10}
+                  axisLine={false}
+                  tickFormatter={(value: string) => value.slice(0, 3)}
                 />
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </CardContent>
-    </Card>
+                <YAxis
+                  tickLine={false}
+                  tickMargin={10}
+                  axisLine={false}
+                  width={0}
+                />
+                <Tooltip
+                  formatter={(value: number, name: string) => [
+                    typeof value === "number" ? value.toFixed(1) : value,
+                    name,
+                  ]}
+                />
+                <Bar
+                  dataKey={yAxisKey as string}
+                  fill="#8884d8"
+                  radius={[4, 4, 0, 0]}
+                >
+                  <LabelList
+                    position="top"
+                    offset={12}
+                    className="fill-foreground"
+                    fontSize={12}
+                    data={data}
+                    valueAccessor={(entry) => {
+                      const value = entry[yAxisKey as string];
+                      return value && value !== 0 ? value : "";
+                    }}
+                  />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
+    </Container>
   );
 }

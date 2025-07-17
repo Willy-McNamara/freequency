@@ -9,6 +9,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { PlusIcon, EditIcon, TrashIcon } from "lucide-react";
+import { Container } from "@/components/layout/Container";
+import { Section } from "@/components/layout/Section";
 
 interface Goal {
   id: string;
@@ -65,16 +67,18 @@ export const GoalsView: React.FC<GoalsViewProps> = ({
   };
 
   return (
-    <div className="w-[75vw] mx-auto">
-      <div className="flex justify-start mb-2">
-        <Button
-          onClick={onBack}
-          variant="ghost"
-          className="text-sm text-muted-foreground"
-        >
-          &larr; Back
-        </Button>
-      </div>
+    <Container size="lg" className="w-full px-4 sm:px-6 lg:px-8">
+      <Section>
+        <div className="flex justify-start mb-2">
+          <Button
+            onClick={onBack}
+            variant="outline"
+            className="text-sm text-muted-foreground"
+          >
+            &larr; Back
+          </Button>
+        </div>
+      </Section>
       <h1 className="text-2xl font-bold text-center mb-4">Goals</h1>
       {/* Add Goal Button */}
       <div className="flex justify-center mb-6">
@@ -99,11 +103,11 @@ export const GoalsView: React.FC<GoalsViewProps> = ({
               onClick={() => openEditModal(goal)}
             >
               <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex-1">
-                    <CardTitle className="text-lg font-semibold mb-2 text-left">
-                      {formatGoalSummary(goal)}
-                    </CardTitle>
+                <div className="mb-4">
+                  <CardTitle className="text-lg font-semibold mb-2 text-left w-full">
+                    {formatGoalSummary(goal)}
+                  </CardTitle>
+                  <div className="flex items-center justify-between w-full gap-2">
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <span>
                         Progress: {progress} / {goal.target}{" "}
@@ -117,29 +121,29 @@ export const GoalsView: React.FC<GoalsViewProps> = ({
                         {Math.round(progressPercentage)}%
                       </span>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openEditModal(goal);
-                      }}
-                    >
-                      <EditIcon className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDeleteGoal(goal.id);
-                      }}
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      <TrashIcon className="w-4 h-4" />
-                    </Button>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openEditModal(goal);
+                        }}
+                      >
+                        <EditIcon className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDeleteGoal(goal.id);
+                        }}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <TrashIcon className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
                 {/* Progress Bar */}
@@ -169,7 +173,7 @@ export const GoalsView: React.FC<GoalsViewProps> = ({
             <div className="grid gap-2">
               <label className="text-sm font-medium">Tag</label>
               <select
-                className="w-full p-2 border rounded-md"
+                className="w-full p-2 border border-border rounded-md bg-white"
                 value={editingGoal?.tag || newGoal.tag}
                 onChange={(e) => {
                   if (editingGoal) {
@@ -194,7 +198,7 @@ export const GoalsView: React.FC<GoalsViewProps> = ({
             <div className="grid gap-2">
               <label className="text-sm font-medium">Goal Type</label>
               <select
-                className="w-full p-2 border rounded-md"
+                className="w-full p-2 border border-border rounded-md bg-white"
                 value={editingGoal?.type || newGoal.type}
                 onChange={(e) => {
                   if (editingGoal) {
@@ -235,7 +239,7 @@ export const GoalsView: React.FC<GoalsViewProps> = ({
             <div className="grid gap-2">
               <label className="text-sm font-medium">Time Frame</label>
               <select
-                className="w-full p-2 border rounded-md"
+                className="w-full p-2 border border-border rounded-md bg-white"
                 value={editingGoal?.timeFrame || newGoal.timeFrame}
                 onChange={(e) => {
                   if (editingGoal) {
@@ -286,6 +290,6 @@ export const GoalsView: React.FC<GoalsViewProps> = ({
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </Container>
   );
 };
