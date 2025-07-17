@@ -1,7 +1,7 @@
 import "./globals.css";
 import "./index.css";
 import "./App.css";
-import React, { Suspense, lazy } from "react";
+import { Suspense, lazy } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router";
 import Login from "./pages/Login";
