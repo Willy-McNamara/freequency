@@ -20,7 +20,7 @@ import {
 } from "../components/create-task-modal";
 import { useNavigate } from "react-router";
 import { SessionContext } from "@/components/SessionContext";
-import { Pause, Timer, Plus } from "lucide-react";
+import { Timer, Plus, Play } from "lucide-react";
 import { apiConfig } from "../config/api";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "../components/auth/AuthProvider";
@@ -286,6 +286,7 @@ const TaskLibrary: React.FC = () => {
         {
           id: String(task.id),
           title: task.title,
+          description: task.description,
           tags:
             task.tags?.map((tag) => ({
               id: String(tag.id),
@@ -390,8 +391,8 @@ const TaskLibrary: React.FC = () => {
 
   // Helper: get total session time (sum of all task timeSpent)
   const getSessionTime = () => {
-    if (!session || !session.tasks.length) return 0;
-    return session.tasks.reduce((sum, t) => sum + (t.timeSpent || 0), 0);
+    if (!session) return 0;
+    return session.sessionTimerSeconds || 0;
   };
 
   const hasActiveSession = session && session.isActive;
@@ -470,9 +471,13 @@ const TaskLibrary: React.FC = () => {
           <Timer className="w-5 h-5 text-primary" />
           <span className="font-semibold text-primary">Active Session</span>
           <span className="ml-2 text-sm text-muted-foreground flex items-center gap-1">
-            <Pause className="w-4 h-4 inline-block" />
-            {Math.floor(getSessionTime() / 60)}:
-            {String(getSessionTime() % 60).padStart(2, "0")}
+            <Play className="w-4 h-4 inline-block" />
+            {(() => {
+              const total = getSessionTime();
+              const min = Math.floor(total / 60);
+              const sec = String(total % 60).padStart(2, "0");
+              return `${min}:${sec}`;
+            })()}
           </span>
           <button
             className="ml-auto px-3 py-1 rounded bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"

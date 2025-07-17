@@ -1,19 +1,35 @@
 import "./globals.css";
 import "./index.css";
+import "./App.css";
+import { Suspense, lazy } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router";
-import App from "./App";
-import Feed from "./pages/Feed";
-import Practice from "./pages/Practice";
-import TaskLibrary from "./pages/TaskLibrary";
-import Growth from "./pages/Growth";
-import Profile from "./pages/Profile";
 import Login from "./pages/Login";
-import { PostView } from "./pages/PostView";
 import ErrorBoundaryWrapper from "./ErrorBoundary.tsx";
-import { SessionProvider } from "./components/SessionContext";
 import { AuthProvider } from "./components/auth/AuthProvider";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+
+// Lazy load all protected components
+const App = lazy(() => import("./App"));
+const Feed = lazy(() => import("./pages/Feed"));
+const Practice = lazy(() => import("./pages/Practice"));
+const TaskLibrary = lazy(() => import("./pages/TaskLibrary"));
+const Growth = lazy(() => import("./pages/Growth"));
+const Profile = lazy(() => import("./pages/Profile"));
+const PostView = lazy(() =>
+  import("./pages/PostView").then((m) => ({ default: m.PostView }))
+);
+const SessionProvider = lazy(() =>
+  import("./components/SessionContext").then((m) => ({
+    default: m.SessionProvider,
+  }))
+);
+
+const LoadingScreen = () => (
+  <div className="flex items-center justify-center min-h-screen text-lg">
+    Loading...
+  </div>
+);
 
 const root = document.getElementById("root");
 
@@ -25,33 +41,91 @@ ReactDOM.createRoot(root).render(
   <BrowserRouter>
     <ErrorBoundaryWrapper>
       <AuthProvider>
-        <SessionProvider>
-          <Routes>
-            {/* Public route */}
-            <Route path="/login" element={<Login />} />
+        <Routes>
+          {/* Public route */}
+          <Route path="/login" element={<Login />} />
 
-            {/* Protected routes */}
+          {/* Protected routes */}
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Suspense fallback={<LoadingScreen />}>
+                  <SessionProvider>
+                    <App />
+                  </SessionProvider>
+                </Suspense>
+              </ProtectedRoute>
+            }
+          >
             <Route
-              path="/"
+              index
               element={
-                <ProtectedRoute>
-                  <App />
-                </ProtectedRoute>
+                <Suspense fallback={<LoadingScreen />}>
+                  <Feed />
+                </Suspense>
               }
-            >
-              <Route index element={<Feed />} />
-              <Route path="/feed" element={<Feed />} />
-              <Route path="/practice" element={<Practice />} />
-              <Route path="/task-library" element={<TaskLibrary />} />
-              <Route path="/growth" element={<Growth />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/profile/:id" element={<Profile />} />
-              <Route path="/post/:postId" element={<PostView />} />
-              {/* Fallback for unknown routes */}
-              <Route path="*" element={<h1>Page Not Found</h1>} />
-            </Route>
-          </Routes>
-        </SessionProvider>
+            />
+            <Route
+              path="/feed"
+              element={
+                <Suspense fallback={<LoadingScreen />}>
+                  <Feed />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/practice"
+              element={
+                <Suspense fallback={<LoadingScreen />}>
+                  <Practice />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/task-library"
+              element={
+                <Suspense fallback={<LoadingScreen />}>
+                  <TaskLibrary />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/growth"
+              element={
+                <Suspense fallback={<LoadingScreen />}>
+                  <Growth />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <Suspense fallback={<LoadingScreen />}>
+                  <Profile />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/profile/:id"
+              element={
+                <Suspense fallback={<LoadingScreen />}>
+                  <Profile />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/post/:postId"
+              element={
+                <Suspense fallback={<LoadingScreen />}>
+                  <PostView />
+                </Suspense>
+              }
+            />
+            {/* Fallback for unknown routes */}
+            <Route path="*" element={<h1>Page Not Found</h1>} />
+          </Route>
+        </Routes>
       </AuthProvider>
     </ErrorBoundaryWrapper>
   </BrowserRouter>

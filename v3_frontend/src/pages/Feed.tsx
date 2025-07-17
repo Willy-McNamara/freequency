@@ -82,7 +82,9 @@ const Feed = () => {
   const isFetching = useRef(false);
   const hasFetchedOnce = useRef(false);
   const filtersInitialized = useRef(false);
-  const [allUsers, setAllUsers] = useState<string[]>([]);
+  const [allUsers, setAllUsers] = useState<
+    { id: number; displayName: string }[]
+  >([]);
   const [allTags, setAllTags] = useState<string[]>([]);
   const isSettingFromUrl = useRef(false);
   const previousFilterState = useRef<string>("");
@@ -117,17 +119,17 @@ const Feed = () => {
       const userFilter = activeFilters.find((f) => f.type === "user");
 
       if (userFilter?.isSelected && userFilter.options) {
-        const selectedUsers = userFilter.options
-          .filter((option) => option.checked)
-          .map((option) => option.label);
-
-        // Check if "following" is selected
-        const followingSelected = selectedUsers.includes("Following");
+        const selectedUserIds = userFilter.options
+          .filter((option) => option.checked && option.id !== "following")
+          .map((option) => option.id);
+        const followingSelected = userFilter.options.some(
+          (option) => option.id === "following" && option.checked
+        );
         if (followingSelected) {
           params.append("following", "true");
-        } else if (selectedUsers.length > 0) {
-          // Only add users param if not using following filter
-          params.append("users", selectedUsers.join(","));
+        }
+        if (selectedUserIds.length > 0) {
+          params.append("users", selectedUserIds.join(","));
         }
       }
 
@@ -322,7 +324,7 @@ const Feed = () => {
 
   // Fetch all users, instruments, and tags on mount
   useEffect(() => {
-    fetch(apiConfig.endpoints.musicians.allDisplayNames)
+    fetch(apiConfig.endpoints.musicians.allIdNames)
       .then((res) => res.json())
       .then((data) => setAllUsers(data));
     fetch(apiConfig.endpoints.tags.all)
@@ -335,13 +337,14 @@ const Feed = () => {
     // Use allUsers, ALL_INSTRUMENTS, allTags for filter options
     if (allUsers.length > 0 && allTags.length > 0) {
       const userOptions = allUsers.map((user) => ({
-        id: user.toLowerCase().replace(/\s+/g, ""),
-        label: user,
+        id: String(user.id),
+        label: user.displayName,
         checked:
           activeFilters
             .find((f) => f.type === "user")
-            ?.options?.some((opt) => opt.label === user && opt.checked) ||
-          false,
+            ?.options?.some(
+              (opt) => opt.id === String(user.id) && opt.checked
+            ) || false,
       }));
 
       // Add the "Following" option if user is authenticated
@@ -433,13 +436,13 @@ const Feed = () => {
   useEffect(() => {
     const userParam = searchParams.get("user");
     if (userParam && allUsers.length > 0 && filtersInitialized.current) {
-      const userLabel = allUsers.find((u) => u === userParam);
+      const userLabel = allUsers.find((u) => u.displayName === userParam);
       if (userLabel) {
         const userFilter = activeFilters.find((f) => f.type === "user");
         const isAlreadySet =
           userFilter?.isSelected &&
           userFilter.options?.some(
-            (opt) => opt.label === userLabel && opt.checked
+            (opt) => opt.label === userLabel.displayName && opt.checked
           );
         if (!isAlreadySet) {
           isSettingFromUrl.current = true;
@@ -452,7 +455,7 @@ const Feed = () => {
                   options: filter.options
                     ? filter.options.map((opt) => ({
                         ...opt,
-                        checked: opt.label === userLabel,
+                        checked: opt.label === userLabel.displayName,
                       }))
                     : [],
                 };

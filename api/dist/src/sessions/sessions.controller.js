@@ -25,29 +25,22 @@ let SessionsController = class SessionsController {
         this.mediaService = mediaService;
     }
     async getSessionsOnRender(req, cursor, users, instruments, tags, saved, following) {
-        console.log('Sessions endpoint called with filters:', {
-            cursor,
-            users,
-            instruments,
-            tags,
-            saved,
-            following,
-        });
+        let userIdList = users
+            ? users
+                .split(',')
+                .map((id) => parseInt(id, 10))
+                .filter((id) => !isNaN(id))
+            : [];
         if (following === 'true') {
-            return this.sessionsService.getSessionsFromFollowedUsers(req.user.id, cursor);
+            const followedUserIds = await this.sessionsService.getFollowedUserIds(req.user.id);
+            userIdList = Array.from(new Set([...userIdList, ...followedUserIds]));
         }
-        const filters = {
-            users: users ? users.split(',') : [],
+        return this.sessionsService.getSessionsWithFilters({
+            userIds: userIdList,
             instruments: instruments ? instruments.split(',') : [],
             tags: tags ? tags.split(',') : [],
             saved: saved === 'true',
-        };
-        const result = await this.sessionsService.getSessionsWithFilters(filters, cursor);
-        console.log('Sessions result:', {
-            count: result.sessions.length,
-            hasNextCursor: !!result.nextCursor,
-        });
-        return result;
+        }, cursor);
     }
     async createSessionWithoutAudio(body, req) {
         const createSession = {

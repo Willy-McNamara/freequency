@@ -1,10 +1,11 @@
-import { Plus, Pencil } from "lucide-react";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import { cn } from "../lib/utils";
 
 export interface PracticeTaskListProps {
   tasks: { id: string; title: string }[];
   onAddNew?: () => void;
   onEditTask?: (id: string) => void;
+  onDeleteTask?: (id: string) => void;
   className?: string;
 }
 
@@ -12,6 +13,7 @@ export function PracticeTaskList({
   tasks,
   onAddNew,
   onEditTask,
+  onDeleteTask,
   className,
 }: PracticeTaskListProps) {
   return (
@@ -34,17 +36,35 @@ export function PracticeTaskList({
           <Plus className="w-4 h-4 ml-2" />
         </button>
         {tasks.map((task) => (
-          <button
+          <div
             key={task.id}
-            type="button"
-            onClick={() => onEditTask?.(task.id)}
-            className={
-              "flex items-center justify-between w-full px-4 py-2 rounded-md bg-background hover:bg-accent text-foreground font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border border-muted/50"
-            }
+            className="flex items-center justify-between w-full px-4 py-2 rounded-md bg-background hover:bg-accent text-foreground font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border border-muted/50"
           >
-            <span className="truncate text-left">{task.title}</span>
-            <Pencil className="w-4 h-4 ml-2" />
-          </button>
+            <button
+              type="button"
+              onClick={() => onEditTask?.(task.id)}
+              className="flex-1 text-left truncate focus:outline-none bg-transparent border-none"
+              style={{ minWidth: 0 }}
+            >
+              {task.title}
+            </button>
+            <button
+              type="button"
+              onClick={() => onEditTask?.(task.id)}
+              className="ml-2 p-1 rounded hover:bg-muted focus:outline-none"
+              aria-label="Edit task"
+            >
+              <Pencil className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => onDeleteTask?.(task.id)}
+              className="ml-1 p-1 rounded hover:bg-destructive/10 focus:outline-none"
+              aria-label="Delete task"
+            >
+              <Trash2 className="w-4 h-4 text-destructive" />
+            </button>
+          </div>
         ))}
       </div>
     </div>

@@ -107,54 +107,71 @@ export class MusiciansService {
   ): Promise<MusicianDto> {
     const prisma = this.prisma;
 
-    try {
-      // Create a new musician in the database
-      const createdMusician = await prisma.musician.create({
-        data: {
-          googleId: createMusicianDto.googleId,
-          displayName: createMusicianDto.displayName,
-          givenName: createMusicianDto.givenName,
-          familyName: createMusicianDto.familyName,
-          email: createMusicianDto.email,
-          avatarUrl: createMusicianDto.profilePictureUrl,
-          bio: 'Tell us about yourself as a musician! Eventually other users may be able to see your profile :)',
-          totalSessions: 0,
-          totalPracticeSeconds: 0,
-          totalGasUpsGiven: 0,
-          totalGasUpsReceived: 0,
-        },
-        include: {
-          instruments: true,
-        },
-      });
-
-      // Map the created musician to the DTO
-      const musicianDto: MusicianDto = {
-        id: createdMusician.id,
-        googleId: createdMusician.googleId ? createdMusician.googleId : null,
-        displayName: createdMusician.displayName,
-        email: createdMusician.email,
-        bio: createdMusician.bio ? createdMusician.bio : '',
-        instruments: createdMusician.instruments.map((tag) => tag.label), // Convert Tag objects to strings
-        profilePictureUrl: createdMusician.avatarUrl,
-        totalSessions: createdMusician.totalSessions,
-        totalPracticeSeconds: createdMusician.totalPracticeSeconds,
-        totalGasUpsGiven: createdMusician.totalGasUpsGiven,
-        totalGasUpsReceived: createdMusician.totalGasUpsReceived,
-        longestStreak: 0, // Not in schema, default to 0
-        currentStreak: 0, // Not in schema, default to 0
-        createdAt: createdMusician.createdAt,
-        comments: [],
-        sessions: [],
-        givenName: createdMusician.givenName || '',
-        familyName: createdMusician.familyName || '',
-      };
-
-      return musicianDto;
-    } catch (error) {
-      // Handle any errors during creation
-      throw new Error(`Failed to create musician: ${error.message}`);
+    let baseDisplayName = createMusicianDto.displayName;
+    let displayName = baseDisplayName;
+    let suffix = 1;
+    let createdMusician;
+    while (true) {
+      try {
+        createdMusician = await prisma.musician.create({
+          data: {
+            googleId: createMusicianDto.googleId,
+            displayName: displayName,
+            givenName: createMusicianDto.givenName,
+            familyName: createMusicianDto.familyName,
+            email: createMusicianDto.email,
+            avatarUrl: createMusicianDto.profilePictureUrl,
+            bio: 'Tell us about yourself as a musician! Eventually other users may be able to see your profile :)',
+            totalSessions: 0,
+            totalPracticeSeconds: 0,
+            totalGasUpsGiven: 0,
+            totalGasUpsReceived: 0,
+          },
+          include: {
+            instruments: true,
+          },
+        });
+        break; // Success
+      } catch (error) {
+        // If the error is a unique constraint violation on displayName, try a new one
+        if (
+          error.code === 'P2002' &&
+          error.meta &&
+          error.meta.target &&
+          error.meta.target.includes('displayName')
+        ) {
+          displayName = `${baseDisplayName} ${suffix}`;
+          suffix++;
+        } else {
+          // Other errors, rethrow
+          throw new Error(`Failed to create musician: ${error.message}`);
+        }
+      }
     }
+
+    // Map the created musician to the DTO
+    const musicianDto: MusicianDto = {
+      id: createdMusician.id,
+      googleId: createdMusician.googleId ? createdMusician.googleId : null,
+      displayName: createdMusician.displayName,
+      email: createdMusician.email,
+      bio: createdMusician.bio ? createdMusician.bio : '',
+      instruments: createdMusician.instruments.map((tag) => tag.label), // Convert Tag objects to strings
+      profilePictureUrl: createdMusician.avatarUrl,
+      totalSessions: createdMusician.totalSessions,
+      totalPracticeSeconds: createdMusician.totalPracticeSeconds,
+      totalGasUpsGiven: createdMusician.totalGasUpsGiven,
+      totalGasUpsReceived: createdMusician.totalGasUpsReceived,
+      longestStreak: 0, // Not in schema, default to 0
+      currentStreak: 0, // Not in schema, default to 0
+      createdAt: createdMusician.createdAt,
+      comments: [],
+      sessions: [],
+      givenName: createdMusician.givenName || '',
+      familyName: createdMusician.familyName || '',
+    };
+
+    return musicianDto;
   }
 
   async findOrCreateMusician(
@@ -233,7 +250,7 @@ export class MusiciansService {
           instruments: {
             set: [], // Clear existing instruments
             connect: profileUpdateDto.instruments.map((instrument) => ({
-              id: instrument.id,
+              label: instrument.label,
             })),
           },
         },
@@ -300,6 +317,14 @@ export class MusiciansService {
       orderBy: { displayName: 'asc' },
     });
     return musicians.map((m) => m.displayName);
+  }
+
+  async getAllIdNames(): Promise<{ id: number; displayName: string }[]> {
+    const musicians = await this.prisma.musician.findMany({
+      select: { id: true, displayName: true },
+      orderBy: { displayName: 'asc' },
+    });
+    return musicians;
   }
 
   async createGoalForMusician(

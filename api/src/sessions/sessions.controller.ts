@@ -49,39 +49,28 @@ export class SessionsController {
     @Query('saved') saved?: string,
     @Query('following') following?: string,
   ): Promise<{ sessions: NewFrontendSessionDTO[]; nextCursor?: string }> {
-    console.log('Sessions endpoint called with filters:', {
-      cursor,
-      users,
-      instruments,
-      tags,
-      saved,
-      following,
-    });
-
-    // If following filter is enabled, get sessions from followed users
+    // Removed debug logs
+    let userIdList = users
+      ? users
+          .split(',')
+          .map((id) => parseInt(id, 10))
+          .filter((id) => !isNaN(id))
+      : [];
     if (following === 'true') {
-      return this.sessionsService.getSessionsFromFollowedUsers(
+      const followedUserIds = await this.sessionsService.getFollowedUserIds(
         req.user.id,
-        cursor,
       );
+      userIdList = Array.from(new Set([...userIdList, ...followedUserIds]));
     }
-
-    const filters = {
-      users: users ? users.split(',') : [],
-      instruments: instruments ? instruments.split(',') : [],
-      tags: tags ? tags.split(',') : [],
-      saved: saved === 'true',
-    };
-
-    const result = await this.sessionsService.getSessionsWithFilters(
-      filters,
+    return this.sessionsService.getSessionsWithFilters(
+      {
+        userIds: userIdList,
+        instruments: instruments ? instruments.split(',') : [],
+        tags: tags ? tags.split(',') : [],
+        saved: saved === 'true',
+      },
       cursor,
     );
-    console.log('Sessions result:', {
-      count: result.sessions.length,
-      hasNextCursor: !!result.nextCursor,
-    });
-    return result;
   }
 
   // @Post('nextChunk')

@@ -12,6 +12,10 @@ export declare class MusiciansService {
     updateProfile(musicianId: number, profileUpdateDto: ProfileUpdateDto): Promise<MusicianFrontendDTO>;
     formatMusicianForFrontend(musician: any): MusicianFrontendDTO;
     getAllDisplayNames(): Promise<string[]>;
+    getAllIdNames(): Promise<{
+        id: number;
+        displayName: string;
+    }[]>;
     createGoalForMusician(musicianId: number, goalDto: GoalDto): Promise<GoalDto>;
     deleteGoalForMusician(musicianId: number, goalId: number): Promise<void>;
     followMusician(followerId: number, followingId: number): Promise<void>;
