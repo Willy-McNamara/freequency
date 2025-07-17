@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, MessageSquare, Heart, Clock, User } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/badge";
 import { RichTextRenderer } from "@/components/rich-text";
 import { Button } from "@/components/ui/button";
 import { sessionService } from "@/services/sessions";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { Container } from "@/components/layout/Container";
+import { Section } from "@/components/layout/Section";
 
 interface PostViewTask {
   id: number;
@@ -310,242 +312,254 @@ export const PostView: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
-          <div className="space-y-4">
-            <div className="h-32 bg-gray-200 rounded"></div>
-            <div className="h-32 bg-gray-200 rounded"></div>
+      <Container>
+        <Section spacing="lg">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
+            <div className="space-y-4">
+              <div className="h-32 bg-gray-200 rounded"></div>
+              <div className="h-32 bg-gray-200 rounded"></div>
+            </div>
           </div>
-        </div>
-      </div>
+        </Section>
+      </Container>
     );
   }
 
   if (error || !post) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Error</h1>
-          <p className="text-gray-600 mb-4">{error || "Post not found"}</p>
-          <Button variant="outline" onClick={handleBack}>
-            Back to Feed
-          </Button>
-        </div>
-      </div>
+      <Container>
+        <Section spacing="lg">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-red-600 mb-4">Error</h1>
+            <p className="text-gray-600 mb-4">{error || "Post not found"}</p>
+            <Button variant="outline" onClick={handleBack}>
+              Back to Feed
+            </Button>
+          </div>
+        </Section>
+      </Container>
     );
   }
 
   return (
-    <div className="container w-[70vw] mx-auto px-4 py-8 max-w-4xl">
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleBack}
-          className="flex items-center gap-2 text-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Feed
-        </Button>
-      </div>
-
-      {/* Single Card Container */}
-      <div className="bg-card border border-border rounded-lg overflow-hidden">
-        {/* Post Header Section */}
-        <div className="p-6 border-b border-border">
-          {/* User info and metadata row */}
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <Avatar className="h-12 w-12">
-                <AvatarFallback className="text-lg">
-                  {post.musician.displayName[0]}
-                </AvatarFallback>
-              </Avatar>
-              <span
-                className="text-lg font-medium cursor-pointer hover:text-primary hover:underline transition-all duration-200"
-                onClick={() => handleMusicianClick(post.musician.id)}
-              >
-                {post.musician.displayName}
-              </span>
-            </div>
-            <div className="flex items-center gap-4 text-muted-foreground">
-              <div className="flex items-center gap-2">
+    <Container>
+      <Section spacing="lg">
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-8">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleBack}
+            className="flex items-center gap-2 text-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Feed
+          </Button>
+        </div>
+      </Section>
+      <Section spacing="md">
+        {/* Single Card Container */}
+        <div className="bg-card border border-border rounded-lg overflow-hidden w-full max-w-4xl mx-auto">
+          {/* Post Header Section */}
+          <div className="p-6 border-b border-border">
+            {/* User info and metadata row */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-12 w-12">
+                  <AvatarFallback className="text-lg">
+                    {post.musician.displayName[0]}
+                  </AvatarFallback>
+                </Avatar>
+                <span
+                  className="text-lg font-medium cursor-pointer hover:text-primary hover:underline transition-all duration-200"
+                  onClick={() => handleMusicianClick(post.musician.id)}
+                >
+                  {post.musician.displayName}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-muted-foreground">
                 <Clock className="w-4 h-4" />
                 <span>{formatDuration(post.duration)}</span>
               </div>
-              <span>•</span>
-              <span>{new Date(post.createdAt).toLocaleDateString()}</span>
             </div>
-          </div>
 
-          {/* Instruments and Tags */}
-          <div className="flex flex-wrap gap-2 mb-4">
-            {post.instruments.map((instrument) => (
-              <Badge
-                key={instrument.id}
-                variant="default"
-                className="!hover:bg-none !hover:bg-transparent"
-              >
-                {instrument.label}
-              </Badge>
-            ))}
-            {post.tags
-              .filter(
-                (tag) =>
-                  !post.instruments.some(
-                    (instrument) =>
-                      instrument.label.toLowerCase() === tag.label.toLowerCase()
-                  )
-              )
-              .map((tag) => (
+            {/* Instruments and Tags */}
+            <div className="flex flex-wrap gap-2 mb-4">
+              {post.instruments.map((instrument) => (
                 <Badge
-                  key={tag.id}
-                  variant="secondary"
+                  key={instrument.id}
+                  variant="default"
                   className="!hover:bg-none !hover:bg-transparent"
                 >
-                  {tag.label}
+                  {instrument.label}
                 </Badge>
               ))}
-          </div>
+              {post.tags
+                .filter(
+                  (tag) =>
+                    !post.instruments.some(
+                      (instrument) =>
+                        instrument.label.toLowerCase() ===
+                        tag.label.toLowerCase()
+                    )
+                )
+                .map((tag) => (
+                  <Badge
+                    key={tag.id}
+                    variant="secondary"
+                    className="!hover:bg-none !hover:bg-transparent"
+                  >
+                    {tag.label}
+                  </Badge>
+                ))}
+            </div>
 
-          {/* Session Title */}
-          <h1 className="text-2xl font-bold mb-4 text-left">{post.title}</h1>
+            {/* Session Title */}
+            <h1 className="text-2xl font-bold mb-4 text-left">{post.title}</h1>
 
-          {/* Notes */}
-          <div className="text-left">
-            <RichTextRenderer
-              content={post.notes}
-              className="font-['Inter',Helvetica] text-foreground text-sm font-normal leading-6"
-            />
-          </div>
-        </div>
+            {/* Notes */}
+            <div className="text-left">
+              <RichTextRenderer
+                content={post.notes}
+                className="font-['Inter',Helvetica] text-foreground text-sm font-normal leading-6"
+              />
+            </div>
 
-        {/* Tasks Section */}
-        {post.tasks.length > 0 && (
-          <div className="p-6 border-b border-border">
-            <h2 className="text-xl font-semibold mb-4 text-left">Tasks</h2>
-            <div className="space-y-3">
-              {post.tasks.map((task) => (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  onViewTaskDefinition={handleViewTaskDefinition}
-                />
-              ))}
+            {/* Date below notes */}
+            <div className="text-sm text-muted-foreground mt-4">
+              {new Date(post.createdAt).toLocaleDateString()}
             </div>
           </div>
-        )}
 
-        {/* Engagement Actions Footer */}
-        <div className="p-6 bg-muted/20">
-          <div className="flex gap-4">
-            <Button
-              variant="outline"
-              onClick={handleAddGasUp}
-              className="flex-1"
-            >
-              <Heart className="w-4 h-4 mr-2" />
-              Gas Up ({post.gasUps.length})
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handleAddComment}
-              className="flex-1"
-            >
-              <MessageSquare className="w-4 h-4 mr-2" />
-              Comments ({post.comments.length})
-            </Button>
-          </div>
-        </div>
-      </div>
+          {/* Tasks Section */}
+          {post.tasks.length > 0 && (
+            <div className="p-6 border-b border-border">
+              <h2 className="text-xl font-semibold mb-4 text-left">Tasks</h2>
+              <div className="space-y-3">
+                {post.tasks.map((task) => (
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    onViewTaskDefinition={handleViewTaskDefinition}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
 
-      {/* Comments Modal/Drawer */}
-      {showCommentModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-end justify-center z-50">
-          <div className="bg-background border-t border-border rounded-t-lg w-full h-[80vh] flex flex-col animate-in slide-in-from-bottom duration-300">
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-border">
-              <h3 className="text-lg font-semibold">
-                Comments ({post.comments.length})
-              </h3>
+          {/* Engagement Actions Footer */}
+          <div className="p-6 bg-muted/20">
+            <div className="flex gap-4">
               <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowCommentModal(false)}
+                variant="outline"
+                onClick={handleAddGasUp}
+                className="flex-1"
               >
-                ✕
+                <Heart className="w-4 h-4 mr-2" />
+                Gas Up ({post.gasUps.length})
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleAddComment}
+                className="flex-1"
+              >
+                <MessageSquare className="w-4 h-4 mr-2" />
+                Comments ({post.comments.length})
               </Button>
             </div>
-
-            {/* Comments List */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {post.comments.length > 0 ? (
-                post.comments.map((comment) => (
-                  <div key={comment.id} className="flex gap-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback className="text-sm">
-                        {comment.musician.displayName[0]}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span
-                          className="font-medium text-sm cursor-pointer hover:text-primary hover:underline transition-all duration-200"
-                          onClick={() =>
-                            handleMusicianClick(comment.musician.id)
-                          }
-                        >
-                          {comment.musician.displayName}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(comment.createdAt).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <p className="text-sm text-foreground">{comment.text}</p>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center text-muted-foreground py-8">
-                  <MessageSquare className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                  <p>No comments yet. Be the first to comment!</p>
-                </div>
-              )}
-            </div>
-
-            {/* Add Comment Form */}
-            <div className="p-4 border-t border-border">
-              <div className="flex gap-2">
-                <textarea
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  placeholder="Write a comment..."
-                  className="flex-1 p-3 border border-border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary min-h-[80px]"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && e.metaKey) {
-                      handleSubmitComment();
-                    }
-                  }}
-                />
-                <Button
-                  onClick={handleSubmitComment}
-                  disabled={!newComment.trim()}
-                  className="self-end"
-                >
-                  Post
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Press ⌘+Enter to post
-              </p>
-            </div>
           </div>
         </div>
+      </Section>
+      {/* Comments Modal/Drawer */}
+      {showCommentModal && (
+        <Section spacing="md">
+          <div className="fixed inset-0 bg-black/50 flex items-end justify-center z-50">
+            <div className="bg-background border-t border-border rounded-t-lg w-full h-[80vh] flex flex-col animate-in slide-in-from-bottom duration-300">
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 border-b border-border">
+                <h3 className="text-lg font-semibold">
+                  Comments ({post.comments.length})
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowCommentModal(false)}
+                >
+                  ✕
+                </Button>
+              </div>
+
+              {/* Comments List */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {post.comments.length > 0 ? (
+                  post.comments.map((comment) => (
+                    <div key={comment.id} className="flex gap-3">
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback className="text-sm">
+                          {comment.musician.displayName[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span
+                            className="font-medium text-sm cursor-pointer hover:text-primary hover:underline transition-all duration-200"
+                            onClick={() =>
+                              handleMusicianClick(comment.musician.id)
+                            }
+                          >
+                            {comment.musician.displayName}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(comment.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <p className="text-sm text-foreground">
+                          {comment.text}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center text-muted-foreground py-8">
+                    <MessageSquare className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    <p>No comments yet. Be the first to comment!</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Add Comment Form */}
+              <div className="p-4 border-t border-border">
+                <div className="flex gap-2">
+                  <textarea
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder="Write a comment..."
+                    className="flex-1 p-3 border border-border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary min-h-[80px]"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && e.metaKey) {
+                        handleSubmitComment();
+                      }
+                    }}
+                  />
+                  <Button
+                    onClick={handleSubmitComment}
+                    disabled={!newComment.trim()}
+                    className="self-end"
+                  >
+                    Post
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Press ⌘+Enter to post
+                </p>
+              </div>
+            </div>
+          </div>
+        </Section>
       )}
-    </div>
+    </Container>
   );
 };
 

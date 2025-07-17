@@ -1,6 +1,6 @@
 import { JSX } from "react";
 import { useNavigate } from "react-router";
-import { Avatar, AvatarFallback } from "./avatar";
+import { Avatar, AvatarFallback } from "./ui/avatar";
 import { Badge } from "./badge";
 import { MessageSquareIcon, ThumbsUpIcon, Clock } from "lucide-react";
 import { RichTextRenderer } from "./rich-text";
@@ -160,7 +160,7 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
       className="cursor-pointer hover:bg-accent/50 transition-colors duration-200 rounded-lg p-4 -m-4"
       onClick={handlePostClick}
     >
-      <div className="flex w-[70vw] flex-col items-start gap-2.5 mb-2">
+      <div className="flex w-full flex-col items-start gap-2.5 mb-2">
         <div className="flex items-center w-full justify-between">
           <div className="flex items-center">
             <Avatar className="h-10 w-10 bg-slate-200 rounded-[20px]">
@@ -177,7 +177,7 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
             <span>{formatDuration(postData.duration)}</span>
           </div>
         </div>
-        <div className="flex items-center gap-[17px]">
+        <div className="flex items-center gap-4 flex-wrap">
           {instruments.map(
             (
               tag: { id: number; label: string; color: string | null },
@@ -220,13 +220,13 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
         <RichTextRenderer
           content={sessionData.description}
           maxLength={300}
-          className="font-['Inter',Helvetica] text-black text-sm font-normal leading-6"
+          className="font-['Inter',Helvetica] text-black text-sm font-normal leading-6 break-words overflow-hidden"
         />
       </div>
       {/* splicing in like/comment section */}
-      <div className="flex items-center gap-[18px]">
+      <div className="flex items-center gap-4">
         {engagementData.map((item, index) => (
-          <div key={index} className="flex items-center gap-[11px]">
+          <div key={index} className="flex items-center gap-2">
             {item.icon}
             <div className="font-bold text-sm text-black leading-[14px] whitespace-nowrap">
               <span className="font-small text-[length:var(--small-font-size)] tracking-[var(--small-letter-spacing)] leading-[var(--small-line-height)]">

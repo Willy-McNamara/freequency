@@ -1,20 +1,21 @@
-import { useState, useEffect } from "react";
-import { Button } from "../components/button";
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
 import { Badge } from "../components/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "../components/avatar";
-import { Card, CardContent } from "../components/card";
-import { ChevronDownIcon } from "lucide-react";
-import { apiConfig } from "../config/api";
-import { Music, Clock, Fuel, Pencil } from "lucide-react";
-import { useAuth } from "../components/auth/AuthProvider";
+import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
+import { Card, CardContent } from "../components/ui/card";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "../components/ui/dialog";
-import { Input } from "../components/ui/input";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { Container } from "../components/layout/Container";
+import { Section } from "../components/layout/Section";
+import { useAuth } from "../components/auth/AuthProvider";
+import { apiConfig } from "../config/api";
+import { Music, Clock, Fuel, Pencil, ChevronDown } from "lucide-react";
 import { ALL_INSTRUMENTS } from "../types/instruments.types";
 
 interface Instrument {
@@ -216,254 +217,264 @@ export default function Profile() {
   }
 
   return (
-    <div className="w-[70vw] min-w-[340px] mx-auto">
-      <div className="flex justify-center mb-4 relative">
-        <Avatar>
-          <AvatarImage src={data.profilePictureUrl} alt={data.displayName} />
-          <AvatarFallback>{data.displayName[0]}</AvatarFallback>
-        </Avatar>
-        {/* Edit Profile button in top right */}
-        {viewingOwnProfile && (
-          <Button
-            variant="outline"
-            className="absolute right-0 top-0 flex items-center gap-2"
-            onClick={openEdit}
-          >
-            <Pencil className="w-4 h-4 mr-1" /> Edit Profile
-          </Button>
-        )}
-      </div>
-      <h2 className="relative self-stretch font-h-2 font-[number:var(--h-2-font-weight)] text-black text-[length:var(--h-2-font-size)] text-center tracking-[var(--h-2-letter-spacing)] leading-[var(--h-2-line-height)] [font-style:var(--h-2-font-style)]">
-        {data.displayName}
-      </h2>
-      <p className="text-center text-muted-foreground mb-4">
-        {"Member since " +
-          new Intl.DateTimeFormat("en-US", {
-            month: "long",
-            day: "numeric",
-            year: "numeric",
-          }).format(new Date(data.createdAt))}
-      </p>
-      <div className="flex flex-wrap justify-center gap-2 mt-4">
-        {data.instruments.map((skill, index) => (
-          <Badge
-            key={index}
-            className="rounded-md px-2 py-[0.125rem]"
-            style={{
-              backgroundColor: skill.color || "#475569",
-              color: "white",
-            }}
-          >
-            <span className="text-xs">{skill.label}</span>
-          </Badge>
-        ))}
-      </div>
-      <p className="text-center text-muted-foreground mb-6">{data.bio}</p>
-      {/* Follow button always visible, disabled if own profile */}
-      <div className="flex justify-center mb-4">
+    <>
+      {/* Edit Profile button - fixed in the top right of the viewport */}
+      {viewingOwnProfile && (
         <Button
-          variant="secondary"
-          className="flex items-center gap-2"
-          disabled={viewingOwnProfile || isFollowLoading}
-          title={
-            viewingOwnProfile ? "You can't follow yourself" : "Follow this user"
-          }
-          onClick={handleFollowToggle}
+          variant="outline"
+          className="fixed top-4 right-4 z-50 flex items-center gap-2"
+          onClick={openEdit}
         >
-          {isFollowLoading ? "Loading..." : isFollowing ? "Unfollow" : "Follow"}
+          <Pencil className="w-4 h-4 mr-1" /> Edit Profile
         </Button>
-      </div>
-      <div className="flex justify-center flex-row gap-2 mb-6">
-        <Button
-          onClick={() =>
-            navigate(`/feed?user=${encodeURIComponent(data.displayName)}`)
-          }
-        >
-          See Sessions
-        </Button>
-        <Button
-          onClick={() =>
-            navigate(
-              `/task-library?user=${encodeURIComponent(data.displayName)}`
-            )
-          }
-        >
-          See Tasks
-        </Button>
-      </div>
-      <div className="flex flex-col items-center w-[340px] justify-items gap-2.5 px-3 py-[19px] left-[26px] bg-slate-100 mx-auto">
-        <Card className="w-[315px] bg-white">
-          <CardContent className="flex items-start gap-2.5 px-4 py-2">
-            <Music className="w-5 h-5 text-slate-500 mt-1" />
-            <span className="relative w-fit mt-[-0.50px] font-table-item font-[number:var(--table-item-font-weight)] text-slate-900 text-[length:var(--table-item-font-size)] tracking-[var(--table-item-letter-spacing)] leading-[var(--table-item-line-height)] whitespace-nowrap [font-style:var(--table-item-font-style)]">
-              {data.totalSessions} Total Sessions
-            </span>
-          </CardContent>
-        </Card>
-        <Card className="w-[315px] bg-white">
-          <CardContent className="flex items-start gap-2.5 px-4 py-2">
-            <Clock className="w-5 h-5 text-slate-500 mt-1" />
-            <span className="relative w-fit mt-[-0.50px] font-table-item font-[number:var(--table-item-font-weight)] text-slate-900 text-[length:var(--table-item-font-size)] tracking-[var(--table-item-letter-spacing)] leading-[var(--table-item-line-height)] whitespace-nowrap [font-style:var(--table-item-font-style)]">
-              {formatPracticeMinutes(data.totalPracticeSeconds)} Practice Time
-            </span>
-          </CardContent>
-        </Card>
-        <Card className="w-[315px] bg-white">
-          <CardContent className="flex items-start gap-2.5 px-4 py-2">
-            <Fuel className="w-5 h-5 text-slate-500 mt-1" />
-            <span className="relative w-fit mt-[-0.50px] font-table-item font-[number:var(--table-item-font-weight)] text-slate-900 text-[length:var(--table-item-font-size)] tracking-[var(--table-item-letter-spacing)] leading-[var(--table-item-line-height)] whitespace-nowrap [font-style:var(--table-item-font-style)]">
-              {data.totalGasUpsGiven} Gas Ups Given
-            </span>
-          </CardContent>
-        </Card>
-      </div>
-      {/* Edit Profile Modal */}
-      <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Edit Profile</DialogTitle>
-          </DialogHeader>
-          {editData ? (
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <label className="text-sm font-medium">Display Name</label>
-                <Input
-                  value={editData.displayName}
-                  onChange={(e) =>
-                    handleEditChange("displayName", e.target.value)
-                  }
-                />
-              </div>
-              <div className="grid gap-2">
-                <label className="text-sm font-medium">Avatar URL</label>
-                <div className="text-sm text-muted-foreground p-2 bg-muted rounded-md">
-                  Coming soon...
-                </div>
-              </div>
-              <div className="grid gap-2">
-                <label className="text-sm font-medium">Bio</label>
-                <Input
-                  value={editData.bio}
-                  onChange={(e) => handleEditChange("bio", e.target.value)}
-                />
-              </div>
-              <div className="grid gap-2">
-                <label className="text-sm font-medium">Instruments</label>
-                <Button
-                  variant="outline"
-                  className="flex items-center gap-2 min-w-[180px] justify-between"
-                  onClick={() => setInstrumentDropdownOpen(true)}
-                  type="button"
-                >
-                  <span className="flex items-center gap-2">
-                    {editData.instruments.length > 0
-                      ? editData.instruments
-                          .map((inst) => inst.label)
-                          .join(", ")
-                      : "Select instruments"}
-                  </span>
-                  <ChevronDownIcon className="w-4 h-4" />
-                </Button>
-                {/* Dropdown dialog for instruments */}
-                {instrumentDropdownOpen && (
-                  <div className="absolute z-50 bg-white border rounded-md shadow-lg mt-2 w-[300px] p-4">
-                    <Input
-                      placeholder="Search instruments..."
-                      value={instrumentSearch}
-                      onChange={(e) => setInstrumentSearch(e.target.value)}
-                      className="mb-2"
-                    />
-                    <div className="max-h-60 overflow-y-auto space-y-1">
-                      {ALL_INSTRUMENTS.filter((inst) =>
-                        inst.label
-                          .toLowerCase()
-                          .includes(instrumentSearch.toLowerCase())
-                      ).map((inst) => {
-                        const selected = editData.instruments.some(
-                          (i) => i.label === inst.label
-                        );
-                        return (
-                          <button
-                            key={inst.id}
-                            className={`w-full text-left px-3 py-2 rounded-md hover:bg-muted transition-colors flex items-center gap-2 ${
-                              selected ? "bg-primary/10 font-semibold" : ""
-                            }`}
-                            onClick={() => {
-                              setEditData((prev) => {
-                                if (!prev) return prev;
-                                const alreadySelected = prev.instruments.some(
-                                  (i) => i.label === inst.label
-                                );
-                                let newInstruments;
-                                if (alreadySelected) {
-                                  newInstruments = prev.instruments.filter(
-                                    (i) => i.label !== inst.label
-                                  );
-                                } else {
-                                  newInstruments = [
-                                    ...prev.instruments,
-                                    {
-                                      id: inst.id,
-                                      label: inst.label,
-                                      color: null,
-                                      createdAt: new Date().toISOString(),
-                                    },
-                                  ];
-                                }
-                                return { ...prev, instruments: newInstruments };
-                              });
-                            }}
-                            type="button"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={selected}
-                              readOnly
-                              className="mr-2"
-                            />
-                            {inst.label}
-                          </button>
-                        );
-                      })}
-                      {ALL_INSTRUMENTS.length === 0 && (
-                        <div className="text-muted-foreground text-sm py-2 px-1">
-                          No instruments found
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex justify-end mt-2">
-                      <Button
-                        size="sm"
-                        onClick={() => setInstrumentDropdownOpen(false)}
-                      >
-                        Done
-                      </Button>
-                    </div>
-                  </div>
-                )}
-                {editData.instruments.length === 0 && (
-                  <div className="text-red-500 text-xs mt-1">
-                    At least one instrument must be selected.
-                  </div>
-                )}
-              </div>
-            </div>
-          ) : null}
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={closeEdit}>
-              Cancel
-            </Button>
+      )}
+      <Container size="lg">
+        {/* Header Section */}
+        <Section spacing="lg">
+          <div className="flex justify-center relative">
+            <Avatar>
+              <AvatarImage
+                src={data.profilePictureUrl}
+                alt={data.displayName}
+              />
+              <AvatarFallback>{data.displayName[0]}</AvatarFallback>
+            </Avatar>
+          </div>
+          <h2 className="relative self-stretch font-h-2 font-[number:var(--h-2-font-weight)] text-black text-[length:var(--h-2-font-size)] text-center tracking-[var(--h-2-letter-spacing)] leading-[var(--h-2-line-height)] [font-style:var(--h-2-font-style)]">
+            {data.displayName}
+          </h2>
+          <p className="text-center text-muted-foreground">
+            {"Member since " +
+              new Intl.DateTimeFormat("en-US", {
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              }).format(new Date(data.createdAt))}
+          </p>
+          <div className="flex flex-wrap justify-center gap-2">
+            {data.instruments.map((skill, index) => (
+              <Badge
+                key={index}
+                className="rounded-md px-2 py-[0.125rem]"
+                style={{
+                  backgroundColor: skill.color || "#475569",
+                  color: "white",
+                }}
+              >
+                <span className="text-xs">{skill.label}</span>
+              </Badge>
+            ))}
+          </div>
+        </Section>
+
+        {/* Description Section */}
+        <Section spacing="md">
+          <p className="text-center text-muted-foreground">{data.bio}</p>
+        </Section>
+
+        {/* Actions Section */}
+        <Section spacing="lg">
+          {/* Follow button always visible, disabled if own profile */}
+          <div className="flex justify-center">
             <Button
-              onClick={handleSaveEdit}
-              disabled={
-                !editData || editData.instruments.length === 0 || isSaving
+              variant="secondary"
+              className="flex items-center gap-2"
+              disabled={viewingOwnProfile || isFollowLoading}
+              title={
+                viewingOwnProfile
+                  ? "You can't follow yourself"
+                  : "Follow this user"
               }
+              onClick={handleFollowToggle}
             >
-              {isSaving ? "Saving..." : "Save"}
+              {isFollowLoading
+                ? "Loading..."
+                : isFollowing
+                ? "Unfollow"
+                : "Follow"}
             </Button>
           </div>
-        </DialogContent>
-      </Dialog>
-    </div>
+          <div className="flex justify-center flex-row gap-2">
+            <Button
+              onClick={() =>
+                navigate(`/feed?user=${encodeURIComponent(data.displayName)}`)
+              }
+            >
+              See Sessions
+            </Button>
+            <Button
+              onClick={() =>
+                navigate(
+                  `/task-library?user=${encodeURIComponent(data.displayName)}`
+                )
+              }
+            >
+              See Tasks
+            </Button>
+          </div>
+        </Section>
+
+        {/* Stats Section */}
+        <Section spacing="lg">
+          <div className="flex flex-col items-center w-full max-w-sm mx-auto bg-slate-100 rounded-lg p-4">
+            <Card className="w-full bg-white mb-2">
+              <CardContent className="flex items-start gap-2.5 px-4 py-2">
+                <Music className="w-5 h-5 text-slate-500 mt-1" />
+                <span className="relative w-fit mt-[-0.50px] font-table-item font-[number:var(--table-item-font-weight)] text-slate-900 text-[length:var(--table-item-font-size)] tracking-[var(--table-item-letter-spacing)] leading-[var(--table-item-line-height)] whitespace-nowrap [font-style:var(--table-item-font-style)]">
+                  {data.totalSessions} Total Sessions
+                </span>
+              </CardContent>
+            </Card>
+            <Card className="w-full bg-white mb-2">
+              <CardContent className="flex items-start gap-2.5 px-4 py-2">
+                <Clock className="w-5 h-5 text-slate-500 mt-1" />
+                <span className="relative w-fit mt-[-0.50px] font-table-item font-[number:var(--table-item-font-weight)] text-slate-900 text-[length:var(--table-item-font-size)] tracking-[var(--table-item-letter-spacing)] leading-[var(--table-item-line-height)] whitespace-nowrap [font-style:var(--table-item-font-style)]">
+                  {formatPracticeMinutes(data.totalPracticeSeconds)} Practice
+                  Time
+                </span>
+              </CardContent>
+            </Card>
+            <Card className="w-full bg-white">
+              <CardContent className="flex items-start gap-2.5 px-4 py-2">
+                <Fuel className="w-5 h-5 text-slate-500 mt-1" />
+                <span className="relative w-fit mt-[-0.50px] font-table-item font-[number:var(--table-item-font-weight)] text-slate-900 text-[length:var(--table-item-font-size)] tracking-[var(--table-item-letter-spacing)] leading-[var(--table-item-line-height)] whitespace-nowrap [font-style:var(--table-item-font-style)]">
+                  {data.totalGasUpsGiven} Gas Ups Given
+                </span>
+              </CardContent>
+            </Card>
+          </div>
+        </Section>
+
+        {/* Edit Profile Modal */}
+        <Dialog open={editOpen} onOpenChange={setEditOpen}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Edit Profile</DialogTitle>
+            </DialogHeader>
+            {editData ? (
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <label className="text-sm font-medium">Display Name</label>
+                  <Input
+                    value={editData.displayName}
+                    onChange={(e) =>
+                      handleEditChange("displayName", e.target.value)
+                    }
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <label className="text-sm font-medium">Avatar URL</label>
+                  <div className="text-sm text-muted-foreground p-2 bg-muted rounded-md">
+                    Coming soon...
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <label className="text-sm font-medium">Bio</label>
+                  <Input
+                    value={editData.bio}
+                    onChange={(e) => handleEditChange("bio", e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <label className="text-sm font-medium">Instruments</label>
+                  <Button
+                    variant="outline"
+                    className="flex items-center gap-2 min-w-[180px] justify-between"
+                    onClick={() => setInstrumentDropdownOpen(true)}
+                    type="button"
+                  >
+                    <span className="flex items-center gap-2">
+                      {editData.instruments.length > 0
+                        ? editData.instruments
+                            .map((inst) => inst.label)
+                            .join(", ")
+                        : "Select instruments"}
+                    </span>
+                    <ChevronDown className="w-4 h-4" />
+                  </Button>
+                  {/* Dropdown dialog for instruments */}
+                  {instrumentDropdownOpen && (
+                    <div className="absolute z-50 bg-white border rounded-md shadow-lg mt-2 w-[300px] p-4">
+                      <Input
+                        placeholder="Search instruments..."
+                        value={instrumentSearch}
+                        onChange={(e) => setInstrumentSearch(e.target.value)}
+                        className="mb-2"
+                      />
+                      <div className="max-h-60 overflow-y-auto space-y-1">
+                        {ALL_INSTRUMENTS.filter((inst) =>
+                          inst.label
+                            .toLowerCase()
+                            .includes(instrumentSearch.toLowerCase())
+                        ).map((inst) => {
+                          const selected = editData.instruments.some(
+                            (i) => i.label === inst.label
+                          );
+                          return (
+                            <button
+                              key={inst.id}
+                              className={`w-full text-left px-3 py-2 rounded-md hover:bg-muted transition-colors flex items-center gap-2 ${
+                                selected ? "bg-primary/10 font-semibold" : ""
+                              }`}
+                              onClick={() => {
+                                setEditData((prev) => {
+                                  if (!prev) return prev;
+                                  const alreadySelected = prev.instruments.some(
+                                    (i) => i.label === inst.label
+                                  );
+                                  let newInstruments;
+                                  if (alreadySelected) {
+                                    newInstruments = prev.instruments.filter(
+                                      (i) => i.label !== inst.label
+                                    );
+                                  } else {
+                                    newInstruments = [
+                                      ...prev.instruments,
+                                      {
+                                        id: inst.id,
+                                        label: inst.label,
+                                        color: null,
+                                        createdAt: new Date().toISOString(),
+                                      },
+                                    ];
+                                  }
+                                  return {
+                                    ...prev,
+                                    instruments: newInstruments,
+                                  };
+                                });
+                              }}
+                            >
+                              <span>{inst.label}</span>
+                              {selected && <span>✓</span>}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div className="flex gap-2 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={closeEdit}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleSaveEdit}
+                    disabled={isSaving}
+                    className="flex-1"
+                  >
+                    {isSaving ? "Saving..." : "Save Changes"}
+                  </Button>
+                </div>
+              </div>
+            ) : null}
+          </DialogContent>
+        </Dialog>
+      </Container>
+    </>
   );
 }
