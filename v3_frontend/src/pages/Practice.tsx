@@ -22,6 +22,8 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Section } from "@/components/layout/Section";
+// import { Container } from "@/components/layout/Container";
 
 const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   session,
@@ -328,7 +330,9 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
 
   // Main Practice view
   return (
-    <div className="w-[70vw] min-h-screen">
+    <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 min-h-screen mb-8">
+      {/* <Container>
+      For some reason I couldn't get xontainer to work here.. */}
       {/* Instrument Tag Required Modal */}
       <Dialog
         open={showInstrumentTagModal}
@@ -353,61 +357,71 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
         </DialogContent>
       </Dialog>
       {selectedTask ? (
-        <div className="flex flex-col items-center justify-center w-[90vw] min-h-screen bg-background px-4 py-8">
-          <div className="w-full max-w-xl bg-card rounded-xl shadow-lg p-8 flex flex-col items-center relative">
+        <Section spacing="xl">
+          <div className="w-full mx-auto bg-card rounded-xl shadow-lg p-4 md:p-8 flex flex-col items-center relative">
             {/* Back Arrow at top left */}
             <button
               type="button"
-              className="absolute top-16 left-8 p-2 rounded-full hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring"
+              className="absolute top-4 left-4 p-2 rounded-full hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring"
               onClick={handleBack}
               aria-label="Back to Session"
             >
               <ArrowLeft className="w-6 h-6" />
             </button>
             {/* Task Title and Timer */}
-            <div className="mb-6 w-full flex flex-col items-center">
-              <span className="text-2xl font-bold mb-2 text-center">
-                {selectedTask.title}
-              </span>
-              <PracticeTimer
-                value={taskTimer}
-                onChange={setTaskTimer}
-                runningValue={taskTimerRunning}
-                onRunningChange={setTaskTimerRunning}
-              />
-            </div>
+            <Section spacing="md">
+              <div className="w-full flex flex-col items-center justify-center">
+                <span className="text-2xl font-bold mb-2 text-center">
+                  {selectedTask.title}
+                </span>
+                <PracticeTimer
+                  value={taskTimer}
+                  onChange={setTaskTimer}
+                  runningValue={taskTimerRunning}
+                  onRunningChange={setTaskTimerRunning}
+                />
+              </div>
+            </Section>
             {/* Task Description */}
             {hasDescription(selectedTask) && (
-              <div className="w-full mb-4">
-                <h4 className="text-sm font-semibold mb-1 text-left">
-                  Description
-                </h4>
-                <p className="text-sm text-foreground leading-relaxed text-left">
-                  {selectedTask.description}
-                </p>
-              </div>
+              <Section spacing="sm">
+                <div className="w-full">
+                  <h4 className="text-sm font-semibold mb-1 text-left">
+                    Description
+                  </h4>
+                  <p className="text-sm text-foreground leading-relaxed">
+                    {selectedTask.description}
+                  </p>
+                </div>
+              </Section>
             )}
-            <RichTextEditor value={taskNotes} onChange={setTaskNotes} />
+            <Section spacing="sm">
+              <div className="w-full">
+                <RichTextEditor value={taskNotes} onChange={setTaskNotes} />
+              </div>
+            </Section>
             {/* Task Tags */}
-            <div className="w-full mb-4">
-              <PracticeTagList
-                tags={selectedTask.tags || []}
-                onAddTag={() => setTagModalOpen(true)}
-                onRemoveTag={(tagId) => {
-                  // Remove tag from selected task's tags
-                  const updatedTags = (selectedTask.tags || []).filter(
-                    (t) => t.id !== tagId
-                  );
-                  session.setTasks(
-                    session.tasks.map((task) =>
-                      task.id === selectedTask.id
-                        ? { ...task, tags: updatedTags }
-                        : task
-                    )
-                  );
-                }}
-              />
-            </div>
+            <Section spacing="sm">
+              <div className="w-full">
+                <PracticeTagList
+                  tags={selectedTask.tags || []}
+                  onAddTag={() => setTagModalOpen(true)}
+                  onRemoveTag={(tagId) => {
+                    // Remove tag from selected task's tags
+                    const updatedTags = (selectedTask.tags || []).filter(
+                      (t) => t.id !== tagId
+                    );
+                    session.setTasks(
+                      session.tasks.map((task) =>
+                        task.id === selectedTask.id
+                          ? { ...task, tags: updatedTags }
+                          : task
+                      )
+                    );
+                  }}
+                />
+              </div>
+            </Section>
             {/* Tag Modal for Task Tags */}
             <TagModal
               isOpen={tagModalOpen}
@@ -431,157 +445,179 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
               }}
             />
             {/* Checklist */}
-            <div className="mt-6 w-full">
-              <h4 className="font-semibold mb-2 text-left">Checklist</h4>
-              {checklist.length === 0 && (
-                <div className="text-muted-foreground text-sm">
-                  No checklist items.
-                </div>
-              )}
-              {checklist.map((item, idx) => (
-                <label
-                  key={idx}
-                  className="flex items-start mb-2 cursor-pointer text-left"
-                >
-                  <input
-                    type="checkbox"
-                    checked={item.checked}
-                    onChange={() => toggleChecklistItem(idx)}
-                    className="mr-2 mt-1.5"
-                  />
-                  <span
-                    className={
-                      item.checked
-                        ? "line-through text-muted-foreground text-left"
-                        : "text-left"
-                    }
+            <Section spacing="sm">
+              <div className="w-full">
+                <h4 className="font-semibold mb-2 text-left">Checklist</h4>
+                {checklist.length === 0 && (
+                  <div className="text-muted-foreground text-sm">
+                    No checklist items.
+                  </div>
+                )}
+                {checklist.map((item, idx) => (
+                  <label
+                    key={idx}
+                    className="flex items-start mb-2 cursor-pointer text-left"
                   >
-                    {item.item}
-                  </span>
-                </label>
-              ))}
-            </div>
+                    <input
+                      type="checkbox"
+                      checked={item.checked}
+                      onChange={() => toggleChecklistItem(idx)}
+                      className="mr-2 mt-1.5"
+                    />
+                    <span
+                      className={
+                        item.checked
+                          ? "line-through text-muted-foreground text-left"
+                          : "text-left"
+                      }
+                    >
+                      {item.item}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </Section>
             {/* Remove Task from Session Button */}
-            <Button
-              type="button"
-              className="mt-6 px-6 py-2 rounded-lg bg-green-600 text-white font-semibold shadow hover:bg-green-700 transition-colors focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2"
-              onClick={handleBack}
-            >
-              Save
-            </Button>
+            <Section spacing="md">
+              <Button
+                type="button"
+                className="w-full px-6 py-2 rounded-lg bg-green-600 text-white font-semibold shadow hover:bg-green-700 transition-colors focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2"
+                onClick={handleBack}
+              >
+                Save
+              </Button>
+            </Section>
           </div>
-        </div>
+        </Section>
       ) : (
         <>
-          <div className="flex flex-col items-center justify-center my-4">
-            <PracticeTimer
-              ref={sessionTimerRef}
-              value={session.sessionTimerSeconds}
-              onChange={session.setSessionTimerSeconds}
-              runningValue={session.sessionTimerRunning}
-              onRunningChange={(newRunning) => {
-                session.setSessionTimerRunning(newRunning);
-                if (newRunning) {
-                  session.setIsActive(true);
-                }
-              }}
-            />
-            <input
-              type="text"
-              value={sessionTitle}
-              onChange={handleTitleChange}
-              maxLength={maxLength}
-              className="font-bold text-base mb-1 text-center bg-transparent border-b border-muted focus:border-primary outline-none w-full max-w-xs"
-              aria-label="Session title"
-            />
-          </div>
-          <RichTextEditor
-            value={sessionNotes || ""}
-            onChange={setSessionNotes}
-          />
-          <PracticeTaskList
-            tasks={session.tasks}
-            onAddNew={() => {
-              // TODO: Stop timer here
-              navigate("/task-library");
-            }}
-            onEditTask={(id) => {
-              // Set selected task and show Task-in-Session view
-              localStorage.setItem("practiceSelectedTaskId", id);
-              setSelectedTaskId(id);
-            }}
-            onDeleteTask={handleDeleteTask}
-          />
-          <PracticeTagList
-            tags={tags}
-            onAddTag={() => setTagModalOpen(true)}
-            onRemoveTag={handleRemoveTag}
-          />
-          <TagModal
-            isOpen={tagModalOpen}
-            onClose={() => setTagModalOpen(false)}
-            onTagSelected={handleTagSelected}
-          />
-          <div className="flex justify-center items-center gap-4 mt-8">
-            <button
-              type="button"
-              className="px-6 py-2 rounded-md bg-primary text-primary-foreground font-semibold shadow hover:bg-primary/80 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-              onClick={handleSaveSession}
-            >
-              Save Session
-            </button>
-            <Dialog
-              open={showDeleteSessionModal}
-              onOpenChange={setShowDeleteSessionModal}
-            >
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Delete Practice Session?</DialogTitle>
-                  <DialogDescription>
-                    Are you sure you want to delete this session? All data from
-                    this session will be lost. This action cannot be undone.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="flex justify-end gap-2 mt-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowDeleteSessionModal(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    onClick={() => {
-                      // Reset all session data
-                      session.setSessionTitle("Untitled Session");
-                      session.setTags([]);
-                      session.setTasks([]);
-                      session.setIsActive(false);
-                      session.setSessionTimerSeconds(0);
-                      session.setSessionTimerRunning(false);
-                      session.setSessionNotes("");
-                      localStorage.removeItem("practiceSession");
-                      localStorage.removeItem("practiceSelectedTaskId");
-                      setShowDeleteSessionModal(false);
-                    }}
-                  >
-                    Delete
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-            <button
-              type="button"
-              className="p-2 rounded-md bg-destructive text-destructive-foreground hover:bg-destructive/80 transition-colors focus:outline-none focus:ring-2 focus:ring-destructive focus:ring-offset-2"
-              aria-label="Reset Session"
-              onClick={() => setShowDeleteSessionModal(true)}
-            >
-              <Trash2 className="w-5 h-5" />
-            </button>
-          </div>
+          <Section spacing="xl">
+            <div className="flex flex-col w-full items-center justify-center">
+              <PracticeTimer
+                ref={sessionTimerRef}
+                value={session.sessionTimerSeconds}
+                onChange={session.setSessionTimerSeconds}
+                runningValue={session.sessionTimerRunning}
+                onRunningChange={(newRunning) => {
+                  session.setSessionTimerRunning(newRunning);
+                  if (newRunning) {
+                    session.setIsActive(true);
+                  }
+                }}
+              />
+              <input
+                type="text"
+                value={sessionTitle}
+                onChange={handleTitleChange}
+                maxLength={maxLength}
+                className="font-bold text-base mb-1 bg-transparent border-b border-muted focus:border-primary outline-none w-full text-center"
+                aria-label="Session title"
+              />
+            </div>
+          </Section>
+          <Section spacing="md">
+            <div className="w-full">
+              <RichTextEditor
+                value={sessionNotes || ""}
+                onChange={setSessionNotes}
+              />
+            </div>
+          </Section>
+          <Section spacing="md">
+            <div className="w-full">
+              <PracticeTaskList
+                tasks={session.tasks}
+                onAddNew={() => {
+                  // TODO: Stop timer here
+                  navigate("/task-library");
+                }}
+                onEditTask={(id) => {
+                  // Set selected task and show Task-in-Session view
+                  localStorage.setItem("practiceSelectedTaskId", id);
+                  setSelectedTaskId(id);
+                }}
+                onDeleteTask={handleDeleteTask}
+              />
+            </div>
+          </Section>
+          <Section spacing="md">
+            <div className="w-full">
+              <PracticeTagList
+                tags={tags}
+                onAddTag={() => setTagModalOpen(true)}
+                onRemoveTag={handleRemoveTag}
+              />
+              <TagModal
+                isOpen={tagModalOpen}
+                onClose={() => setTagModalOpen(false)}
+                onTagSelected={handleTagSelected}
+              />
+            </div>
+          </Section>
+          <Section spacing="xl">
+            <div className="flex flex-col sm:flex-row justify-center items-center gap-4 w-full">
+              <button
+                type="button"
+                className="px-6 py-2 rounded-md bg-primary text-primary-foreground font-semibold shadow hover:bg-primary/80 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                onClick={handleSaveSession}
+              >
+                Save Session
+              </button>
+              <Dialog
+                open={showDeleteSessionModal}
+                onOpenChange={setShowDeleteSessionModal}
+              >
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Delete Practice Session?</DialogTitle>
+                    <DialogDescription>
+                      Are you sure you want to delete this session? All data
+                      from this session will be lost. This action cannot be
+                      undone.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="flex justify-end gap-2 mt-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowDeleteSessionModal(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={() => {
+                        // Reset all session data
+                        session.setSessionTitle("Untitled Session");
+                        session.setTags([]);
+                        session.setTasks([]);
+                        session.setIsActive(false);
+                        session.setSessionTimerSeconds(0);
+                        session.setSessionTimerRunning(false);
+                        session.setSessionNotes("");
+                        localStorage.removeItem("practiceSession");
+                        localStorage.removeItem("practiceSelectedTaskId");
+                        setShowDeleteSessionModal(false);
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+              <button
+                type="button"
+                className="p-2 rounded-md bg-destructive text-destructive-foreground hover:bg-destructive/80 transition-colors focus:outline-none focus:ring-2 focus:ring-destructive focus:ring-offset-2"
+                aria-label="Reset Session"
+                onClick={() => setShowDeleteSessionModal(true)}
+              >
+                <Trash2 className="w-5 h-5" />
+              </button>
+            </div>
+          </Section>
         </>
       )}
     </div>
+    // </Container>
   );
 };
 

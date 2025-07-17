@@ -7,6 +7,7 @@ import {
   TagIcon,
   BookmarkIcon,
   CheckIcon,
+  // Container,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -251,7 +252,11 @@ export function FilterBar({
                           } else {
                             return [
                               ...prev,
-                              { id: "following", label: "Following", checked },
+                              {
+                                id: "following",
+                                label: "Following",
+                                checked,
+                              },
                             ];
                           }
                         });

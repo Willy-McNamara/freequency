@@ -25,6 +25,8 @@ import { apiConfig } from "../config/api";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "../components/auth/AuthProvider";
 import { ALL_INSTRUMENTS } from "../types/instruments.types";
+import { Container } from "@/components/layout/Container";
+import { Section } from "@/components/layout/Section";
 
 const TaskLibrary: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -399,32 +401,36 @@ const TaskLibrary: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading tasks...</p>
+      <Container>
+        <Section spacing="lg">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Loading tasks...</p>
+            </div>
           </div>
-        </div>
-      </div>
+        </Section>
+      </Container>
     );
   }
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <p className="text-destructive mb-4">Error: {error}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-            >
-              Try Again
-            </button>
+      <Container>
+        <Section spacing="lg">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <p className="text-destructive mb-4">Error: {error}</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+              >
+                Try Again
+              </button>
+            </div>
           </div>
-        </div>
-      </div>
+        </Section>
+      </Container>
     );
   }
 
@@ -441,15 +447,11 @@ const TaskLibrary: React.FC = () => {
             hasActiveSession ? handleUseInCurrentSession : undefined
           }
         />
-
-        {/* Create Task Modal - Always rendered */}
         <CreateTaskModal
           isOpen={isCreateModalOpen}
           onClose={() => setIsCreateModalOpen(false)}
           onSubmit={handleCreateTask}
         />
-
-        {/* Modify Task Modal - Always rendered */}
         <CreateTaskModal
           isOpen={isModifyModalOpen}
           onClose={() => {
@@ -464,47 +466,52 @@ const TaskLibrary: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col gap-6 w-full max-w-4xl mx-auto">
+    <Container>
       {/* Active Session Indicator */}
       {hasActiveSession && (
-        <div className="flex items-center gap-4 bg-primary/10 border border-primary rounded-lg px-4 py-2 mt-4 mb-2">
-          <Timer className="w-5 h-5 text-primary" />
-          <span className="font-semibold text-primary">Active Session</span>
-          <span className="ml-2 text-sm text-muted-foreground flex items-center gap-1">
-            <Play className="w-4 h-4 inline-block" />
-            {(() => {
-              const total = getSessionTime();
-              const min = Math.floor(total / 60);
-              const sec = String(total % 60).padStart(2, "0");
-              return `${min}:${sec}`;
-            })()}
-          </span>
-          <button
-            className="ml-auto px-3 py-1 rounded bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
-            onClick={() => navigate("/practice")}
-          >
-            Return to Practice
-          </button>
-        </div>
+        <Section spacing="sm">
+          <div className="flex items-center gap-4 bg-primary/10 border border-primary rounded-lg px-4 py-2">
+            <Timer className="w-5 h-5 text-primary" />
+            <span className="font-semibold text-primary">Active Session</span>
+            <span className="ml-2 text-sm text-muted-foreground flex items-center gap-1">
+              <Play className="w-4 h-4 inline-block" />
+              {(() => {
+                const total = getSessionTime();
+                const min = Math.floor(total / 60);
+                const sec = String(total % 60).padStart(2, "0");
+                return `${min}:${sec}`;
+              })()}
+            </span>
+            <button
+              className="ml-auto px-3 py-1 rounded bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
+              onClick={() => navigate("/practice")}
+            >
+              Return to Practice
+            </button>
+          </div>
+        </Section>
       )}
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Task Library</h1>
-        <Button
-          onClick={() => setIsCreateModalOpen(true)}
-          className="flex items-center gap-2"
-        >
-          <Plus className="w-4 h-4" />
-          Create Task
-        </Button>
-      </div>
-      <FilterBar filters={activeFilters} onFilterChange={handleFilterChange} />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {tasks.map((task) => {
-          // Infer instruments from tags (no longer used for badges below)
-          // const instrumentLabels = ALL_INSTRUMENTS.map((i) => i.label.toLowerCase());
-          // const instrumentTags = (task.tags || []).filter((tag) => instrumentLabels.includes(tag.label.toLowerCase()));
-          // const regularTags = (task.tags || []).filter((tag) => !instrumentLabels.includes(tag.label.toLowerCase()));
-          return (
+      <Section spacing="md">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Task Library</h1>
+          <Button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Create Task
+          </Button>
+        </div>
+      </Section>
+      <Section spacing="sm">
+        <FilterBar
+          filters={activeFilters}
+          onFilterChange={handleFilterChange}
+        />
+      </Section>
+      <Section spacing="md">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {tasks.map((task) => (
             <div key={task.id} className="relative">
               <TaskListItem
                 task={task}
@@ -516,17 +523,15 @@ const TaskLibrary: React.FC = () => {
                 }
               />
             </div>
-          );
-        })}
-      </div>
-
+          ))}
+        </div>
+      </Section>
       {/* Create Task Modal - Always rendered */}
       <CreateTaskModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onSubmit={handleCreateTask}
       />
-
       {/* Modify Task Modal - Always rendered */}
       <CreateTaskModal
         isOpen={isModifyModalOpen}
@@ -537,7 +542,7 @@ const TaskLibrary: React.FC = () => {
         onSubmit={handleModifySubmit}
         initialData={modifyTaskData}
       />
-    </div>
+    </Container>
   );
 };
 

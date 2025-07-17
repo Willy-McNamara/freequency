@@ -11,6 +11,7 @@ import { Badge } from "./badge";
 import { cn } from "../lib/utils";
 import { Task } from "./task-list-item";
 import { Button } from "./ui/button";
+import { Section } from "./layout/Section";
 
 export interface TaskDetailProps {
   task: Task;
@@ -59,24 +60,26 @@ export function TaskDetail({
   return (
     <div
       className={cn(
-        "flex flex-col w-full max-w-full min-w-[320px] px-4 sm:px-6 lg:px-8 mx-auto",
+        "flex flex-col w-full max-w-full min-w-[320px] px-4 sm:px-6 lg:px-8 mx-auto mb-8",
         className
       )}
     >
       {/* Header with back button */}
-      <div className="flex items-center gap-4 mb-6">
-        <Button
-          onClick={onBack}
-          variant="outline"
-          className="flex items-center gap-2 text-foreground"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Task Library
-        </Button>
-      </div>
+      <Section>
+        <div className="flex items-center gap-4">
+          <Button
+            onClick={onBack}
+            variant="outline"
+            className="flex items-center gap-2 text-foreground"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Task Library
+          </Button>
+        </div>
+      </Section>
 
       {/* Single Task Section */}
-      <div className="bg-card border border-border rounded-lg p-6 mb-6">
+      <div className="bg-card border border-border rounded-lg p-4 md:p-6 mb-6">
         {/* Task Title and Creator */}
         <div className="flex items-start justify-between mb-4">
           <h1 className="text-2xl font-bold text-foreground">{task.title}</h1>
@@ -130,10 +133,10 @@ export function TaskDetail({
               {task.checklist.map((item, index) => (
                 <div
                   key={index}
-                  className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg"
+                  className="flex flex-row items-center gap-3 p-3 bg-muted/30 rounded-lg w-full min-w-0"
                 >
                   <div className="w-5 h-5 rounded border-2 border-muted-foreground/30 flex-shrink-0"></div>
-                  <span className="flex-1 text-sm text-foreground text-left">
+                  <span className="flex-1 min-w-0 text-sm text-foreground text-left break-words truncate">
                     {item}
                   </span>
                 </div>
@@ -143,7 +146,7 @@ export function TaskDetail({
         )}
 
         {/* Stats and Buttons */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <Bookmark className="w-4 h-4" />
@@ -155,12 +158,12 @@ export function TaskDetail({
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
             {/* Modify Button */}
             <Button
               onClick={handleModifyTask}
               variant="outline"
-              className="flex items-center gap-2 text-foreground"
+              className="flex items-center gap-2 text-foreground w-full sm:w-auto"
             >
               <Edit className="w-4 h-4" />
               Make it your own
@@ -171,7 +174,7 @@ export function TaskDetail({
               onClick={handleToggleSave}
               variant={isSaved ? "default" : "outline"}
               className={cn(
-                "flex items-center gap-2 font-medium text-foreground",
+                "flex items-center gap-2 font-medium text-foreground w-full sm:w-auto",
                 isSaved
                   ? "bg-primary text-primary-foreground hover:bg-primary/90"
                   : "border border-border"
@@ -185,7 +188,7 @@ export function TaskDetail({
       </div>
 
       {/* Action Buttons */}
-      <div className="flex gap-3">
+      <div className="flex flex-col sm:flex-row gap-3">
         {hasActiveSession && onUseInCurrentSession ? (
           <button
             className="flex-1 bg-primary text-primary-foreground px-4 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"

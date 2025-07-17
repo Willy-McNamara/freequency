@@ -10,6 +10,8 @@ import {
 import { apiConfig } from "../config/api";
 import { useAuth } from "../components/auth/AuthProvider";
 import { ALL_INSTRUMENTS } from "../types/instruments.types";
+import { Container } from "../components/layout/Container";
+import { Section } from "../components/layout/Section";
 
 interface Post {
   id: number;
@@ -500,26 +502,16 @@ const Feed = () => {
   }
 
   return (
-    <div className="flex flex-col w-full justify-start">
-      {/* Filter Bar */}
-      <FilterBar filters={activeFilters} onFilterChange={handleFilterChange} />
-
-      {/* My Sessions Indicator */}
-      {isMySessionsFilter && (
-        <div className="flex items-center justify-center py-4 bg-muted/20 border-b border-border">
-          <div className="text-center">
-            <h2 className="text-lg font-semibold text-foreground">
-              My Sessions
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Showing only your practice sessions
-            </p>
-          </div>
-        </div>
-      )}
+    <Container>
+      <Section>
+        <FilterBar
+          filters={activeFilters}
+          onFilterChange={handleFilterChange}
+        />
+      </Section>
 
       {/* Feed Posts */}
-      <div className="flex flex-col items-start gap-12 mb-2 pt-8">
+      <div className="flex flex-col items-start gap-12 mb-2 ">
         {!posts || posts.length === 0 ? (
           <div className="text-center py-12 w-full">
             <p className="text-muted-foreground">
@@ -536,11 +528,11 @@ const Feed = () => {
                 </div>
               );
             } else {
+              // All other posts - same wrapper structure but no ref
               return (
-                <FeedPost
-                  key={post.id || index}
-                  postData={{ ...post, duration: post.duration }}
-                />
+                <div key={post.id || index}>
+                  <FeedPost postData={{ ...post, duration: post.duration }} />
+                </div>
               );
             }
           })
@@ -556,7 +548,7 @@ const Feed = () => {
           </div>
         )}
       </div>
-    </div>
+    </Container>
   );
 };
 

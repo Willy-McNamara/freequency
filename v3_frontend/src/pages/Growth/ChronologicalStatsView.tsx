@@ -2,6 +2,9 @@ import React from "react";
 import { ChartBarLabel } from "@/components/bar-chart";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { TagSelectDropdown } from "./TagSelectDropdown";
+import { Container } from "@/components/layout/Container";
+import { Section } from "@/components/layout/Section";
+import { Button } from "@/components/ui/button";
 
 interface ChartDataItem extends Record<string, string | number> {
   label: string;
@@ -57,15 +60,21 @@ export const ChronologicalStatsView: React.FC<ChronologicalStatsViewProps> = ({
   timeRanges,
 }) => {
   return (
-    <div className="w-[75vw]">
-      <div className="flex justify-start mb-2">
-        <button
-          onClick={onBack}
-          className="text-sm text-muted-foreground hover:underline"
-        >
-          &larr; Back
-        </button>
-      </div>
+    <Container
+      size="lg"
+      className="w-full px-0 sm:px-6 lg:px-8 min min-w-[357px]"
+    >
+      <Section>
+        <div className="flex justify-start mb-2">
+          <Button
+            onClick={onBack}
+            variant="outline"
+            className="text-sm text-muted-foreground"
+          >
+            &larr; Back
+          </Button>
+        </div>
+      </Section>
       <h1 className="text-2xl font-bold text-center mb-4">
         Chronological Stats
       </h1>
@@ -90,14 +99,14 @@ export const ChronologicalStatsView: React.FC<ChronologicalStatsViewProps> = ({
         <span className="font-semibold text-base min-w-[120px] text-center">
           {periodLabel}
         </span>
-        <button
-          className="p-2 rounded-full border disabled:opacity-50"
+        <Button
+          className="p-2 rounded-full border disabled:opacity-20"
           onClick={() => onCurrentIndexChange(Math.max(currentIndex - 1, 0))}
           disabled={!canGoForward}
           aria-label="Next"
         >
           <ChevronRightIcon className="w-5 h-5" />
-        </button>
+        </Button>
       </div>
       {/* Time range buttons */}
       <div className="flex justify-center gap-3 mb-4">
@@ -127,7 +136,7 @@ export const ChronologicalStatsView: React.FC<ChronologicalStatsViewProps> = ({
         description={chartDescription}
       />
       {/* Metric buttons */}
-      <div className="flex gap-3 mt-4 justify-center">
+      <div className="flex gap-3 mt-4 justify-center mb-4">
         <button
           onClick={() => onMetricChange("occurrence")}
           className={`px-4 py-2 rounded-md border transition-colors duration-150 focus:outline-none ${
@@ -149,6 +158,6 @@ export const ChronologicalStatsView: React.FC<ChronologicalStatsViewProps> = ({
           Duration (min)
         </button>
       </div>
-    </div>
+    </Container>
   );
 };

@@ -27,6 +27,7 @@ import {
   type Goal,
 } from "./Growth/index";
 import { createGoal, deleteGoal } from "../services/musicians";
+import { Container } from "@/components/layout/Container";
 
 // Define the possible views as a union type
 type ViewType = "MENU" | "TOTAL" | "CHRONOLOGICAL" | "GOALS";
@@ -462,16 +463,18 @@ const Growth: React.FC = () => {
     const { tagTotals, pieData, tagColorMap } = calculateTotalStatsData();
 
     return (
-      <TotalStatsView
-        onBack={handleBack}
-        selectedTotalRange={selectedTotalRange}
-        onRangeChange={setSelectedTotalRange}
-        tagTotals={tagTotals}
-        pieData={pieData}
-        tagColorMap={tagColorMap}
-        formatMinutes={formatMinutes}
-        totalTimeRanges={totalTimeRanges}
-      />
+      <Container size="lg" className="w-full px-4 sm:px-6 lg:px-8">
+        <TotalStatsView
+          onBack={handleBack}
+          selectedTotalRange={selectedTotalRange}
+          onRangeChange={setSelectedTotalRange}
+          tagTotals={tagTotals}
+          pieData={pieData}
+          tagColorMap={tagColorMap}
+          formatMinutes={formatMinutes}
+          totalTimeRanges={totalTimeRanges}
+        />
+      </Container>
     );
   }
 
@@ -486,58 +489,64 @@ const Growth: React.FC = () => {
     } = calculateChronologicalStatsData();
 
     return (
-      <ChronologicalStatsView
-        onBack={handleBack}
-        selectedTag={selectedTag}
-        onTagChange={setSelectedTag}
-        userTags={userTags}
-        selectedTimeRange={selectedTimeRange}
-        onTimeRangeChange={setSelectedTimeRange}
-        currentIndex={currentIndex}
-        onCurrentIndexChange={setCurrentIndex}
-        selectedMetric={selectedMetric}
-        onMetricChange={setSelectedMetric}
-        chartData={chartData}
-        chartTitle={chartTitle}
-        chartDescription={chartDescription}
-        periodLabel={periodLabel}
-        canGoBack={canGoBack}
-        canGoForward={canGoForward}
-        timeRanges={timeRanges}
-      />
+      <Container size="lg" className="w-full px-4 sm:px-6 lg:px-8">
+        <ChronologicalStatsView
+          onBack={handleBack}
+          selectedTag={selectedTag}
+          onTagChange={setSelectedTag}
+          userTags={userTags}
+          selectedTimeRange={selectedTimeRange}
+          onTimeRangeChange={setSelectedTimeRange}
+          currentIndex={currentIndex}
+          onCurrentIndexChange={setCurrentIndex}
+          selectedMetric={selectedMetric}
+          onMetricChange={setSelectedMetric}
+          chartData={chartData}
+          chartTitle={chartTitle}
+          chartDescription={chartDescription}
+          periodLabel={periodLabel}
+          canGoBack={canGoBack}
+          canGoForward={canGoForward}
+          timeRanges={timeRanges}
+        />
+      </Container>
     );
   }
 
   if (view === "GOALS") {
     return (
-      <GoalsView
-        onBack={handleBack}
-        goals={goals}
-        userTags={userTags}
-        isGoalModalOpen={isGoalModalOpen}
-        onGoalModalOpenChange={setIsGoalModalOpen}
-        editingGoal={editingGoal}
-        newGoal={newGoal}
-        onNewGoalChange={setNewGoal}
-        onEditingGoalChange={setEditingGoal}
-        onDeleteGoal={handleDeleteGoal}
-        onCreateGoal={handleCreateGoal}
-        onEditGoal={handleEditGoal}
-        formatGoalSummary={formatGoalSummary}
-        calculateGoalProgress={calculateGoalProgress}
-        allTasksInUse={allTasksInUse}
-      />
+      <Container size="lg" className="w-full px-4 sm:px-6 lg:px-8">
+        <GoalsView
+          onBack={handleBack}
+          goals={goals}
+          userTags={userTags}
+          isGoalModalOpen={isGoalModalOpen}
+          onGoalModalOpenChange={setIsGoalModalOpen}
+          editingGoal={editingGoal}
+          newGoal={newGoal}
+          onNewGoalChange={setNewGoal}
+          onEditingGoalChange={setEditingGoal}
+          onDeleteGoal={handleDeleteGoal}
+          onCreateGoal={handleCreateGoal}
+          onEditGoal={handleEditGoal}
+          formatGoalSummary={formatGoalSummary}
+          calculateGoalProgress={calculateGoalProgress}
+          allTasksInUse={allTasksInUse}
+        />
+      </Container>
     );
   }
 
   // Default menu view
   return (
-    <GrowthMenuView
-      allTasksInUse={allTasksInUse}
-      goals={goals}
-      onViewChange={setView}
-      formatMinutes={formatMinutes}
-    />
+    <Container size="lg" className="w-full px-4 sm:px-6 lg:px-8">
+      <GrowthMenuView
+        allTasksInUse={allTasksInUse}
+        goals={goals}
+        onViewChange={setView}
+        formatMinutes={formatMinutes}
+      />
+    </Container>
   );
 };
 

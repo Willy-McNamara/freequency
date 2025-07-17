@@ -2,6 +2,8 @@ import React from "react";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TaskInUseMock } from "./utils";
+import { Section } from "@/components/layout/Section";
+import { Container } from "@/components/layout/Container";
 
 interface GrowthMenuViewProps {
   allTasksInUse: TaskInUseMock[];
@@ -21,11 +23,13 @@ export const GrowthMenuView: React.FC<GrowthMenuViewProps> = ({
     .size;
 
   return (
-    <div className="w-[75vw] mx-auto">
-      <h1 className="text-2xl font-bold text-center mb-4">Growth</h1>
-      <p className="text-center text-muted-foreground mb-6">
-        Track your musical practice over time.
-      </p>
+    <Container size="lg" className="w-full px-4 sm:px-6 lg:px-8">
+      <Section>
+        <h1 className="text-2xl font-bold text-center mb-4">Growth</h1>
+        <p className="text-center text-muted-foreground">
+          Track your musical practice over time.
+        </p>
+      </Section>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="p-6 text-center flex flex-col items-center justify-between">
           <CardTitle className="text-lg font-semibold mb-2">
@@ -73,6 +77,6 @@ export const GrowthMenuView: React.FC<GrowthMenuViewProps> = ({
           </Button>
         </Card>
       </div>
-    </div>
+    </Container>
   );
 };

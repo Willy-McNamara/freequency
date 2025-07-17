@@ -160,12 +160,13 @@ export function CreateTaskModal({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div
         className={cn(
-          "bg-background border border-border rounded-lg shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto",
+          // Responsive padding and max width for modal
+          "bg-background border border-border rounded-lg shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto p-4 md:p-6",
           className
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-border">
+        <div className="flex items-center justify-between pb-4 md:pb-6 border-b border-border">
           <h2 className="text-xl font-semibold text-foreground text-left">
             {isModifying ? "Modify Task" : "Create New Task"}
           </h2>
@@ -181,7 +182,7 @@ export function CreateTaskModal({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="pt-4 md:pt-6 space-y-6">
           {/* Title */}
           <div>
             <label
@@ -249,7 +250,7 @@ export function CreateTaskModal({
             <label className="block text-sm font-medium text-foreground mb-2 text-left">
               Tags
             </label>
-            <div className="flex gap-2 mb-3">
+            <div className="flex flex-wrap gap-2 mb-3">
               <button
                 type="button"
                 onClick={() => setTagModalOpen(true)}
@@ -262,27 +263,27 @@ export function CreateTaskModal({
                   + add
                 </Badge>
               </button>
-            </div>
-            {formData.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {formData.tags.map((tag, index) => (
-                  <Badge
-                    key={index}
-                    variant="secondary"
-                    className="flex items-center gap-1 !hover:bg-none !hover:bg-transparent"
-                  >
-                    {tag}
-                    <button
-                      type="button"
-                      onClick={() => removeTag(tag)}
-                      className="hover:text-destructive"
+              {formData.tags.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {formData.tags.map((tag, index) => (
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="flex items-center gap-1 !hover:bg-none !hover:bg-transparent"
                     >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-            )}
+                      {tag}
+                      <button
+                        type="button"
+                        onClick={() => removeTag(tag)}
+                        className="hover:text-destructive"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
             <TagModal
               isOpen={tagModalOpen}
               onClose={() => setTagModalOpen(false)}
@@ -295,7 +296,7 @@ export function CreateTaskModal({
             <label className="block text-sm font-medium text-foreground mb-2 text-left">
               Checklist
             </label>
-            <div className="flex gap-2 mb-3">
+            <div className="flex flex-row flex-nowrap gap-2 mb-3">
               <input
                 type="text"
                 value={newChecklistItem}
@@ -303,7 +304,7 @@ export function CreateTaskModal({
                 onKeyPress={(e) =>
                   e.key === "Enter" && (e.preventDefault(), addChecklistItem())
                 }
-                className="flex-1 px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-left"
+                className="flex-1 min-w-0 px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-left"
                 placeholder="Add a checklist item"
               />
               <button
@@ -319,10 +320,10 @@ export function CreateTaskModal({
                 {formData.checklist.map((item, index) => (
                   <div
                     key={index}
-                    className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg"
+                    className="flex flex-row items-center gap-3 p-3 bg-muted/30 rounded-lg w-full min-w-0"
                   >
                     <div className="w-5 h-5 rounded border-2 border-muted-foreground/30 flex-shrink-0"></div>
-                    <span className="flex-1 text-sm text-foreground text-left">
+                    <span className="flex-1 min-w-0 text-sm text-foreground text-left break-words truncate">
                       {item}
                     </span>
                     <button
@@ -339,7 +340,7 @@ export function CreateTaskModal({
           </div>
 
           {/* Submit Button */}
-          <div className="flex gap-3 pt-4 border-t border-border">
+          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
             <button
               type="button"
               onClick={handleClose}

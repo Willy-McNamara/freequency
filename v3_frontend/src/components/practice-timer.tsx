@@ -64,18 +64,19 @@ export const PracticeTimer = React.forwardRef<
   return (
     <div
       className={
-        "flex items-center gap-2 font-mono text-lg " + (className || "")
+        "flex items-center justify-center font-mono text-lg " +
+        (className || "")
       }
     >
       <button
         type="button"
         aria-label={running ? "Pause timer" : "Start timer"}
         onClick={() => onRunningChange?.(!running)}
-        className="focus:outline-none"
+        className="focus:outline-none px-2"
       >
         {running ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
       </button>
-      <span>{formatted}</span>
+      <span className="px-2">{formatted}</span>
     </div>
   );
 });

@@ -17,11 +17,11 @@ export function PracticeTaskList({
   className,
 }: PracticeTaskListProps) {
   return (
-    <div className="flex flex-col gap-2 items-start mt-4">
+    <div className="flex flex-col gap-2 items-start mt-4 w-full">
       <h3 className="font-bold text-base mb-1">Tasks</h3>
       <div
         className={cn(
-          "flex flex-col gap-2 border-2 border-dotted border-zinc-400 rounded-xl p-3 w-full min-w-[200px]",
+          "flex flex-col gap-2 border-2 border-dotted border-zinc-400 rounded-xl p-3 w-full",
           className
         )}
       >
