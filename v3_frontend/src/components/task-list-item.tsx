@@ -31,6 +31,7 @@ export interface Task {
   checklist: string[];
   savedCount: number;
   usedCount: number;
+  isSaved?: boolean;
 }
 
 export interface TaskListItemProps {

@@ -12,6 +12,20 @@ import { cn } from "../lib/utils";
 import { Task } from "./task-list-item";
 import { Button } from "./ui/button";
 import { Section } from "./layout/Section";
+import { apiConfig } from "../config/api";
+
+async function saveTask(taskId: number) {
+  return fetch(`${apiConfig.endpoints.tasks}/${taskId}/save`, {
+    method: "POST",
+    credentials: "include",
+  });
+}
+async function unsaveTask(taskId: number) {
+  return fetch(`${apiConfig.endpoints.tasks}/${taskId}/save`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+}
 
 export interface TaskDetailProps {
   task: Task;
@@ -30,25 +44,24 @@ export function TaskDetail({
   hasActiveSession,
   onUseInCurrentSession,
 }: TaskDetailProps) {
-  const [isSaved, setIsSaved] = React.useState(false);
+  const [isSaved, setIsSaved] = React.useState(task.isSaved ?? false);
+
+  React.useEffect(() => {
+    setIsSaved(task.isSaved ?? false);
+  }, [task.isSaved, task.id]);
 
   const handleToggleSave = async () => {
     const newSavedState = !isSaved;
     setIsSaved(newSavedState);
-
-    // Mock API call
     try {
       if (newSavedState) {
-        console.log(`Saving task ${task.id} to user's saved tasks`);
-        // Mock API call: POST /api/tasks/${task.id}/save
+        await saveTask(task.id);
       } else {
-        console.log(`Removing task ${task.id} from user's saved tasks`);
-        // Mock API call: DELETE /api/tasks/${task.id}/save
+        await unsaveTask(task.id);
       }
     } catch (error) {
-      console.error("Error toggling task save state:", error);
-      // Revert state on error
       setIsSaved(!newSavedState);
+      // Optionally show error to user
     }
   };
 

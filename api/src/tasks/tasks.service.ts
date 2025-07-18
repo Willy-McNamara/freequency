@@ -14,7 +14,9 @@ interface TaskFilters {
 export class TasksService {
   constructor(private prisma: PrismaService) {}
 
-  async getAllTasks(filters?: TaskFilters): Promise<TaskDTO[]> {
+  async getAllTasks(
+    filters?: TaskFilters & { allowedIds?: number[] },
+  ): Promise<TaskDTO[]> {
     console.log('TasksService.getAllTasks called with filters:', filters);
 
     // Build where clause for filtering
@@ -45,11 +47,29 @@ export class TasksService {
       };
     }
 
-    // Filter by saved tasks (savedCount > 0)
-    if (filters?.saved) {
-      where.savedCount = {
-        gt: 0,
-      };
+    // User-specific saved filter
+    if (filters?.saved && filters.userId) {
+      // Get the user's saved task IDs
+      const savedTasks = await this.prisma.savedTask.findMany({
+        where: { musicianId: filters.userId },
+        select: { taskDefinitionId: true },
+      });
+      const savedTaskIds = savedTasks.map((st) => st.taskDefinitionId);
+      if (savedTaskIds.length === 0) {
+        // Return early if no saved tasks
+        return [];
+      }
+      where.id = { in: savedTaskIds };
+    }
+
+    // If allowedIds is provided, only return those tasks
+    if (filters?.allowedIds) {
+      if (filters.allowedIds.length === 0) {
+        console.log('allowedIds is empty, returning []');
+        return [];
+      }
+      where.id = { in: filters.allowedIds };
+      console.log('allowedIds:', filters.allowedIds);
     }
 
     console.log('Final where clause:', where);
@@ -79,25 +99,45 @@ export class TasksService {
 
     console.log('Found tasks:', tasks.length);
 
+    // Fetch saved task IDs for the user, if userId is provided
+    let savedTaskIds: number[] = [];
+    if (filters?.userId) {
+      const savedTasks = await this.prisma.savedTask.findMany({
+        where: { musicianId: filters.userId },
+        select: { taskDefinitionId: true },
+      });
+      savedTaskIds = savedTasks.map((st) => st.taskDefinitionId);
+      console.log('User', filters.userId, 'has saved task IDs:', savedTaskIds);
+    }
+
     // Map the database tasks to TaskDTO objects
-    let taskDtos: TaskDTO[] = tasks.map((task) => ({
-      id: task.id,
-      title: task.title,
-      description: task.description,
-      instrument: task.musician.instruments[0]?.label || 'Unknown', // Use first instrument as primary
-      user: {
-        displayName: task.musician.displayName,
-        avatarUrl: task.musician.avatarUrl,
-      },
-      tags: task.tags.map((tag) => ({
-        id: tag.id,
-        label: tag.label,
-        color: tag.color,
-      })),
-      checklist: task.checklist,
-      savedCount: task.savedCount,
-      usedCount: task.usedCount,
-    }));
+    let taskDtos: TaskDTO[] = tasks.map((task) => {
+      const isSaved = filters?.allowedIds
+        ? true
+        : savedTaskIds.includes(task.id);
+      if (filters?.allowedIds) {
+        console.log(`Task ${task.id} isSaved:`, isSaved);
+      }
+      return {
+        id: task.id,
+        title: task.title,
+        description: task.description,
+        instrument: task.musician.instruments[0]?.label || 'Unknown',
+        user: {
+          displayName: task.musician.displayName,
+          avatarUrl: task.musician.avatarUrl,
+        },
+        tags: task.tags.map((tag) => ({
+          id: tag.id,
+          label: tag.label,
+          color: tag.color,
+        })),
+        checklist: task.checklist,
+        savedCount: task.savedCount,
+        usedCount: task.usedCount,
+        isSaved,
+      };
+    });
 
     // Filter by instruments (client-side filtering for now)
     if (filters?.instruments && filters.instruments.length > 0) {
@@ -262,6 +302,70 @@ export class TasksService {
   async deleteTask(id: number): Promise<void> {
     // This would be implemented when we add task deletion functionality
     throw new Error('Not implemented yet');
+  }
+
+  async saveTaskForUser(taskId: number, userId: number) {
+    // Create a SavedTask entry if it doesn't exist
+    const savedTask = await this.prisma.savedTask.upsert({
+      where: {
+        musicianId_taskDefinitionId: {
+          musicianId: userId,
+          taskDefinitionId: taskId,
+        },
+      },
+      update: {},
+      create: {
+        musicianId: userId,
+        taskDefinitionId: taskId,
+      },
+    });
+
+    // Increment savedCount
+    await this.prisma.taskDefinition.update({
+      where: { id: taskId },
+      data: { savedCount: { increment: 1 } },
+    });
+
+    return savedTask;
+  }
+
+  async unsaveTaskForUser(taskId: number, userId: number) {
+    // Remove the SavedTask entry
+    const deleted = await this.prisma.savedTask.deleteMany({
+      where: {
+        musicianId: userId,
+        taskDefinitionId: taskId,
+      },
+    });
+
+    // Decrement savedCount only if a row was actually deleted
+    if (deleted.count > 0) {
+      await this.prisma.taskDefinition.update({
+        where: { id: taskId },
+        data: { savedCount: { decrement: 1 } },
+      });
+    }
+
+    return deleted;
+  }
+
+  async getTasks({ saved, userId }: { saved?: string; userId?: number }) {
+    console.log('getTasks called with saved:', saved, 'userId:', userId);
+    if (saved === 'true' && userId) {
+      // Return only tasks saved by the user
+      const savedTasks = await this.prisma.savedTask.findMany({
+        where: { musicianId: userId },
+        select: { taskDefinitionId: true },
+      });
+      const savedTaskIds = savedTasks.map((st) => st.taskDefinitionId);
+      console.log('Saved task IDs for user', userId, ':', savedTaskIds);
+      return this.getAllTasks({
+        userId,
+        allowedIds: savedTaskIds,
+      });
+    }
+    // Fallback to existing logic
+    return this.getAllTasks({ userId });
   }
 
   private getInstrumentColor(instrument: string): string {

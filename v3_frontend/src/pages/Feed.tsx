@@ -110,7 +110,7 @@ const Feed = () => {
       isSelected: false,
       options: [],
     },
-    { type: "saved", isSelected: false },
+    // { type: "saved", isSelected: false }, removing for now, don't know whether to filter liked posts, or add an option to save posts.
   ]);
 
   // Build query parameters from active filters

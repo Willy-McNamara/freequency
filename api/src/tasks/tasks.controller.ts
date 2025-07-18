@@ -8,6 +8,7 @@ import {
   Req,
   UseGuards,
   Query,
+  Delete,
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { TaskDTO, CreateTaskDto } from './dto/task.dto';
@@ -51,5 +52,19 @@ export class TasksController {
     @Req() req: any,
   ): Promise<TaskDTO> {
     return this.tasksService.createTask(createTaskDto, req.user.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/save')
+  async saveTask(@Param('id') id: number, @Req() req: any) {
+    const userId = req.user.id;
+    return this.tasksService.saveTaskForUser(Number(id), userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id/save')
+  async unsaveTask(@Param('id') id: number, @Req() req: any) {
+    const userId = req.user.id;
+    return this.tasksService.unsaveTaskForUser(Number(id), userId);
   }
 }
