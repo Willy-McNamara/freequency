@@ -364,12 +364,12 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
         <>
           {/* Overlay below TopBar */}
           <div
-            className="fixed top-[64px] left-0 right-0 bottom-0 z-40 bg-black/70"
+            className="fixed top-[64px] left-0 right-0 bottom-0 z-30 bg-black/70"
             style={{ pointerEvents: "none" }}
           />
           {/* Centered content */}
           <div
-            className="fixed left-1/2 z-50"
+            className="fixed left-1/2 z-40"
             style={{
               top: "calc(50% + 32px)",
               transform: "translate(-50%, -50%)",

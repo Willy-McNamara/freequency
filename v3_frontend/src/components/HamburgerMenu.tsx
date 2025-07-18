@@ -66,7 +66,7 @@ export function HamburgerMenu({ children }: HamburgerMenuProps) {
       <div
         ref={menuRef}
         className={cn(
-          "fixed top-0 left-0 h-screen w-64 bg-background border-r border-border shadow-lg transition-transform duration-200 ease-in-out",
+          "fixed top-0 left-0 h-screen w-64 bg-background border-r border-border shadow-lg transition-transform duration-200 ease-in-out z-50",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
