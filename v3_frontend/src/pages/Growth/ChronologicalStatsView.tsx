@@ -5,6 +5,7 @@ import { TagSelectDropdown } from "./TagSelectDropdown";
 import { Container } from "@/components/layout/Container";
 import { Section } from "@/components/layout/Section";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface ChartDataItem extends Record<string, string | number> {
   label: string;
@@ -88,19 +89,27 @@ export const ChronologicalStatsView: React.FC<ChronologicalStatsViewProps> = ({
       </div>
       {/* Time navigation */}
       <div className="flex items-center justify-center gap-2 mb-4">
-        <button
-          className="p-2 rounded-full border disabled:opacity-50"
+        <Button
+          className={cn(
+            "p-2 rounded-full border",
+            !canGoBack &&
+              "bg-gray-200 text-gray-400 border-gray-300 cursor-not-allowed hover:bg-gray-200 hover:text-gray-400 hover:border-gray-300"
+          )}
           onClick={() => onCurrentIndexChange(currentIndex + 1)}
           disabled={!canGoBack}
           aria-label="Previous"
         >
           <ChevronLeftIcon className="w-5 h-5" />
-        </button>
+        </Button>
         <span className="font-semibold text-base min-w-[120px] text-center">
           {periodLabel}
         </span>
         <Button
-          className="p-2 rounded-full border disabled:opacity-20"
+          className={cn(
+            "p-2 rounded-full border",
+            !canGoForward &&
+              "bg-gray-200 text-gray-400 border-gray-300 cursor-not-allowed hover:bg-gray-200 hover:text-gray-400 hover:border-gray-300"
+          )}
           onClick={() => onCurrentIndexChange(Math.max(currentIndex - 1, 0))}
           disabled={!canGoForward}
           aria-label="Next"

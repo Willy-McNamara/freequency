@@ -92,7 +92,7 @@ export function TaskDetail({
       </Section>
 
       {/* Single Task Section */}
-      <div className="bg-card border border-border rounded-lg p-4 md:p-6 mb-6">
+      <div className="bg-card border border-border rounded-lg p-4 md:p-6">
         {/* Task Title and Creator */}
         <div className="flex items-start justify-between mb-4">
           <h1 className="text-2xl font-bold text-foreground">{task.title}</h1>
@@ -202,18 +202,24 @@ export function TaskDetail({
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-3">
-        {hasActiveSession && onUseInCurrentSession ? (
-          <button
-            className="flex-1 bg-primary text-primary-foreground px-4 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
-            onClick={() => onUseInCurrentSession(task)}
-          >
-            Use in current session
-          </button>
-        ) : (
-          <button className="flex-1 bg-primary text-primary-foreground px-4 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors">
-            Start Practice Session
-          </button>
-        )}
+        {
+          hasActiveSession && onUseInCurrentSession ? (
+            <button
+              className="flex-1 bg-primary text-primary-foreground px-4 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors mb-6"
+              onClick={() => onUseInCurrentSession(task)}
+            >
+              Use in current session
+            </button>
+          ) : (
+            <></>
+          )
+          // Commenting this out for now, it would be complex to implement and I'm not sure it's necessary
+          // (
+          //   <button className="flex-1 bg-primary text-primary-foreground px-4 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors">
+          //     Start Practice Session
+          //   </button>
+          // )
+        }
       </div>
     </div>
   );
