@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState, useRef } from "react";
+import React, { useContext, useEffect, useState, useRef, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { RichTextEditor } from "@/components/rich-text";
 import { PracticeTaskList } from "@/components/practice-task-list";
@@ -53,6 +53,19 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   const [showInstrumentTagModal, setShowInstrumentTagModal] = useState(false);
   const [showDeleteSessionModal, setShowDeleteSessionModal] = useState(false);
   const [instrumentModalOpen, setInstrumentModalOpen] = useState(false);
+  const [showStartModal, setShowStartModal] = useState(
+    !session.sessionTimerRunning && (session.sessionTimerSeconds ?? 0) === 0
+  );
+
+  useEffect(() => {
+    // Show modal if session timer is reset to 0 and not running
+    if (
+      !session.sessionTimerRunning &&
+      (session.sessionTimerSeconds ?? 0) === 0
+    ) {
+      setShowStartModal(true);
+    }
+  }, [session.sessionTimerRunning, session.sessionTimerSeconds]);
 
   const {
     sessionTitle,
@@ -328,9 +341,71 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
     );
   }
 
+  const startPhrases = [
+    "Let's do this",
+    "Pull the lever kronk",
+    "Booyah.",
+    "Big time.",
+    "Uh 1, uh 2, uh 1, 2, 3, 4....",
+  ];
+
+  const startButtonPhrase = useMemo(() => {
+    if (!showStartModal) return startPhrases[0];
+    return startPhrases[Math.floor(Math.random() * startPhrases.length)];
+    // Only pick a new phrase when the modal is shown
+    // eslint-disable-next-line
+  }, [showStartModal]);
+
   // Main Practice view
   return (
     <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 min-h-screen mb-8">
+      {/* Start Session Custom Overlay */}
+      {showStartModal && (
+        <>
+          {/* Overlay below TopBar */}
+          <div
+            className="fixed top-[64px] left-0 right-0 bottom-0 z-40 bg-black/70"
+            style={{ pointerEvents: "none" }}
+          />
+          {/* Centered content */}
+          <div
+            className="fixed left-1/2 z-50"
+            style={{
+              top: "calc(50% + 32px)",
+              transform: "translate(-50%, -50%)",
+              background: "rgba(255,255,255,0.95)",
+              boxShadow: "none",
+              border: "none",
+              textAlign: "center",
+              borderRadius: "1rem",
+              padding: "2rem 2.5rem",
+              minWidth: "320px",
+              maxWidth: "90vw",
+            }}
+          >
+            <div className="text-lg font-semibold leading-none tracking-tight text-center w-full mb-2">
+              Ready to practice?
+            </div>
+            <Button
+              style={{
+                backgroundColor: "#22c55e",
+                color: "white",
+                fontWeight: 600,
+                fontSize: "1rem",
+                padding: "0.5rem 1.5rem",
+                borderRadius: "9999px",
+                marginTop: "1.5rem",
+              }}
+              onClick={() => {
+                session.setSessionTimerRunning(true);
+                setShowStartModal(false);
+              }}
+            >
+              {startButtonPhrase}
+            </Button>
+          </div>
+        </>
+      )}
       {/* <Container>
       For some reason I couldn't get xontainer to work here.. */}
       {/* Instrument Tag Required Modal */}
