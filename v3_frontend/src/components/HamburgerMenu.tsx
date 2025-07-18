@@ -34,13 +34,13 @@ export function HamburgerMenu({ children }: HamburgerMenuProps) {
   }, [isOpen]);
 
   return (
-    <div className="fixed top-4 left-4 z-50">
+    <div className="fixed top-4 left-4">
       <Button
         ref={buttonRef}
         variant="outline"
         size="icon"
         onClick={() => setIsOpen(!isOpen)}
-        className="relative z-50 bg-background"
+        className="relative z-60 bg-background"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -66,11 +66,11 @@ export function HamburgerMenu({ children }: HamburgerMenuProps) {
       <div
         ref={menuRef}
         className={cn(
-          "fixed top-0 left-0 h-screen w-64 bg-background border-r border-border shadow-lg transition-transform duration-200 ease-in-out z-50",
+          "fixed left-0 top-16 w-64 bg-background border-r border-border shadow-lg transition-transform duration-200 ease-in-out z-50 h-[calc(100vh-4rem)]",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <div className="pt-16 px-4" onClick={handleChildClick}>
+        <div className="pt-4 px-4" onClick={handleChildClick}>
           {children}
         </div>
       </div>
