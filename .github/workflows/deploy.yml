@@ -71,11 +71,14 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPOSITORY
-            docker stop freequency-app || true
-            docker rm freequency-app || true
-            docker pull $ECR_REPOSITORY:latest
-            docker run --name freequency-app \
+            export AWS_REGION=${{ secrets.AWS_REGION }}
+            export ECR_REPOSITORY=${{ secrets.ECR_REPOSITORY }}
+
+            aws ecr get-login-password --region $AWS_REGION | sudo docker login --username AWS --password-stdin $ECR_REPOSITORY
+            sudo docker stop freequency-app || true
+            sudo docker rm freequency-app || true
+            sudo docker pull $ECR_REPOSITORY:latest
+            sudo docker run --name freequency-app \
               -e DATABASE_URL_V3="$DATABASE_URL_V3" \
               -e GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID" \
               -e GOOGLE_CLIENT_SECRET="$GOOGLE_CLIENT_SECRET" \
