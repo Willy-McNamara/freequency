@@ -47,9 +47,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
     (t: SessionTask) => t.id === selectedTaskId
   );
   const { user } = useAuth();
-  const [userInstruments, setUserInstruments] = useState<
-    { id: number; label: string }[]
-  >([]);
+
   const [showInstrumentTagModal, setShowInstrumentTagModal] = useState(false);
   const [showDeleteSessionModal, setShowDeleteSessionModal] = useState(false);
   const [instrumentModalOpen, setInstrumentModalOpen] = useState(false);
@@ -111,25 +109,19 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
     return `${day} ${timeOfDay} practice session`;
   }
 
-  // Fetch user instruments and auto-populate tags on mount
+  // Auto-populate tags with first instrument if not present
   useEffect(() => {
-    if (user && user.id) {
+    if (user && user.id && session.tags.length === 0) {
       fetch(apiConfig.endpoints.musicians.profile(user.id))
         .then((res) => res.json())
         .then((profile) => {
-          if (profile && Array.isArray(profile.instruments)) {
-            type InstrumentTag = { id: number; label: string };
-            setUserInstruments(
-              profile.instruments.map((inst: InstrumentTag) => ({
-                id: inst.id,
-                label: inst.label,
-              }))
-            );
-            // Auto-populate tags with only the first instrument if not present
-            if (session.tags.length === 0 && profile.instruments.length > 0) {
-              const first = profile.instruments[0];
-              session.setTags([{ id: String(first.id), label: first.label }]);
-            }
+          if (
+            profile &&
+            Array.isArray(profile.instruments) &&
+            profile.instruments.length > 0
+          ) {
+            const first = profile.instruments[0];
+            session.setTags([{ id: String(first.id), label: first.label }]);
           }
         });
     }
@@ -256,21 +248,37 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
 
   const handleSaveSession = async () => {
     // Validate: must have at least one instrument tag
-    const instrumentLabels = userInstruments.map((i) => i.label.toLowerCase());
+    const instruments = ALL_INSTRUMENTS.map((i) => i.label.toLowerCase());
     const hasInstrumentTag = session.tags.some((tag) =>
-      instrumentLabels.includes(tag.label.toLowerCase())
+      instruments.includes(tag.label.toLowerCase())
     );
+    console.log("instruments", instruments);
+    console.log("session tags", session.tags);
     if (!hasInstrumentTag) {
       setShowInstrumentTagModal(true);
       return;
     }
     try {
+      // Separate instrument tags from regular tags
+      const instrumentTags = session.tags.filter((tag) =>
+        instruments.includes(tag.label.toLowerCase())
+      );
+      const regularTags = session.tags.filter(
+        (tag) => !instruments.includes(tag.label.toLowerCase())
+      );
+
+      // Debug logging
+      console.log("Instrument labels:", instruments);
+      console.log("All session tags:", session.tags);
+      console.log("Instrument tags:", instrumentTags);
+      console.log("Regular tags:", regularTags);
+
       // Explicitly type sessionData to match backend DTO
       const sessionData: {
         title: string;
         notes: string;
-        instruments: number[];
-        tags: number[];
+        instruments: string[];
+        tags: string[];
         duration: number;
         tasks: Array<{
           id: number;
@@ -278,13 +286,13 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
           notes: string;
           timeSpent: number;
           checklist: { item: string; checked: boolean }[];
-          tags: number[];
+          tags: string[];
         }>;
       } = {
         title: session.sessionTitle || "Untitled Session",
         notes: session.sessionNotes || "",
-        instruments: [], // No instrument selection in context yet
-        tags: session.tags ? session.tags.map((t) => Number(t.id)) : [],
+        instruments: instrumentTags.map((t) => t.label), // Send instrument labels
+        tags: regularTags.map((t) => t.label), // Send regular tag labels
         duration: session.sessionTimerSeconds || 0,
         tasks: (session.tasks || []).map((task) => ({
           id: Number(task.id),
@@ -292,9 +300,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
           notes: task.notes || "",
           timeSpent: task.timeSpent || 0,
           checklist: Array.isArray(task.checklist) ? task.checklist : [],
-          tags: Array.isArray(task.tags)
-            ? task.tags.map((t) => Number(t.id))
-            : [],
+          tags: Array.isArray(task.tags) ? task.tags.map((t) => t.label) : [],
         })),
       };
       await sessionService.saveSession(sessionData);

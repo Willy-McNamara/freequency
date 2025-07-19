@@ -315,11 +315,11 @@ export const PostView: React.FC = () => {
       <Container>
         <Section spacing="lg">
           <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
-            <div className="space-y-4">
-              <div className="h-32 bg-gray-200 rounded"></div>
-              <div className="h-32 bg-gray-200 rounded"></div>
+            <div className="h-6 sm:h-8 bg-gray-200 rounded w-1/3 sm:w-1/4 mb-3 sm:mb-4"></div>
+            <div className="h-3 sm:h-4 bg-gray-200 rounded w-2/3 sm:w-1/2 mb-6 sm:mb-8"></div>
+            <div className="space-y-3 sm:space-y-4">
+              <div className="h-24 sm:h-32 bg-gray-200 rounded"></div>
+              <div className="h-24 sm:h-32 bg-gray-200 rounded"></div>
             </div>
           </div>
         </Section>
@@ -332,9 +332,13 @@ export const PostView: React.FC = () => {
       <Container>
         <Section spacing="lg">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-red-600 mb-4">Error</h1>
-            <p className="text-gray-600 mb-4">{error || "Post not found"}</p>
-            <Button variant="outline" onClick={handleBack}>
+            <h1 className="text-xl sm:text-2xl font-bold text-red-600 mb-3 sm:mb-4">
+              Error
+            </h1>
+            <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4">
+              {error || "Post not found"}
+            </p>
+            <Button variant="outline" onClick={handleBack} size="sm">
               Back to Feed
             </Button>
           </div>
@@ -345,35 +349,33 @@ export const PostView: React.FC = () => {
 
   return (
     <Container>
-      <Section spacing="lg">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleBack}
-            className="flex items-center gap-2 text-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Feed
-          </Button>
-        </div>
-      </Section>
       <Section spacing="md">
+        {/* Header */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleBack}
+          className="flex items-center gap-2 text-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Feed
+        </Button>
+      </Section>
+      <Section spacing="sm">
         {/* Single Card Container */}
-        <div className="bg-card border border-border rounded-lg overflow-hidden w-full max-w-4xl mx-auto">
+        <div className="bg-card border border-border rounded-lg overflow-hidden w-full min-w-[280px] sm:min-w-[320px] md:min-w-[400px] lg:min-w-[480px] xl:min-w-[560px] 2xl:min-w-[640px] max-w-4xl mx-auto">
           {/* Post Header Section */}
-          <div className="p-6 border-b border-border">
+          <div className="p-4 sm:p-6 border-b border-border">
             {/* User info and metadata row */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <Avatar className="h-12 w-12">
-                  <AvatarFallback className="text-lg">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
+                  <AvatarFallback className="text-base sm:text-lg">
                     {post.musician.displayName[0]}
                   </AvatarFallback>
                 </Avatar>
                 <span
-                  className="text-lg font-medium cursor-pointer hover:text-primary hover:underline transition-all duration-200"
+                  className="text-base sm:text-lg font-medium cursor-pointer hover:text-primary hover:underline transition-all duration-200"
                   onClick={() => handleMusicianClick(post.musician.id)}
                 >
                   {post.musician.displayName}
@@ -381,7 +383,9 @@ export const PostView: React.FC = () => {
               </div>
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Clock className="w-4 h-4" />
-                <span>{formatDuration(post.duration)}</span>
+                <span className="text-sm sm:text-base">
+                  {formatDuration(post.duration)}
+                </span>
               </div>
             </div>
 
@@ -391,7 +395,7 @@ export const PostView: React.FC = () => {
                 <Badge
                   key={instrument.id}
                   variant="default"
-                  className="!hover:bg-none !hover:bg-transparent"
+                  className="!hover:bg-none !hover:bg-transparent text-xs sm:text-sm"
                 >
                   {instrument.label}
                 </Badge>
@@ -409,7 +413,7 @@ export const PostView: React.FC = () => {
                   <Badge
                     key={tag.id}
                     variant="secondary"
-                    className="!hover:bg-none !hover:bg-transparent"
+                    className="!hover:bg-none !hover:bg-transparent text-xs sm:text-sm"
                   >
                     {tag.label}
                   </Badge>
@@ -417,7 +421,9 @@ export const PostView: React.FC = () => {
             </div>
 
             {/* Session Title */}
-            <h1 className="text-2xl font-bold mb-4 text-left">{post.title}</h1>
+            <h1 className="text-xl sm:text-2xl font-bold mb-4 text-left">
+              {post.title}
+            </h1>
 
             {/* Notes */}
             <div className="text-left">
@@ -428,15 +434,17 @@ export const PostView: React.FC = () => {
             </div>
 
             {/* Date below notes */}
-            <div className="text-sm text-muted-foreground mt-4">
+            <div className="text-xs sm:text-sm text-muted-foreground mt-4">
               {new Date(post.createdAt).toLocaleDateString()}
             </div>
           </div>
 
           {/* Tasks Section */}
           {post.tasks.length > 0 && (
-            <div className="p-6 border-b border-border">
-              <h2 className="text-xl font-semibold mb-4 text-left">Tasks</h2>
+            <div className="p-4 sm:p-6 border-b border-border">
+              <h2 className="text-lg sm:text-xl font-semibold mb-4 text-left">
+                Tasks
+              </h2>
               <div className="space-y-3">
                 {post.tasks.map((task) => (
                   <TaskCard
@@ -450,12 +458,13 @@ export const PostView: React.FC = () => {
           )}
 
           {/* Engagement Actions Footer */}
-          <div className="p-6 bg-muted/20">
-            <div className="flex gap-4">
+          <div className="p-4 sm:p-6 bg-muted/20">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Button
                 variant="outline"
                 onClick={handleAddGasUp}
                 className="flex-1"
+                size="sm"
               >
                 <Heart className="w-4 h-4 mr-2" />
                 Gas Up ({post.gasUps.length})
@@ -464,6 +473,7 @@ export const PostView: React.FC = () => {
                 variant="outline"
                 onClick={handleAddComment}
                 className="flex-1"
+                size="sm"
               >
                 <MessageSquare className="w-4 h-4 mr-2" />
                 Comments ({post.comments.length})
@@ -476,10 +486,10 @@ export const PostView: React.FC = () => {
       {showCommentModal && (
         <Section spacing="md">
           <div className="fixed inset-0 bg-black/50 flex items-end justify-center z-50">
-            <div className="bg-background border-t border-border rounded-t-lg w-full h-[80vh] flex flex-col animate-in slide-in-from-bottom duration-300">
+            <div className="bg-background border-t border-border rounded-t-lg w-full h-[70vh] sm:h-[80vh] flex flex-col animate-in slide-in-from-bottom duration-300">
               {/* Header */}
-              <div className="flex items-center justify-between p-4 border-b border-border">
-                <h3 className="text-lg font-semibold">
+              <div className="flex items-center justify-between p-3 sm:p-4 border-b border-border">
+                <h3 className="text-base sm:text-lg font-semibold">
                   Comments ({post.comments.length})
                 </h3>
                 <Button
@@ -492,19 +502,19 @@ export const PostView: React.FC = () => {
               </div>
 
               {/* Comments List */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
                 {post.comments.length > 0 ? (
                   post.comments.map((comment) => (
-                    <div key={comment.id} className="flex gap-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback className="text-sm">
+                    <div key={comment.id} className="flex gap-2 sm:gap-3">
+                      <Avatar className="h-7 w-7 sm:h-8 sm:w-8">
+                        <AvatarFallback className="text-xs sm:text-sm">
                           {comment.musician.displayName[0]}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-1">
                           <span
-                            className="font-medium text-sm cursor-pointer hover:text-primary hover:underline transition-all duration-200"
+                            className="font-medium text-xs sm:text-sm cursor-pointer hover:text-primary hover:underline transition-all duration-200"
                             onClick={() =>
                               handleMusicianClick(comment.musician.id)
                             }
@@ -515,28 +525,30 @@ export const PostView: React.FC = () => {
                             {new Date(comment.createdAt).toLocaleDateString()}
                           </span>
                         </div>
-                        <p className="text-sm text-foreground">
+                        <p className="text-xs sm:text-sm text-foreground">
                           {comment.text}
                         </p>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="text-center text-muted-foreground py-8">
-                    <MessageSquare className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                    <p>No comments yet. Be the first to comment!</p>
+                  <div className="text-center text-muted-foreground py-6 sm:py-8">
+                    <MessageSquare className="w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm sm:text-base">
+                      No comments yet. Be the first to comment!
+                    </p>
                   </div>
                 )}
               </div>
 
               {/* Add Comment Form */}
-              <div className="p-4 border-t border-border">
-                <div className="flex gap-2">
+              <div className="p-3 sm:p-4 border-t border-border">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <textarea
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
                     placeholder="Write a comment..."
-                    className="flex-1 p-3 border border-border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary min-h-[80px]"
+                    className="flex-1 p-2 sm:p-3 border border-border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary min-h-[60px] sm:min-h-[80px] text-sm"
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && e.metaKey) {
                         handleSubmitComment();
@@ -546,7 +558,8 @@ export const PostView: React.FC = () => {
                   <Button
                     onClick={handleSubmitComment}
                     disabled={!newComment.trim()}
-                    className="self-end"
+                    className="self-end sm:self-end"
+                    size="sm"
                   >
                     Post
                   </Button>
@@ -575,13 +588,13 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onViewTaskDefinition }) => {
     <div className="border border-border rounded-lg overflow-hidden">
       {/* Collapsed View */}
       <div
-        className="p-4 cursor-pointer hover:bg-muted/30 transition-colors"
+        className="p-3 sm:p-4 cursor-pointer hover:bg-muted/30 transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <div className="flex items-center justify-between">
-          <h3 className="font-medium">{task.title}</h3>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Clock className="w-4 h-4" />
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+          <h3 className="font-medium text-sm sm:text-base">{task.title}</h3>
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+            <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
             <span>{formatDuration(task.timeSpent)}</span>
           </div>
         </div>
@@ -589,10 +602,10 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onViewTaskDefinition }) => {
 
       {/* Expanded View */}
       {isExpanded && (
-        <div className="border-t border-border p-4 bg-muted/20">
+        <div className="border-t border-border p-3 sm:p-4 bg-muted/20">
           {/* Task Tags */}
           {task.taskDefinition.tags && task.taskDefinition.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex flex-wrap gap-2 mb-3 sm:mb-4">
               {task.taskDefinition.tags.map((tag) => (
                 <Badge
                   key={tag.id}
@@ -607,18 +620,18 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onViewTaskDefinition }) => {
 
           {/* Task Notes */}
           {task.notes && (
-            <div className="mb-4 text-left">
+            <div className="mb-3 sm:mb-4 text-left">
               <RichTextRenderer
                 content={task.notes}
-                className="font-['Inter',Helvetica] text-foreground text-sm font-normal leading-6"
+                className="font-['Inter',Helvetica] text-foreground text-xs sm:text-sm font-normal leading-5 sm:leading-6"
               />
             </div>
           )}
 
           {/* Task Creator and Link */}
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <User className="w-4 h-4" />
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+              <User className="w-3 h-3 sm:w-4 sm:h-4" />
               <span>by {task.taskDefinition.user.displayName}</span>
             </div>
             <Button
@@ -628,6 +641,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onViewTaskDefinition }) => {
                 e.stopPropagation();
                 onViewTaskDefinition(task.taskDefinition.id);
               }}
+              className="self-start sm:self-auto"
             >
               View Task Definition
             </Button>

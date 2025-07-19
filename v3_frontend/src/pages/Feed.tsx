@@ -12,6 +12,7 @@ import { useAuth } from "../components/auth/AuthProvider";
 import { ALL_INSTRUMENTS } from "../types/instruments.types";
 import { Container } from "../components/layout/Container";
 import { Section } from "../components/layout/Section";
+import { Separator } from "@/components/ui/separator";
 
 interface Post {
   id: number;
@@ -511,7 +512,7 @@ const Feed = () => {
       </Section>
 
       {/* Feed Posts */}
-      <div className="flex flex-col items-start gap-12 mb-2 ">
+      <div className="flex flex-col w-full min-w-[280px] sm:min-w-[320px] md:min-w-[400px] lg:min-w-[480px] xl:min-w-[560px] 2xl:min-w-[640px] max-w-full gap-8 sm:gap-10 md:gap-12 lg:gap-16 mt-2">
         {!posts || posts.length === 0 ? (
           <div className="text-center py-12 w-full">
             <p className="text-muted-foreground">
@@ -530,14 +531,16 @@ const Feed = () => {
             } else {
               // All other posts - same wrapper structure but no ref
               return (
-                <div key={post.id || index}>
-                  <FeedPost postData={{ ...post, duration: post.duration }} />
-                </div>
+                <>
+                  <div key={post.id || index}>
+                    <FeedPost postData={{ ...post, duration: post.duration }} />
+                  </div>
+                  <Separator className="my-4" />
+                </>
               );
             }
           })
         )}
-
         {/* Loading more indicator */}
         {loadingMore && (
           <div className="flex items-center justify-center w-full py-8">

@@ -2,8 +2,8 @@ import { FrontendMedia, MediaItem } from 'src/media/media.dto';
 export declare class CreateSessionDto {
     title: string;
     notes: string;
-    instruments: number[];
-    tags: number[];
+    instruments: string[];
+    tags: string[];
     duration: number;
     isPublic: boolean;
     musicianId: number;
@@ -18,7 +18,7 @@ export interface TaskInUseDto {
         item: string;
         checked: boolean;
     }>;
-    tags: number[];
+    tags: string[];
 }
 export declare class SessionDto {
     id: number;

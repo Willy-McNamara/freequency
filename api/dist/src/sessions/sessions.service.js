@@ -547,6 +547,28 @@ let SessionsService = class SessionsService {
     async createSession(newSession) {
         try {
             const createdSession = await this.prisma.$transaction(async (prisma) => {
+                const instrumentTags = await Promise.all(newSession.instruments.map(async (label) => {
+                    let tag = await prisma.tag.findUnique({
+                        where: { label },
+                    });
+                    if (!tag) {
+                        tag = await prisma.tag.create({
+                            data: { label },
+                        });
+                    }
+                    return tag;
+                }));
+                const regularTags = await Promise.all(newSession.tags.map(async (label) => {
+                    let tag = await prisma.tag.findUnique({
+                        where: { label },
+                    });
+                    if (!tag) {
+                        tag = await prisma.tag.create({
+                            data: { label },
+                        });
+                    }
+                    return tag;
+                }));
                 const createdSession = await prisma.session.create({
                     data: {
                         title: newSession.title,
@@ -557,10 +579,10 @@ let SessionsService = class SessionsService {
                             connect: { id: newSession.musicianId },
                         },
                         instruments: {
-                            connect: newSession.instruments.map((id) => ({ id })),
+                            connect: instrumentTags.map((tag) => ({ id: tag.id })),
                         },
                         tags: {
-                            connect: newSession.tags.map((id) => ({ id })),
+                            connect: regularTags.map((tag) => ({ id: tag.id })),
                         },
                     },
                     include: {
@@ -592,15 +614,20 @@ let SessionsService = class SessionsService {
                 for (const task of newSession.tasks) {
                     console.log('Creating TaskInUse for task:', task);
                     console.log('Task tags:', task.tags);
+                    let taskTagIds = [];
                     if (task.tags && task.tags.length > 0) {
-                        const existingTags = await prisma.tag.findMany({
-                            where: { id: { in: task.tags } },
-                        });
-                        console.log('Found existing tags:', existingTags);
-                        if (existingTags.length !== task.tags.length) {
-                            console.log('Warning: Some tags not found. Expected:', task.tags.length, 'Found:', existingTags.length);
-                            task.tags = existingTags.map((tag) => tag.id);
-                        }
+                        const taskTags = await Promise.all(task.tags.map(async (label) => {
+                            let tag = await prisma.tag.findUnique({
+                                where: { label },
+                            });
+                            if (!tag) {
+                                tag = await prisma.tag.create({
+                                    data: { label },
+                                });
+                            }
+                            return tag;
+                        }));
+                        taskTagIds = taskTags.map((tag) => tag.id);
                     }
                     await prisma.taskInUse.create({
                         data: {
@@ -619,9 +646,9 @@ let SessionsService = class SessionsService {
                             session: {
                                 connect: { id: createdSession.id },
                             },
-                            tags: task.tags && task.tags.length > 0
+                            tags: taskTagIds.length > 0
                                 ? {
-                                    connect: task.tags.map((id) => ({ id })),
+                                    connect: taskTagIds.map((id) => ({ id })),
                                 }
                                 : undefined,
                         },
@@ -630,16 +657,20 @@ let SessionsService = class SessionsService {
                 const sessionTaskDuration = newSession.duration - totalTaskTime;
                 if (sessionTaskDuration > 0) {
                     console.log('Creating session TaskInUse with tags:', newSession.tags);
-                    let sessionTags = newSession.tags;
-                    if (sessionTags && sessionTags.length > 0) {
-                        const existingSessionTags = await prisma.tag.findMany({
-                            where: { id: { in: sessionTags } },
-                        });
-                        console.log('Found existing session tags:', existingSessionTags);
-                        if (existingSessionTags.length !== sessionTags.length) {
-                            console.log('Warning: Some session tags not found. Expected:', sessionTags.length, 'Found:', existingSessionTags.length);
-                            sessionTags = existingSessionTags.map((tag) => tag.id);
-                        }
+                    let sessionTaskTagIds = [];
+                    if (newSession.tags && newSession.tags.length > 0) {
+                        const sessionTaskTags = await Promise.all(newSession.tags.map(async (label) => {
+                            let tag = await prisma.tag.findUnique({
+                                where: { label },
+                            });
+                            if (!tag) {
+                                tag = await prisma.tag.create({
+                                    data: { label },
+                                });
+                            }
+                            return tag;
+                        }));
+                        sessionTaskTagIds = sessionTaskTags.map((tag) => tag.id);
                     }
                     await prisma.taskInUse.create({
                         data: {
@@ -653,9 +684,9 @@ let SessionsService = class SessionsService {
                             session: {
                                 connect: { id: createdSession.id },
                             },
-                            tags: sessionTags && sessionTags.length > 0
+                            tags: sessionTaskTagIds.length > 0
                                 ? {
-                                    connect: sessionTags.map((id) => ({ id })),
+                                    connect: sessionTaskTagIds.map((id) => ({ id })),
                                 }
                                 : undefined,
                         },
