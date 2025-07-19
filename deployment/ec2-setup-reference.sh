@@ -18,11 +18,11 @@ sudo usermod -aG docker $USER
 sudo apt-get install -y awscli
 
 # 4. Authenticate Docker to ECR (replace region/account as needed)
-aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 212179740567.dkr.ecr.us-east-2.amazonaws.com
+aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 1234.dkr.ecr.us-east-2.amazonaws.com
 
 # 5. Pull and run your app (after copying .env.production to the instance)
-docker pull 212179740567.dkr.ecr.us-east-2.amazonaws.com/freequency-dev:latest
-docker run --name freequency-app --env-file /path/to/.env.production -p 3000:3000 -d 212179740567.dkr.ecr.us-east-2.amazonaws.com/freequency-dev:latest
+docker pull 1234.dkr.ecr.us-east-2.amazonaws.com/freequency-dev:latest
+docker run --name freequency-app --env-file /path/to/.env.production -p 3000:3000 -d 1234.dkr.ecr.us-east-2.amazonaws.com/freequency-dev:latest
 
 # 6. (In AWS Console) Ensure EC2 Security Group allows inbound TCP on port 3000
 # 7. (Optional) Set up Elastic IP or DNS for stable public access
