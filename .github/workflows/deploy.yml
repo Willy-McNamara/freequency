@@ -8,6 +8,22 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+      VITE_API_BASE_URL: ${{ secrets.BACKEND_URL }}
+      DATABASE_URL_V3: ${{ secrets.DATABASE_URL_V3 }}
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      AWS_S3_BUCKET_NAME: ${{ secrets.AWS_S3_BUCKET_NAME }}
+      AWS_BUCKET_REGION: ${{ secrets.AWS_BUCKET_REGION }}
+      AWS_S3_DEV_ACCESS_KEY: ${{ secrets.AWS_S3_DEV_ACCESS_KEY }}
+      AWS_S3_DEV_SECRET_ACCESS_KEY: ${{ secrets.AWS_S3_DEV_SECRET_ACCESS_KEY }}
+      BACKEND_URL: ${{ secrets.BACKEND_URL }}
+      DEBUG: ${{ secrets.DEBUG }}
 
     steps:
       - name: Checkout code
@@ -40,15 +56,15 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build --build-arg VITE_API_BASE_URL=${{ secrets.BACKEND_URL }} -t freequency-app .
+          docker build --build-arg VITE_API_BASE_URL=$VITE_API_BASE_URL -t freequency-app .
 
       - name: Tag Docker image
         run: |
-          docker tag freequency-app:latest ${{ secrets.ECR_REPOSITORY }}:latest
+          docker tag freequency-app:latest $ECR_REPOSITORY:latest
 
       - name: Push Docker image to ECR
         run: |
-          docker push ${{ secrets.ECR_REPOSITORY }}:latest
+          docker push $ECR_REPOSITORY:latest
 
       - name: Deploy on EC2 via SSH
         uses: appleboy/ssh-action@v1
@@ -57,19 +73,19 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REPOSITORY }}
+            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPOSITORY
             docker stop freequency-app || true
             docker rm freequency-app || true
-            docker pull ${{ secrets.ECR_REPOSITORY }}:latest
+            docker pull $ECR_REPOSITORY:latest
             docker run --name freequency-app \
-              -e DATABASE_URL_V3='${{ secrets.DATABASE_URL_V3 }}' \
-              -e GOOGLE_CLIENT_ID='${{ secrets.GOOGLE_CLIENT_ID }}' \
-              -e GOOGLE_CLIENT_SECRET='${{ secrets.GOOGLE_CLIENT_SECRET }}' \
-              -e JWT_SECRET='${{ secrets.JWT_SECRET }}' \
-              -e AWS_S3_BUCKET_NAME='${{ secrets.AWS_S3_BUCKET_NAME }}' \
-              -e AWS_BUCKET_REGION='${{ secrets.AWS_BUCKET_REGION }}' \
-              -e AWS_S3_DEV_ACCESS_KEY='${{ secrets.AWS_S3_DEV_ACCESS_KEY }}' \
-              -e AWS_S3_DEV_SECRET_ACCESS_KEY='${{ secrets.AWS_S3_DEV_SECRET_ACCESS_KEY }}' \
-              -e BACKEND_URL='${{ secrets.BACKEND_URL }}' \
-              -e DEBUG='${{ secrets.DEBUG }}' \
-              -p 3000:3000 -d ${{ secrets.ECR_REPOSITORY }}:latest
+              -e DATABASE_URL_V3="$DATABASE_URL_V3" \
+              -e GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID" \
+              -e GOOGLE_CLIENT_SECRET="$GOOGLE_CLIENT_SECRET" \
+              -e JWT_SECRET="$JWT_SECRET" \
+              -e AWS_S3_BUCKET_NAME="$AWS_S3_BUCKET_NAME" \
+              -e AWS_BUCKET_REGION="$AWS_BUCKET_REGION" \
+              -e AWS_S3_DEV_ACCESS_KEY="$AWS_S3_DEV_ACCESS_KEY" \
+              -e AWS_S3_DEV_SECRET_ACCESS_KEY="$AWS_S3_DEV_SECRET_ACCESS_KEY" \
+              -e BACKEND_URL="$BACKEND_URL" \
+              -e DEBUG="$DEBUG" \
+              -p 3000:3000 -d $ECR_REPOSITORY:latest
