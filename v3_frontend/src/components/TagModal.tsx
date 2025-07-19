@@ -10,6 +10,7 @@ import {
 import { Badge } from "./badge";
 import { Plus } from "lucide-react";
 import { apiConfig } from "../config/api";
+import { ALL_INSTRUMENTS } from "../types/instruments.types";
 
 interface Tag {
   id: number;
@@ -61,9 +62,11 @@ export const TagModal: React.FC<TagModalProps> = ({
       .finally(() => setLoading(false));
   }, [isOpen]);
 
-  const filteredTags = tags.filter((t) =>
-    t.toLowerCase().includes(query.toLowerCase())
-  );
+  // Filter out instrument tags
+  const instrumentLabels = ALL_INSTRUMENTS.map((i) => i.label.toLowerCase());
+  const filteredTags = tags
+    .filter((t) => !instrumentLabels.includes(t.toLowerCase()))
+    .filter((t) => t.toLowerCase().includes(query.toLowerCase()));
   const tagExists = filteredTags.some(
     (t) => t.toLowerCase() === query.toLowerCase()
   );

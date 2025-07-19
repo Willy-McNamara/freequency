@@ -685,6 +685,36 @@ export class SessionsService {
     try {
       // $transactions enforce atomicity. so if any db operation fails, the entire transaction is rolled back
       const createdSession = await this.prisma.$transaction(async (prisma) => {
+        // Find or create instrument tags by label
+        const instrumentTags = await Promise.all(
+          newSession.instruments.map(async (label) => {
+            let tag = await prisma.tag.findUnique({
+              where: { label },
+            });
+            if (!tag) {
+              tag = await prisma.tag.create({
+                data: { label },
+              });
+            }
+            return tag;
+          }),
+        );
+
+        // Find or create regular tags by label
+        const regularTags = await Promise.all(
+          newSession.tags.map(async (label) => {
+            let tag = await prisma.tag.findUnique({
+              where: { label },
+            });
+            if (!tag) {
+              tag = await prisma.tag.create({
+                data: { label },
+              });
+            }
+            return tag;
+          }),
+        );
+
         // Create a new session in the database
         const createdSession = await prisma.session.create({
           data: {
@@ -696,10 +726,10 @@ export class SessionsService {
               connect: { id: newSession.musicianId },
             },
             instruments: {
-              connect: newSession.instruments.map((id) => ({ id })),
+              connect: instrumentTags.map((tag) => ({ id: tag.id })),
             },
             tags: {
-              connect: newSession.tags.map((id) => ({ id })),
+              connect: regularTags.map((tag) => ({ id: tag.id })),
             },
           },
           include: {
@@ -739,23 +769,23 @@ export class SessionsService {
           console.log('Creating TaskInUse for task:', task);
           console.log('Task tags:', task.tags);
 
-          // Validate that all tags exist before trying to connect them
+          // Find or create task tags by label
+          let taskTagIds: number[] = [];
           if (task.tags && task.tags.length > 0) {
-            const existingTags = await prisma.tag.findMany({
-              where: { id: { in: task.tags } },
-            });
-            console.log('Found existing tags:', existingTags);
-
-            if (existingTags.length !== task.tags.length) {
-              console.log(
-                'Warning: Some tags not found. Expected:',
-                task.tags.length,
-                'Found:',
-                existingTags.length,
-              );
-              // Only use tags that exist
-              task.tags = existingTags.map((tag) => tag.id);
-            }
+            const taskTags = await Promise.all(
+              task.tags.map(async (label) => {
+                let tag = await prisma.tag.findUnique({
+                  where: { label },
+                });
+                if (!tag) {
+                  tag = await prisma.tag.create({
+                    data: { label },
+                  });
+                }
+                return tag;
+              }),
+            );
+            taskTagIds = taskTags.map((tag) => tag.id);
           }
 
           await prisma.taskInUse.create({
@@ -776,9 +806,9 @@ export class SessionsService {
                 connect: { id: createdSession.id },
               },
               tags:
-                task.tags && task.tags.length > 0
+                taskTagIds.length > 0
                   ? {
-                      connect: task.tags.map((id) => ({ id })),
+                      connect: taskTagIds.map((id) => ({ id })),
                     }
                   : undefined,
             },
@@ -790,23 +820,23 @@ export class SessionsService {
         if (sessionTaskDuration > 0) {
           console.log('Creating session TaskInUse with tags:', newSession.tags);
 
-          // Validate session tags
-          let sessionTags = newSession.tags;
-          if (sessionTags && sessionTags.length > 0) {
-            const existingSessionTags = await prisma.tag.findMany({
-              where: { id: { in: sessionTags } },
-            });
-            console.log('Found existing session tags:', existingSessionTags);
-
-            if (existingSessionTags.length !== sessionTags.length) {
-              console.log(
-                'Warning: Some session tags not found. Expected:',
-                sessionTags.length,
-                'Found:',
-                existingSessionTags.length,
-              );
-              sessionTags = existingSessionTags.map((tag) => tag.id);
-            }
+          // Find or create session task tags by label
+          let sessionTaskTagIds: number[] = [];
+          if (newSession.tags && newSession.tags.length > 0) {
+            const sessionTaskTags = await Promise.all(
+              newSession.tags.map(async (label) => {
+                let tag = await prisma.tag.findUnique({
+                  where: { label },
+                });
+                if (!tag) {
+                  tag = await prisma.tag.create({
+                    data: { label },
+                  });
+                }
+                return tag;
+              }),
+            );
+            sessionTaskTagIds = sessionTaskTags.map((tag) => tag.id);
           }
 
           await prisma.taskInUse.create({
@@ -823,9 +853,9 @@ export class SessionsService {
                 connect: { id: createdSession.id },
               },
               tags:
-                sessionTags && sessionTags.length > 0
+                sessionTaskTagIds.length > 0
                   ? {
-                      connect: sessionTags.map((id) => ({ id })),
+                      connect: sessionTaskTagIds.map((id) => ({ id })),
                     }
                   : undefined,
             },

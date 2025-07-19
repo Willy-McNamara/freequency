@@ -12,6 +12,21 @@ import { cn } from "../lib/utils";
 import { Task } from "./task-list-item";
 import { Button } from "./ui/button";
 import { Section } from "./layout/Section";
+import { apiConfig } from "../config/api";
+import { RichTextRenderer } from "./rich-text";
+
+async function saveTask(taskId: number) {
+  return fetch(`${apiConfig.endpoints.tasks}/${taskId}/save`, {
+    method: "POST",
+    credentials: "include",
+  });
+}
+async function unsaveTask(taskId: number) {
+  return fetch(`${apiConfig.endpoints.tasks}/${taskId}/save`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+}
 
 export interface TaskDetailProps {
   task: Task;
@@ -30,25 +45,24 @@ export function TaskDetail({
   hasActiveSession,
   onUseInCurrentSession,
 }: TaskDetailProps) {
-  const [isSaved, setIsSaved] = React.useState(false);
+  const [isSaved, setIsSaved] = React.useState(task.isSaved ?? false);
+
+  React.useEffect(() => {
+    setIsSaved(task.isSaved ?? false);
+  }, [task.isSaved, task.id]);
 
   const handleToggleSave = async () => {
     const newSavedState = !isSaved;
     setIsSaved(newSavedState);
-
-    // Mock API call
     try {
       if (newSavedState) {
-        console.log(`Saving task ${task.id} to user's saved tasks`);
-        // Mock API call: POST /api/tasks/${task.id}/save
+        await saveTask(task.id);
       } else {
-        console.log(`Removing task ${task.id} from user's saved tasks`);
-        // Mock API call: DELETE /api/tasks/${task.id}/save
+        await unsaveTask(task.id);
       }
     } catch (error) {
-      console.error("Error toggling task save state:", error);
-      // Revert state on error
       setIsSaved(!newSavedState);
+      // Optionally show error to user
     }
   };
 
@@ -79,7 +93,7 @@ export function TaskDetail({
       </Section>
 
       {/* Single Task Section */}
-      <div className="bg-card border border-border rounded-lg p-4 md:p-6 mb-6">
+      <div className="bg-card border border-border rounded-lg p-4 md:p-6">
         {/* Task Title and Creator */}
         <div className="flex items-start justify-between mb-4">
           <h1 className="text-2xl font-bold text-foreground">{task.title}</h1>
@@ -90,9 +104,14 @@ export function TaskDetail({
         </div>
 
         {/* Description */}
-        <p className="text-muted-foreground leading-relaxed mb-6 text-left">
-          {task.description}
-        </p>
+        <h3 className="text-sm font-medium text-muted-foreground mb-2 text-left">
+          Description
+        </h3>
+        <RichTextRenderer
+          content={task.description}
+          noTruncate={true}
+          className="font-['Inter',Helvetica] text-foreground text-sm font-normal leading-6 mb-2"
+        />
 
         {/* Tags */}
         <div className="mb-6">
@@ -189,18 +208,24 @@ export function TaskDetail({
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-3">
-        {hasActiveSession && onUseInCurrentSession ? (
-          <button
-            className="flex-1 bg-primary text-primary-foreground px-4 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
-            onClick={() => onUseInCurrentSession(task)}
-          >
-            Use in current session
-          </button>
-        ) : (
-          <button className="flex-1 bg-primary text-primary-foreground px-4 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors">
-            Start Practice Session
-          </button>
-        )}
+        {
+          hasActiveSession && onUseInCurrentSession ? (
+            <button
+              className="flex-1 bg-primary text-primary-foreground px-4 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors mb-6"
+              onClick={() => onUseInCurrentSession(task)}
+            >
+              Use in current session
+            </button>
+          ) : (
+            <></>
+          )
+          // Commenting this out for now, it would be complex to implement and I'm not sure it's necessary
+          // (
+          //   <button className="flex-1 bg-primary text-primary-foreground px-4 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors">
+          //     Start Practice Session
+          //   </button>
+          // )
+        }
       </div>
     </div>
   );

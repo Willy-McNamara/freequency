@@ -152,7 +152,7 @@ export function FilterBar({
       <Dialog open={selectedFilter !== null} onOpenChange={handleModalClose}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>{currentFilterConfig?.label} Filter</DialogTitle>
+            <DialogTitle>Filter by {currentFilterConfig?.label}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <Input

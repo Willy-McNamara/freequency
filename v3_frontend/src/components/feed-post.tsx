@@ -4,7 +4,6 @@ import { Avatar, AvatarFallback } from "./ui/avatar";
 import { Badge } from "./badge";
 import { MessageSquareIcon, ThumbsUpIcon, Clock } from "lucide-react";
 import { RichTextRenderer } from "./rich-text";
-import { useMemo } from "react";
 
 interface PostData {
   id: number;
@@ -67,12 +66,6 @@ interface PostData {
 export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
   const navigate = useNavigate();
 
-  // Mock data ahead of passing in actual post data
-
-  console.log(postData);
-
-  // breaking out the data like this is not necessary, this is a remnant of my fast development using Anima. Will want to circle back and clean this up.
-
   const sessionData = {
     date: new Intl.DateTimeFormat("en-US", {
       month: "long",
@@ -84,46 +77,32 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
   };
 
   // Collect all tags from session and tasks, removing duplicates
-  const allTags = useMemo(() => {
-    const sessionTags = postData.tags || [];
-    const taskTags =
-      postData.tasks?.flatMap((task) => task.taskDefinition.tags || []) || [];
+  // const allTags = useMemo(() => {
+  //   const sessionTags = postData.tags || [];
+  //   const taskTags =
+  //     postData.tasks?.flatMap((task) => task.taskDefinition.tags || []) || [];
 
-    // Combine and remove duplicates based on label
-    const tagMap = new Map<
-      string,
-      { id: number; label: string; color: string | null }
-    >();
+  //   // Combine and remove duplicates based on label
+  //   const tagMap = new Map<
+  //     string,
+  //     { id: number; label: string; color: string | null }
+  //   >();
 
-    // Add session tags first
-    sessionTags.forEach((tag) => {
-      tagMap.set(tag.label, tag);
-    });
+  //   // Add session tags first
+  //   sessionTags.forEach((tag) => {
+  //     tagMap.set(tag.label, tag);
+  //   });
 
-    // Add task tags (task tags will override session tags if same label)
-    taskTags.forEach((tag) => {
-      tagMap.set(tag.label, tag);
-    });
+  //   // Add task tags (task tags will override session tags if same label)
+  //   taskTags.forEach((tag) => {
+  //     tagMap.set(tag.label, tag);
+  //   });
 
-    return Array.from(tagMap.values());
-  }, [postData.tags, postData.tasks]);
+  //   return Array.from(tagMap.values());
+  // }, [postData.tags, postData.tasks]);
 
-  // Separate instruments from regular tags
-  const { instruments, regularTags } = useMemo(() => {
-    const instrumentLabels = postData.instruments.map((instr) =>
-      instr.label.toLowerCase()
-    );
-
-    const instruments = allTags.filter((tag) =>
-      instrumentLabels.includes(tag.label.toLowerCase())
-    );
-
-    const regularTags = allTags.filter(
-      (tag) => !instrumentLabels.includes(tag.label.toLowerCase())
-    );
-
-    return { instruments, regularTags };
-  }, [allTags, postData.instruments]);
+  const instruments = postData.instruments;
+  const regularTags = postData.tags;
 
   // Data for engagement metrics
   const engagementData = [
@@ -220,6 +199,7 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
         <RichTextRenderer
           content={sessionData.description}
           maxLength={300}
+          maxLines={6}
           className="font-['Inter',Helvetica] text-black text-sm font-normal leading-6 break-words overflow-hidden"
         />
       </div>

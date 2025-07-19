@@ -1,6 +1,6 @@
-import React, { useContext, useEffect, useState, useRef } from "react";
+import React, { useContext, useEffect, useState, useRef, useMemo } from "react";
 import { useNavigate } from "react-router";
-import { RichTextEditor } from "@/components/rich-text";
+import { RichTextEditor, RichTextRenderer } from "@/components/rich-text";
 import { PracticeTaskList } from "@/components/practice-task-list";
 import { PracticeTagList } from "@/components/practice-tag-list";
 import { PracticeTimer, PracticeTimerRef } from "@/components/practice-timer";
@@ -24,6 +24,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Section } from "@/components/layout/Section";
 // import { Container } from "@/components/layout/Container";
+import { TaskTagList } from "../components/TaskTagList";
+import { InstrumentModal } from "../components/InstrumentModal";
+import { ALL_INSTRUMENTS } from "../types/instruments.types";
+import { Badge } from "../components/badge";
 
 const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   session,
@@ -43,11 +47,23 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
     (t: SessionTask) => t.id === selectedTaskId
   );
   const { user } = useAuth();
-  const [userInstruments, setUserInstruments] = useState<
-    { id: number; label: string }[]
-  >([]);
+
   const [showInstrumentTagModal, setShowInstrumentTagModal] = useState(false);
   const [showDeleteSessionModal, setShowDeleteSessionModal] = useState(false);
+  const [instrumentModalOpen, setInstrumentModalOpen] = useState(false);
+  const [showStartModal, setShowStartModal] = useState(
+    !session.sessionTimerRunning && (session.sessionTimerSeconds ?? 0) === 0
+  );
+
+  useEffect(() => {
+    // Show modal if session timer is reset to 0 and not running
+    if (
+      !session.sessionTimerRunning &&
+      (session.sessionTimerSeconds ?? 0) === 0
+    ) {
+      setShowStartModal(true);
+    }
+  }, [session.sessionTimerRunning, session.sessionTimerSeconds]);
 
   const {
     sessionTitle,
@@ -93,25 +109,19 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
     return `${day} ${timeOfDay} practice session`;
   }
 
-  // Fetch user instruments and auto-populate tags on mount
+  // Auto-populate tags with first instrument if not present
   useEffect(() => {
-    if (user && user.id) {
+    if (user && user.id && session.tags.length === 0) {
       fetch(apiConfig.endpoints.musicians.profile(user.id))
         .then((res) => res.json())
         .then((profile) => {
-          if (profile && Array.isArray(profile.instruments)) {
-            type InstrumentTag = { id: number; label: string };
-            setUserInstruments(
-              profile.instruments.map((inst: InstrumentTag) => ({
-                id: inst.id,
-                label: inst.label,
-              }))
-            );
-            // Auto-populate tags with only the first instrument if not present
-            if (session.tags.length === 0 && profile.instruments.length > 0) {
-              const first = profile.instruments[0];
-              session.setTags([{ id: String(first.id), label: first.label }]);
-            }
+          if (
+            profile &&
+            Array.isArray(profile.instruments) &&
+            profile.instruments.length > 0
+          ) {
+            const first = profile.instruments[0];
+            session.setTags([{ id: String(first.id), label: first.label }]);
           }
         });
     }
@@ -125,11 +135,6 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
     }
     // eslint-disable-next-line
   }, []);
-
-  // Remove tag handler
-  const handleRemoveTag = (id: string) => {
-    session.setTags(session.tags.filter((tag) => tag.id !== id));
-  };
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value;
@@ -243,21 +248,37 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
 
   const handleSaveSession = async () => {
     // Validate: must have at least one instrument tag
-    const instrumentLabels = userInstruments.map((i) => i.label.toLowerCase());
+    const instruments = ALL_INSTRUMENTS.map((i) => i.label.toLowerCase());
     const hasInstrumentTag = session.tags.some((tag) =>
-      instrumentLabels.includes(tag.label.toLowerCase())
+      instruments.includes(tag.label.toLowerCase())
     );
+    console.log("instruments", instruments);
+    console.log("session tags", session.tags);
     if (!hasInstrumentTag) {
       setShowInstrumentTagModal(true);
       return;
     }
     try {
+      // Separate instrument tags from regular tags
+      const instrumentTags = session.tags.filter((tag) =>
+        instruments.includes(tag.label.toLowerCase())
+      );
+      const regularTags = session.tags.filter(
+        (tag) => !instruments.includes(tag.label.toLowerCase())
+      );
+
+      // Debug logging
+      console.log("Instrument labels:", instruments);
+      console.log("All session tags:", session.tags);
+      console.log("Instrument tags:", instrumentTags);
+      console.log("Regular tags:", regularTags);
+
       // Explicitly type sessionData to match backend DTO
       const sessionData: {
         title: string;
         notes: string;
-        instruments: number[];
-        tags: number[];
+        instruments: string[];
+        tags: string[];
         duration: number;
         tasks: Array<{
           id: number;
@@ -265,13 +286,13 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
           notes: string;
           timeSpent: number;
           checklist: { item: string; checked: boolean }[];
-          tags: number[];
+          tags: string[];
         }>;
       } = {
         title: session.sessionTitle || "Untitled Session",
         notes: session.sessionNotes || "",
-        instruments: [], // No instrument selection in context yet
-        tags: session.tags ? session.tags.map((t) => Number(t.id)) : [],
+        instruments: instrumentTags.map((t) => t.label), // Send instrument labels
+        tags: regularTags.map((t) => t.label), // Send regular tag labels
         duration: session.sessionTimerSeconds || 0,
         tasks: (session.tasks || []).map((task) => ({
           id: Number(task.id),
@@ -279,9 +300,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
           notes: task.notes || "",
           timeSpent: task.timeSpent || 0,
           checklist: Array.isArray(task.checklist) ? task.checklist : [],
-          tags: Array.isArray(task.tags)
-            ? task.tags.map((t) => Number(t.id))
-            : [],
+          tags: Array.isArray(task.tags) ? task.tags.map((t) => t.label) : [],
         })),
       };
       await sessionService.saveSession(sessionData);
@@ -328,9 +347,72 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
     );
   }
 
+  const startPhrases = [
+    "Let's do this",
+    "Pull the lever kronk",
+    "Booyah.",
+    "Big time.",
+    "Uh 1, uh 2, uh 1, 2, 3, 4....",
+  ];
+
+  const startButtonPhrase = useMemo(() => {
+    if (!showStartModal) return startPhrases[0];
+    return startPhrases[Math.floor(Math.random() * startPhrases.length)];
+    // Only pick a new phrase when the modal is shown
+    // eslint-disable-next-line
+  }, [showStartModal]);
+
   // Main Practice view
   return (
     <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 min-h-screen mb-8">
+      {/* Start Session Custom Overlay */}
+      {showStartModal && (
+        <>
+          {/* Overlay below TopBar */}
+          <div
+            className="fixed top-[64px] left-0 right-0 bottom-0 z-30 bg-black/70"
+            style={{ pointerEvents: "none" }}
+          />
+          {/* Centered content */}
+          <div
+            className="fixed left-1/2 z-40"
+            style={{
+              top: "calc(50% + 32px)",
+              transform: "translate(-50%, -50%)",
+              background: "rgba(255,255,255,0.95)",
+              boxShadow: "none",
+              border: "none",
+              textAlign: "center",
+              borderRadius: "1rem",
+              padding: "2rem 2.5rem",
+              minWidth: "320px",
+              maxWidth: "90vw",
+            }}
+          >
+            <div className="text-lg font-semibold leading-none tracking-tight text-center w-full mb-2">
+              Ready to practice?
+            </div>
+            <Button
+              style={{
+                backgroundColor: "#22c55e",
+                color: "white",
+                fontWeight: 600,
+                fontSize: "1rem",
+                padding: "0.5rem 1.5rem",
+                borderRadius: "9999px",
+                marginTop: "1.5rem",
+              }}
+              onClick={() => {
+                session.setSessionTimerRunning(true);
+                session.setIsActive(true);
+                setShowStartModal(false);
+              }}
+            >
+              {startButtonPhrase}
+            </Button>
+          </div>
+        </>
+      )}
       {/* <Container>
       For some reason I couldn't get xontainer to work here.. */}
       {/* Instrument Tag Required Modal */}
@@ -357,8 +439,8 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
         </DialogContent>
       </Dialog>
       {selectedTask ? (
-        <Section spacing="xl">
-          <div className="w-full mx-auto bg-card rounded-xl shadow-lg p-4 md:p-8 flex flex-col items-center relative">
+        <Section spacing="sm">
+          <div className="w-full mx-auto bg-card rounded-xl shadow-lg p-4 md:p-8 flex flex-col items-stretch relative align-start">
             {/* Back Arrow at top left */}
             <button
               type="button"
@@ -389,15 +471,21 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                   <h4 className="text-sm font-semibold mb-1 text-left">
                     Description
                   </h4>
-                  <p className="text-sm text-foreground leading-relaxed">
-                    {selectedTask.description}
-                  </p>
+                  <RichTextRenderer
+                    content={selectedTask.description}
+                    noTruncate={true}
+                    className="font-['Inter',Helvetica] text-foreground text-sm font-normal leading-6 mb-2"
+                  />
                 </div>
               </Section>
             )}
             <Section spacing="sm">
               <div className="w-full">
-                <RichTextEditor value={taskNotes} onChange={setTaskNotes} />
+                <RichTextEditor
+                  value={taskNotes}
+                  onChange={setTaskNotes}
+                  placeholder="Add task notes here..."
+                />
               </div>
             </Section>
             {/* Task Tags */}
@@ -477,21 +565,23 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                 ))}
               </div>
             </Section>
-            {/* Remove Task from Session Button */}
+            {/* Save Button */}
             <Section spacing="md">
-              <Button
-                type="button"
-                className="w-full px-6 py-2 rounded-lg bg-green-600 text-white font-semibold shadow hover:bg-green-700 transition-colors focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2"
-                onClick={handleBack}
-              >
-                Save
-              </Button>
+              <div className="flex justify-center">
+                <Button
+                  type="button"
+                  className="px-6 py-2 rounded-lg bg-green-600 text-white font-semibold shadow hover:bg-green-700 transition-colors focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2"
+                  onClick={handleBack}
+                >
+                  Save
+                </Button>
+              </div>
             </Section>
           </div>
         </Section>
       ) : (
         <>
-          <Section spacing="xl">
+          <Section spacing={{ base: "md", sm: "lg", md: "xl" }}>
             <div className="flex flex-col w-full items-center justify-center">
               <PracticeTimer
                 ref={sessionTimerRef}
@@ -515,15 +605,16 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
               />
             </div>
           </Section>
-          <Section spacing="md">
+          <Section spacing={{ base: "sm", sm: "md", md: "lg" }}>
             <div className="w-full">
               <RichTextEditor
                 value={sessionNotes || ""}
                 onChange={setSessionNotes}
+                placeholder="Add session notes here..."
               />
             </div>
           </Section>
-          <Section spacing="md">
+          <Section spacing={{ base: "sm", sm: "md", md: "lg" }}>
             <div className="w-full">
               <PracticeTaskList
                 tasks={session.tasks}
@@ -540,21 +631,108 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
               />
             </div>
           </Section>
-          <Section spacing="md">
+          <Section spacing={{ base: "sm", sm: "md", md: "lg" }}>
             <div className="w-full">
-              <PracticeTagList
-                tags={tags}
-                onAddTag={() => setTagModalOpen(true)}
-                onRemoveTag={handleRemoveTag}
-              />
-              <TagModal
-                isOpen={tagModalOpen}
-                onClose={() => setTagModalOpen(false)}
-                onTagSelected={handleTagSelected}
+              {/* Instrument Section */}
+              <h3 className="font-bold text-base mb-1">Instrument</h3>
+              <div className="flex items-center gap-2 mb-2 min-h-[32px]">
+                {/* Show selected instrument badge if present */}
+                {(() => {
+                  const instrumentLabels = ALL_INSTRUMENTS.map((i) => i.label);
+                  const instrumentTag = tags.find((tag) =>
+                    instrumentLabels.includes(tag.label)
+                  );
+                  return instrumentTag ? (
+                    <Badge
+                      variant="default"
+                      className="h-5 px-3 py-2 rounded-md !hover:bg-none !hover:bg-transparent"
+                    >
+                      {instrumentTag.label}
+                    </Badge>
+                  ) : null;
+                })()}
+                <button
+                  type="button"
+                  onClick={() => setInstrumentModalOpen(true)}
+                  className="text-xs underline text-muted-foreground hover:text-foreground"
+                >
+                  {(() => {
+                    const instrumentLabels = ALL_INSTRUMENTS.map(
+                      (i) => i.label
+                    );
+                    const instrumentTag = tags.find((tag) =>
+                      instrumentLabels.includes(tag.label)
+                    );
+                    return instrumentTag ? "Change" : "Select";
+                  })()}
+                  {/* Hidden input for browser validation */}
+                  <input
+                    type="text"
+                    value={(() => {
+                      const instrumentLabels = ALL_INSTRUMENTS.map(
+                        (i) => i.label
+                      );
+                      const instrumentTag = tags.find((tag) =>
+                        instrumentLabels.includes(tag.label)
+                      );
+                      return instrumentTag ? instrumentTag.label : "";
+                    })()}
+                    required
+                    tabIndex={-1}
+                    autoComplete="off"
+                    style={{ opacity: 0, width: "1px" }}
+                    onChange={() => {}}
+                  />
+                </button>
+              </div>
+              <InstrumentModal
+                isOpen={instrumentModalOpen}
+                onClose={() => setInstrumentModalOpen(false)}
+                onInstrumentSelected={(inst) => {
+                  // Remove any previous instrument from tags, then add the new one if not present
+                  const instrumentLabels = ALL_INSTRUMENTS.map((i) => i.label);
+                  const nonInstrumentTags = tags.filter(
+                    (tag) => !instrumentLabels.includes(tag.label)
+                  );
+                  setTags([
+                    ...nonInstrumentTags,
+                    { id: inst.id.toString(), label: inst.label },
+                  ]);
+                  setInstrumentModalOpen(false);
+                }}
               />
             </div>
           </Section>
-          <Section spacing="xl">
+          <Section spacing={{ base: "sm", sm: "md", md: "lg" }}>
+            {/* Tags Section */}
+            <h3 className="font-bold text-base mb-1">Tags</h3>
+            <div className="flex flex-wrap gap-2 mb-3 items-center">
+              <button
+                type="button"
+                onClick={() => setTagModalOpen(true)}
+                className="focus:outline-none"
+              >
+                <Badge
+                  variant="secondary"
+                  className="max-h-[1.2rem] flex items-center px-2.5 cursor-pointer select-none"
+                >
+                  + add
+                </Badge>
+              </button>
+              <TaskTagList
+                tags={tags.map((t) => t.label)}
+                onRemoveTag={(tagLabel) => {
+                  setTags(tags.filter((t) => t.label !== tagLabel));
+                }}
+              />
+            </div>
+            <TagModal
+              isOpen={tagModalOpen}
+              onClose={() => setTagModalOpen(false)}
+              onTagSelected={handleTagSelected}
+            />
+          </Section>
+          <Section spacing={{ base: "sm", sm: "md", md: "lg" }}>
             <div className="flex flex-col sm:flex-row justify-center items-center gap-4 w-full">
               <button
                 type="button"
@@ -587,7 +765,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                       variant="destructive"
                       onClick={() => {
                         // Reset all session data
-                        session.setSessionTitle("Untitled Session");
+                        session.setSessionTitle(getDefaultSessionTitle());
                         session.setTags([]);
                         session.setTasks([]);
                         session.setIsActive(false);

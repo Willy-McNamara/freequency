@@ -4,8 +4,8 @@ export const sessionService = {
   async saveSession(sessionData: {
     title: string;
     notes: string;
-    instruments: number[];
-    tags: number[];
+    instruments: string[];
+    tags: string[];
     duration: number;
     tasks: Array<{
       id: number;
@@ -13,7 +13,7 @@ export const sessionService = {
       notes: string;
       timeSpent: number;
       checklist: Array<{ item: string; checked: boolean }>;
-      tags: number[];
+      tags: string[];
     }>;
   }) {
     const response = await fetch(

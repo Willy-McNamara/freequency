@@ -39,8 +39,8 @@ import { TagsController } from './tags/tags.controller';
     }),
     ThrottlerModule.forRoot([
       {
-        ttl: 60000,
-        limit: 10,
+        ttl: 60,
+        limit: 60,
       },
     ]),
   ],

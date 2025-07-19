@@ -23,7 +23,7 @@ import { SessionContext } from "@/components/SessionContext";
 import { Timer, Plus, Play } from "lucide-react";
 import { apiConfig } from "../config/api";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "../components/auth/AuthProvider";
+// import { useAuth } from "../components/auth/AuthProvider";
 import { ALL_INSTRUMENTS } from "../types/instruments.types";
 import { Container } from "@/components/layout/Container";
 import { Section } from "@/components/layout/Section";
@@ -42,41 +42,35 @@ const TaskLibrary: React.FC = () => {
   const previousFilterState = useRef<string>("");
   const hasProcessedUrlParam = useRef(false);
   const shouldFetchAfterUrlParam = useRef(false);
-  const { user } = useAuth();
+  // const { user } = useAuth();
+  const [userOptions, setUserOptions] = useState<FilterOption[]>([]);
 
-  const [activeFilters, setActiveFilters] = useState<FilterState[]>(() => {
-    const userOptions = [
-      { id: "user1", label: "John Doe", checked: false },
-      { id: "user2", label: "Jane Smith", checked: false },
-      { id: "user3", label: "Bob Johnson", checked: false },
-    ];
+  const [activeFilters, setActiveFilters] = useState<FilterState[]>(() => [
+    {
+      type: "user",
+      isSelected: false,
+      options: [], // Will be set after fetch
+    },
+    {
+      type: "instrument",
+      isSelected: false,
+      options: ALL_INSTRUMENTS.map((instrument) => ({
+        id: instrument.label.toLowerCase(),
+        label: instrument.label,
+        checked: false,
+      })),
+    },
+    { type: "saved", isSelected: false },
+  ]);
 
-    // Add the "Following" option if user is authenticated
-    const allUserOptions = user
-      ? [
-          ...userOptions,
-          { id: "following", label: "Following", checked: false },
-        ]
-      : userOptions;
-
-    return [
-      {
-        type: "user",
-        isSelected: false,
-        options: allUserOptions,
-      },
-      {
-        type: "instrument",
-        isSelected: false,
-        options: ALL_INSTRUMENTS.map((instrument) => ({
-          id: instrument.label.toLowerCase(),
-          label: instrument.label,
-          checked: false,
-        })),
-      },
-      { type: "saved", isSelected: false },
-    ];
-  });
+  // Update user filter options when userOptions changes
+  useEffect(() => {
+    setActiveFilters((prev) =>
+      prev.map((filter) =>
+        filter.type === "user" ? { ...filter, options: userOptions } : filter
+      )
+    );
+  }, [userOptions]);
 
   // Get task ID from URL query parameter
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
@@ -150,6 +144,29 @@ const TaskLibrary: React.FC = () => {
   }, [fetchTasks]);
 
   useEffect(() => {
+    async function fetchUsers() {
+      try {
+        const response = await fetch(apiConfig.endpoints.musicians.allIdNames, {
+          credentials: "include",
+        });
+        if (!response.ok) throw new Error("Failed to fetch users");
+        const data = await response.json();
+        // Assume data is an array of { id, displayName }
+        setUserOptions(
+          data.map((user: { id: number; displayName: string }) => ({
+            id: String(user.id),
+            label: user.displayName,
+            checked: false,
+          }))
+        );
+      } catch (err) {
+        console.error("Error fetching users:", err);
+      }
+    }
+    fetchUsers();
+  }, []);
+
+  useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const taskId = urlParams.get("task");
     if (taskId) {
@@ -162,20 +179,22 @@ const TaskLibrary: React.FC = () => {
 
   const handleFilterChange = (
     filterType: FilterType,
-    _isSelected: boolean,
+    isSelected: boolean,
     options?: FilterOption[]
   ) => {
     setActiveFilters((prev) =>
       prev.map((filter) => {
         if (filter.type === filterType) {
+          if (filterType === "saved") {
+            // For saved, just toggle isSelected
+            return { ...filter, isSelected };
+          }
           const updatedOptions = options || filter.options;
-          // Check if any options are actually selected
           const hasSelectedOptions =
             updatedOptions?.some((option) => option.checked) || false;
-
           return {
             ...filter,
-            isSelected: hasSelectedOptions, // Only highlight if options are actually selected
+            isSelected: hasSelectedOptions,
             options: updatedOptions,
           };
         }
@@ -316,6 +335,8 @@ const TaskLibrary: React.FC = () => {
     const newUrl = window.location.pathname;
     window.history.pushState({}, "", newUrl);
     setSelectedTaskId(null);
+    // Refetch tasks using current filters
+    fetchTasks(activeFilters);
   };
 
   const handleCreateTask = async (taskData: CreateTaskData) => {
@@ -511,19 +532,30 @@ const TaskLibrary: React.FC = () => {
       </Section>
       <Section spacing="md">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {tasks.map((task) => (
-            <div key={task.id} className="relative">
-              <TaskListItem
-                task={task}
-                onTaskClick={handleTaskClick}
-                onViewDetails={handleViewDetails}
-                hasActiveSession={hasActiveSession}
-                onUseInCurrentSession={
-                  hasActiveSession ? handleUseInCurrentSession : undefined
-                }
-              />
+          {tasks.length === 0 ? (
+            <div className="col-span-full flex flex-col items-center justify-center py-16">
+              <div className="text-2xl font-semibold text-muted-foreground mb-2">
+                No tasks found
+              </div>
+              <div className="text-muted-foreground mb-4">
+                Try adjusting your filters or create a new task.
+              </div>
             </div>
-          ))}
+          ) : (
+            tasks.map((task) => (
+              <div key={task.id} className="relative">
+                <TaskListItem
+                  task={task}
+                  onTaskClick={handleTaskClick}
+                  onViewDetails={handleViewDetails}
+                  hasActiveSession={hasActiveSession}
+                  onUseInCurrentSession={
+                    hasActiveSession ? handleUseInCurrentSession : undefined
+                  }
+                />
+              </div>
+            ))
+          )}
         </div>
       </Section>
       {/* Create Task Modal - Always rendered */}

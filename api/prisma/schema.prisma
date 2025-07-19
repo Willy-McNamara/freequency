@@ -43,6 +43,7 @@ model TaskDefinition {
   subTasks         TaskDefinition[] @relation("TaskHierarchy")
   tasksInUse       TaskInUse[]
   tags         Tag[] @relation("TaskDefinitionTags")
+  savedBy   SavedTask[]
 }
 
 model TaskInUse {
@@ -94,6 +95,7 @@ model Musician  {
   taskDefinitions     TaskDefinition[]
   tasksInUse          TaskInUse[]
   goals               Goal[] // Added: relation to Goal
+  savedTasks SavedTask[]
 
   // Follow relationships
   followers           Follow[]    @relation("Following")
@@ -182,4 +184,16 @@ model Follow {
   @@unique([followerId, followingId])
   @@index([followerId])
   @@index([followingId])
+}
+
+model SavedTask {
+  id               Int            @id @default(autoincrement())
+  musicianId       Int
+  taskDefinitionId Int
+  createdAt        DateTime       @default(now())
+
+  musician         Musician       @relation(fields: [musicianId], references: [id])
+  taskDefinition   TaskDefinition @relation(fields: [taskDefinitionId], references: [id])
+
+  @@unique([musicianId, taskDefinitionId])
 }
