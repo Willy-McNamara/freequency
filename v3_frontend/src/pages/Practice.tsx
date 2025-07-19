@@ -404,6 +404,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
               }}
               onClick={() => {
                 session.setSessionTimerRunning(true);
+                session.setIsActive(true);
                 setShowStartModal(false);
               }}
             >
@@ -764,7 +765,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                       variant="destructive"
                       onClick={() => {
                         // Reset all session data
-                        session.setSessionTitle("Untitled Session");
+                        session.setSessionTitle(getDefaultSessionTitle());
                         session.setTags([]);
                         session.setTasks([]);
                         session.setIsActive(false);
