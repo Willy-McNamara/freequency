@@ -1,62 +1,25 @@
-export type PopularInstrument =
-  | 'Guitar'
-  | 'Piano'
-  | 'Drums'
-  | 'Violin'
-  | `Singin'`
-  | 'Trumpet'
-  | 'Bass'
-  | 'Flute'
-  | 'DJing'
-  | 'Producing'
-  | 'Saxophone'
-  | 'Trombone';
-/*
-I am limited to the main chakra schemes
-I can extend them to include more colors- save that for polish!
-*/
-type PopularColor =
-  | 'red'
-  | 'blue'
-  | 'green'
-  | 'yellow'
-  | 'purple'
-  | 'orange'
-  | 'pink'
-  | 'gray'
-  | 'cyan'
-  | 'blackAlpha';
-
-type InstrumentBadges = {
-  [Instrument in PopularInstrument]: PopularColor;
-};
-
-export const instrumentBadges: InstrumentBadges = {
-  Guitar: 'red',
-  Piano: 'blue',
-  Drums: 'green',
-  Violin: 'yellow',
-  "Singin'": 'purple',
-  Trumpet: 'orange',
-  Bass: 'pink',
-  Flute: 'gray',
-  DJing: 'cyan',
-  Producing: 'blue',
-  Saxophone: 'red',
-  Trombone: 'blackAlpha',
-};
-
-export const instrumentsMasterList: PopularInstrument[] = [
-  'Guitar',
-  'Piano',
-  'Drums',
-  'Violin',
-  `Singin'`,
-  'Trumpet',
-  'Bass',
-  'Flute',
-  'DJing',
-  'Producing',
-  'Saxophone',
-  'Trombone',
+// Shared list of all instruments for filters and profile edit modal
+export const ALL_INSTRUMENTS: { id: number; label: string }[] = [
+  { id: 1, label: "piano" },
+  { id: 2, label: "guitar" },
+  { id: 3, label: "drums" },
+  { id: 4, label: "bass guitar" },
+  { id: 5, label: "violin" },
+  { id: 6, label: "saxophone" },
+  { id: 7, label: "flute" },
+  { id: 8, label: "clarinet" },
+  { id: 9, label: "trumpet" },
+  { id: 10, label: "trombone" },
+  { id: 11, label: "voice" },
+  { id: 12, label: "cello" },
+  { id: 13, label: "ukulele" },
+  { id: 14, label: "percussion" },
+  { id: 15, label: "double bass" },
+  { id: 16, label: "oboe" },
+  { id: 17, label: "harp" },
+  { id: 18, label: "accordion" },
+  { id: 19, label: "banjo" },
+  { id: 20, label: "djing" },
+  { id: 21, label: "production" },
+  { id: 22, label: "listening" },
 ];

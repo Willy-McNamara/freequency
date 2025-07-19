@@ -1,3 +1,0 @@
-/*
-implement rich text editor
-*/

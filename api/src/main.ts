@@ -6,10 +6,15 @@ import { AllExceptionsFilter } from './filters/all-exceptions.filter';
 import { join } from 'path';
 
 async function bootstrap() {
-  config({ path: '.env.local' }); // since git issue with .env, this workaround to use .env.local
+  // config({ path: '.env.local' }); // since git issue with .env, this workaround to use .env.local . Need for local development I think
+  config();
   const app = await NestFactory.create(AppModule);
   app.enableCors({
-    origin: ['http://localhost:5173', 'http://localhost:3000'], // Vite dev server + backend
+    origin: [
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'https://demo.freequencyapp.com',
+    ], // Vite dev server + backend
     credentials: true, // Important for JWT cookies
   });
   app.use(cookieParser());
@@ -27,11 +32,12 @@ async function bootstrap() {
       req.url.startsWith('/tags') ||
       req.url.startsWith('/tasks') ||
       req.url.startsWith('/assets') ||
+      req.url.startsWith('/logo.svg') ||
       req.url.startsWith('/vite.svg')
     ) {
       return next();
     }
-    res.sendFile(join(process.cwd(), '../v3_frontend/dist/index.html'));
+    res.sendFile(join(process.cwd(), '../frontend/dist/index.html'));
   });
 
   await app.listen(3000);

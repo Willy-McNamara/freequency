@@ -1,16 +1,13 @@
 {
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ],
   "compilerOptions": {
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "target": "es6",
-    "module": "commonjs",
-    "lib": ["es6", "dom"],
-    "jsx": "react",
-    "outDir": "build",
-    "strict": true,
-    "esModuleInterop": true,
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
-  },
-  "include": ["src", "src/*"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  }
 }

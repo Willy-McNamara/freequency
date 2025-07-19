@@ -28,7 +28,7 @@ async function bootstrap() {
             req.url.startsWith('/vite.svg')) {
             return next();
         }
-        res.sendFile((0, path_1.join)(process.cwd(), '../v3_frontend/dist/index.html'));
+        res.sendFile((0, path_1.join)(process.cwd(), '../frontend/dist'));
     });
     await app.listen(3000);
 }

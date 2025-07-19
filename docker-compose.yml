@@ -6,7 +6,7 @@ services:
     ports:
       - "3000:3000"
     env_file:
-      - .env.local # Load environment variables from .env.local
+      - ./api/.env.production # Load environment variables from .env.local or .env.production (uses local or RDS db)
 # no need for db sidecare when using RDS, commenting out for now.
 #     depends_on:
 #       - db

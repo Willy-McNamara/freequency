@@ -1,0 +1,75 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - prod
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run placeholder backend test
+        run: |
+          cd api
+          npm ci
+          npm run deployment-test
+
+      - name: Run placeholder frontend test
+        run: |
+          cd frontend
+          npm ci
+          npm run deployment-test
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          registry-type: public
+
+      - name: Build Docker image
+        run: |
+          docker build --build-arg VITE_API_BASE_URL=${{ secrets.BACKEND_URL }} -t freequency-app .
+
+      - name: Tag Docker image
+        run: |
+          docker tag freequency-app:latest ${{ secrets.ECR_REPOSITORY }}:latest
+
+      - name: Push Docker image to ECR
+        run: |
+          docker push ${{ secrets.ECR_REPOSITORY }}:latest
+
+      - name: Deploy on EC2 via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REPOSITORY }}
+            docker stop freequency-app || true
+            docker rm freequency-app || true
+            docker pull ${{ secrets.ECR_REPOSITORY }}:latest
+            docker run --name freequency-app \
+              -e DATABASE_URL_V3='${{ secrets.DATABASE_URL_V3 }}' \
+              -e GOOGLE_CLIENT_ID='${{ secrets.GOOGLE_CLIENT_ID }}' \
+              -e GOOGLE_CLIENT_SECRET='${{ secrets.GOOGLE_CLIENT_SECRET }}' \
+              -e JWT_SECRET='${{ secrets.JWT_SECRET }}' \
+              -e AWS_S3_BUCKET_NAME='${{ secrets.AWS_S3_BUCKET_NAME }}' \
+              -e AWS_BUCKET_REGION='${{ secrets.AWS_BUCKET_REGION }}' \
+              -e AWS_S3_DEV_ACCESS_KEY='${{ secrets.AWS_S3_DEV_ACCESS_KEY }}' \
+              -e AWS_S3_DEV_SECRET_ACCESS_KEY='${{ secrets.AWS_S3_DEV_SECRET_ACCESS_KEY }}' \
+              -e BACKEND_URL='${{ secrets.BACKEND_URL }}' \
+              -e DEBUG='${{ secrets.DEBUG }}' \
+              -p 3000:3000 -d ${{ secrets.ECR_REPOSITORY }}:latest
