@@ -32,14 +32,20 @@ import "./rich-text.css";
 interface RichTextRendererProps {
   content: string;
   maxLength?: number;
+  maxLines?: number;
+  noTruncate?: boolean;
   className?: string;
 }
 
 export const RichTextRenderer: React.FC<RichTextRendererProps> = ({
   content,
   maxLength = 200,
+  maxLines = 5,
+  noTruncate = false,
   className = "",
 }) => {
+  console.log("RichTextRenderer input:", { content, maxLength, maxLines });
+
   // Simple HTML sanitization - remove potentially dangerous attributes and tags
   const sanitizeHtml = (html: string): string => {
     return (
@@ -59,33 +65,89 @@ export const RichTextRenderer: React.FC<RichTextRendererProps> = ({
   };
 
   // Truncate HTML content while preserving structure
-  const truncateHtml = (html: string, maxLength: number): string => {
+  const truncateHtml = (
+    html: string,
+    maxLength: number,
+    maxLines: number
+  ): string => {
+    console.log("truncateHtml called with:", { html, maxLength, maxLines });
+
     // Create a temporary div to parse the HTML
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = html;
 
     // Get text content for length calculation
     const textContent = tempDiv.textContent || tempDiv.innerText || "";
+    console.log("Text content:", textContent);
+    console.log("Text content length:", textContent.length);
 
     if (textContent.length <= maxLength) {
-      return html;
+      // Even if under character limit, check line count
+      const lineCount = countLines(tempDiv);
+      console.log("Line count:", lineCount);
+      if (lineCount <= maxLines) {
+        console.log("No truncation needed - under both limits");
+        return html;
+      }
     }
 
+    console.log("Truncation needed - starting node walk");
     // Find where to truncate
     let currentLength = 0;
+    let currentLines = 0;
     let truncatedHtml = "";
+    let shouldTruncate = false;
 
     const walkNodes = (node: Node): boolean => {
+      if (shouldTruncate) {
+        return true; // Stop walking if we've already decided to truncate
+      }
+
       if (node.nodeType === Node.TEXT_NODE) {
         const text = node.textContent || "";
-        if (currentLength + text.length <= maxLength) {
+        const textLines = countTextLines(text);
+
+        // Check if adding this text would exceed either limit
+        if (
+          currentLength + text.length <= maxLength &&
+          currentLines + textLines <= maxLines
+        ) {
           truncatedHtml += text;
           currentLength += text.length;
+          currentLines += textLines;
           return false; // Continue walking
         } else {
           // Truncate this text node
-          const remainingLength = maxLength - currentLength;
-          truncatedHtml += text.substring(0, remainingLength) + "...";
+          const remainingLength = Math.max(0, maxLength - currentLength);
+          const remainingLines = Math.max(0, maxLines - currentLines);
+
+          // Truncate based on whichever limit is hit first
+          let truncatedText = text;
+          if (currentLength + text.length > maxLength) {
+            truncatedText = text.substring(0, remainingLength);
+          }
+          if (currentLines + textLines > maxLines) {
+            // Find the nth line break
+            const lines = text.split("\n");
+            let lineCount = 0;
+            let charCount = 0;
+            for (
+              let i = 0;
+              i < lines.length && lineCount < remainingLines;
+              i++
+            ) {
+              charCount += lines[i].length + (i < lines.length - 1 ? 1 : 0); // +1 for newline
+              lineCount++;
+            }
+            // Use the shorter truncation if both limits are exceeded
+            const lineTruncatedText = text.substring(0, charCount);
+            if (lineTruncatedText.length < truncatedText.length) {
+              truncatedText = lineTruncatedText;
+            }
+          }
+
+          truncatedHtml += truncatedText;
+          shouldTruncate = true; // Mark that we should truncate, but don't add ellipsis yet
           return true; // Stop walking
         }
       } else if (node.nodeType === Node.ELEMENT_NODE) {
@@ -95,6 +157,24 @@ export const RichTextRenderer: React.FC<RichTextRendererProps> = ({
         // Skip certain tags that might break layout
         if (["script", "style", "meta", "link"].includes(tagName)) {
           return false;
+        }
+
+        // Check if this element creates a new line
+        const createsNewLine = [
+          "p",
+          "div",
+          "h1",
+          "h2",
+          "h3",
+          "h4",
+          "h5",
+          "h6",
+          "br",
+          "li",
+        ].includes(tagName);
+        if (createsNewLine && currentLines >= maxLines) {
+          shouldTruncate = true; // Mark that we should truncate, but don't add ellipsis yet
+          return true; // Stop walking
         }
 
         truncatedHtml += `<${tagName}`;
@@ -120,6 +200,12 @@ export const RichTextRenderer: React.FC<RichTextRendererProps> = ({
         }
 
         truncatedHtml += `</${tagName}>`;
+
+        // Increment line count for block elements
+        if (createsNewLine) {
+          currentLines++;
+        }
+
         return false;
       }
 
@@ -127,16 +213,83 @@ export const RichTextRenderer: React.FC<RichTextRendererProps> = ({
     };
 
     walkNodes(tempDiv);
+
+    // Add ellipsis only once at the very end if truncation occurred
+    if (shouldTruncate) {
+      truncatedHtml += "...";
+    }
+
     return truncatedHtml;
   };
 
+  // Helper function to count lines in a DOM element
+  const countLines = (element: Element): number => {
+    let lineCount = 0;
+
+    const walkElement = (el: Element) => {
+      // Count block elements that create new lines
+      const tagName = el.tagName.toLowerCase();
+      if (
+        ["p", "div", "h1", "h2", "h3", "h4", "h5", "h6", "li"].includes(tagName)
+      ) {
+        lineCount++;
+      }
+
+      // Count <br> tags
+      if (tagName === "br") {
+        lineCount++;
+      }
+
+      // Recursively process child elements
+      for (let i = 0; i < el.children.length; i++) {
+        walkElement(el.children[i]);
+      }
+    };
+
+    walkElement(element);
+
+    // If no structural line breaks found, estimate from text length
+    if (lineCount === 0) {
+      const text = element.textContent || "";
+      lineCount = Math.ceil(text.length / 80);
+    }
+
+    console.log("countLines for element:", {
+      text: element.textContent?.substring(0, 100) + "...",
+      lineCount,
+      html: element.innerHTML.substring(0, 200) + "...",
+    });
+    return lineCount;
+  };
+
+  // Helper function to count lines in text (including newlines and estimated line breaks)
+  const countTextLines = (text: string): number => {
+    if (!text) return 0;
+    // Count explicit newlines
+    const explicitLines = text.split("\n").length;
+    // Estimate additional lines from text length (assuming ~80 chars per line)
+    const estimatedLines = Math.ceil(text.length / 80);
+    const result = Math.max(explicitLines, estimatedLines);
+    console.log("countTextLines:", {
+      text,
+      explicitLines,
+      estimatedLines,
+      result,
+    });
+    return result;
+  };
+
   const sanitizedContent = sanitizeHtml(content);
-  const truncatedContent = truncateHtml(sanitizedContent, maxLength);
+  const finalContent = noTruncate
+    ? sanitizedContent
+    : truncateHtml(sanitizedContent, maxLength, maxLines);
+
+  console.log("Final output:", finalContent);
 
   return (
     <div
       className={`rich-text ${className}`}
-      dangerouslySetInnerHTML={{ __html: truncatedContent }}
+      dangerouslySetInnerHTML={{ __html: finalContent }}
       style={{
         // Basic styling for rich text content
         lineHeight: "1.5",

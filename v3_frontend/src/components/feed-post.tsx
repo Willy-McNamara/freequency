@@ -4,7 +4,6 @@ import { Avatar, AvatarFallback } from "./ui/avatar";
 import { Badge } from "./badge";
 import { MessageSquareIcon, ThumbsUpIcon, Clock } from "lucide-react";
 import { RichTextRenderer } from "./rich-text";
-import { useMemo } from "react";
 
 interface PostData {
   id: number;
@@ -78,29 +77,29 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
   };
 
   // Collect all tags from session and tasks, removing duplicates
-  const allTags = useMemo(() => {
-    const sessionTags = postData.tags || [];
-    const taskTags =
-      postData.tasks?.flatMap((task) => task.taskDefinition.tags || []) || [];
+  // const allTags = useMemo(() => {
+  //   const sessionTags = postData.tags || [];
+  //   const taskTags =
+  //     postData.tasks?.flatMap((task) => task.taskDefinition.tags || []) || [];
 
-    // Combine and remove duplicates based on label
-    const tagMap = new Map<
-      string,
-      { id: number; label: string; color: string | null }
-    >();
+  //   // Combine and remove duplicates based on label
+  //   const tagMap = new Map<
+  //     string,
+  //     { id: number; label: string; color: string | null }
+  //   >();
 
-    // Add session tags first
-    sessionTags.forEach((tag) => {
-      tagMap.set(tag.label, tag);
-    });
+  //   // Add session tags first
+  //   sessionTags.forEach((tag) => {
+  //     tagMap.set(tag.label, tag);
+  //   });
 
-    // Add task tags (task tags will override session tags if same label)
-    taskTags.forEach((tag) => {
-      tagMap.set(tag.label, tag);
-    });
+  //   // Add task tags (task tags will override session tags if same label)
+  //   taskTags.forEach((tag) => {
+  //     tagMap.set(tag.label, tag);
+  //   });
 
-    return Array.from(tagMap.values());
-  }, [postData.tags, postData.tasks]);
+  //   return Array.from(tagMap.values());
+  // }, [postData.tags, postData.tasks]);
 
   const instruments = postData.instruments;
   const regularTags = postData.tags;
@@ -200,6 +199,7 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
         <RichTextRenderer
           content={sessionData.description}
           maxLength={300}
+          maxLines={6}
           className="font-['Inter',Helvetica] text-black text-sm font-normal leading-6 break-words overflow-hidden"
         />
       </div>

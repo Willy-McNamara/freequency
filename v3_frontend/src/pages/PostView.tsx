@@ -430,6 +430,7 @@ export const PostView: React.FC = () => {
               <RichTextRenderer
                 content={post.notes}
                 className="font-['Inter',Helvetica] text-foreground text-sm font-normal leading-6"
+                noTruncate={true}
               />
             </div>
 
