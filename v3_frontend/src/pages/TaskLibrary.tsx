@@ -23,7 +23,7 @@ import { SessionContext } from "@/components/SessionContext";
 import { Timer, Plus, Play } from "lucide-react";
 import { apiConfig } from "../config/api";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "../components/auth/AuthProvider";
+// import { useAuth } from "../components/auth/AuthProvider";
 import { ALL_INSTRUMENTS } from "../types/instruments.types";
 import { Container } from "@/components/layout/Container";
 import { Section } from "@/components/layout/Section";
@@ -42,7 +42,7 @@ const TaskLibrary: React.FC = () => {
   const previousFilterState = useRef<string>("");
   const hasProcessedUrlParam = useRef(false);
   const shouldFetchAfterUrlParam = useRef(false);
-  const { user } = useAuth();
+  // const { user } = useAuth();
   const [userOptions, setUserOptions] = useState<FilterOption[]>([]);
 
   const [activeFilters, setActiveFilters] = useState<FilterState[]>(() => [
