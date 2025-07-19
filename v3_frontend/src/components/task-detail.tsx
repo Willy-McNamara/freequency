@@ -13,6 +13,7 @@ import { Task } from "./task-list-item";
 import { Button } from "./ui/button";
 import { Section } from "./layout/Section";
 import { apiConfig } from "../config/api";
+import { RichTextRenderer } from "./rich-text";
 
 async function saveTask(taskId: number) {
   return fetch(`${apiConfig.endpoints.tasks}/${taskId}/save`, {
@@ -103,9 +104,14 @@ export function TaskDetail({
         </div>
 
         {/* Description */}
-        <p className="text-muted-foreground leading-relaxed mb-6 text-left">
-          {task.description}
-        </p>
+        <h3 className="text-sm font-medium text-muted-foreground mb-2 text-left">
+          Description
+        </h3>
+        <RichTextRenderer
+          content={task.description}
+          noTruncate={true}
+          className="font-['Inter',Helvetica] text-foreground text-sm font-normal leading-6 mb-2"
+        />
 
         {/* Tags */}
         <div className="mb-6">

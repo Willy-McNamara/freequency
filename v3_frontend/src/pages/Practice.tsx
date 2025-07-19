@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState, useRef, useMemo } from "react";
 import { useNavigate } from "react-router";
-import { RichTextEditor } from "@/components/rich-text";
+import { RichTextEditor, RichTextRenderer } from "@/components/rich-text";
 import { PracticeTaskList } from "@/components/practice-task-list";
 import { PracticeTagList } from "@/components/practice-tag-list";
 import { PracticeTimer, PracticeTimerRef } from "@/components/practice-timer";
@@ -438,8 +438,8 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
         </DialogContent>
       </Dialog>
       {selectedTask ? (
-        <Section spacing="xl">
-          <div className="w-full mx-auto bg-card rounded-xl shadow-lg p-4 md:p-8 flex flex-col items-center relative">
+        <Section spacing="sm">
+          <div className="w-full mx-auto bg-card rounded-xl shadow-lg p-4 md:p-8 flex flex-col items-stretch relative align-start">
             {/* Back Arrow at top left */}
             <button
               type="button"
@@ -470,15 +470,21 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                   <h4 className="text-sm font-semibold mb-1 text-left">
                     Description
                   </h4>
-                  <p className="text-sm text-foreground leading-relaxed">
-                    {selectedTask.description}
-                  </p>
+                  <RichTextRenderer
+                    content={selectedTask.description}
+                    noTruncate={true}
+                    className="font-['Inter',Helvetica] text-foreground text-sm font-normal leading-6 mb-2"
+                  />
                 </div>
               </Section>
             )}
             <Section spacing="sm">
               <div className="w-full">
-                <RichTextEditor value={taskNotes} onChange={setTaskNotes} />
+                <RichTextEditor
+                  value={taskNotes}
+                  onChange={setTaskNotes}
+                  placeholder="Add task notes here..."
+                />
               </div>
             </Section>
             {/* Task Tags */}
@@ -558,15 +564,17 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                 ))}
               </div>
             </Section>
-            {/* Remove Task from Session Button */}
+            {/* Save Button */}
             <Section spacing="md">
-              <Button
-                type="button"
-                className="w-full px-6 py-2 rounded-lg bg-green-600 text-white font-semibold shadow hover:bg-green-700 transition-colors focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2"
-                onClick={handleBack}
-              >
-                Save
-              </Button>
+              <div className="flex justify-center">
+                <Button
+                  type="button"
+                  className="px-6 py-2 rounded-lg bg-green-600 text-white font-semibold shadow hover:bg-green-700 transition-colors focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2"
+                  onClick={handleBack}
+                >
+                  Save
+                </Button>
+              </div>
             </Section>
           </div>
         </Section>
@@ -601,6 +609,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
               <RichTextEditor
                 value={sessionNotes || ""}
                 onChange={setSessionNotes}
+                placeholder="Add session notes here..."
               />
             </div>
           </Section>

@@ -7,6 +7,7 @@ import { Button } from "./ui/button";
 import { InstrumentModal } from "./InstrumentModal";
 import { ALL_INSTRUMENTS } from "../types/instruments.types";
 import { TaskTagList } from "./TaskTagList";
+import { RichTextEditor } from "./rich-text";
 
 export interface CreateTaskData {
   title: string;
@@ -214,14 +215,20 @@ export function CreateTaskModal({
             >
               Description *
             </label>
-            <textarea
-              id="description"
+            <RichTextEditor
               value={formData.description}
-              onChange={(e) => handleInputChange("description", e.target.value)}
-              rows={4}
-              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none text-left"
-              placeholder="Describe what this task involves"
+              onChange={(value) => handleInputChange("description", value)}
+              placeholder="Describe what this task involves..."
+            />
+            {/* Hidden input for browser validation */}
+            <input
+              type="text"
+              value={formData.description}
               required
+              tabIndex={-1}
+              autoComplete="off"
+              style={{ opacity: 0, width: "1px" }}
+              onChange={() => {}}
             />
           </div>
 

@@ -13,6 +13,7 @@ import { ALL_INSTRUMENTS } from "../types/instruments.types";
 import { cn } from "../lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
+import { RichTextRenderer } from "./rich-text";
 
 export interface Task {
   id: number;
@@ -151,9 +152,12 @@ export function TaskListItem({
             <h4 className="text-sm font-medium text-muted-foreground mb-1 text-left">
               Description
             </h4>
-            <p className="text-sm text-foreground leading-relaxed text-left">
-              {task.description}
-            </p>
+            <RichTextRenderer
+              content={task.description}
+              maxLength={300}
+              maxLines={4}
+              className="font-['Inter',Helvetica] text-foreground text-sm font-normal leading-6"
+            />
           </div>
 
           {/* Tags */}

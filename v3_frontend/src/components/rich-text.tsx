@@ -312,6 +312,7 @@ const editorConfig: InitialConfigType = {
 export interface RichTextEditorProps {
   value: string; // HTML string
   onChange: (value: string) => void;
+  placeholder?: string;
 }
 
 // Syncs the editor state with the value prop when it changes
@@ -340,7 +341,11 @@ function RichTextSync({
   return null;
 }
 
-export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
+export function RichTextEditor({
+  value,
+  onChange,
+  placeholder,
+}: RichTextEditorProps) {
   // Set initial editor state from HTML value
   const lastHtmlRef = useRef(value);
   const initialConfig = {
@@ -368,6 +373,7 @@ export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
               lastHtmlRef.current = html;
               onChange(html);
             }}
+            placeholder={placeholder}
           />
         </TooltipProvider>
       </LexicalComposer>
@@ -375,9 +381,16 @@ export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
   );
 }
 
-const placeholder = "Add session notes here...";
+export function Plugins({
+  onChange,
+  placeholder,
+}: {
+  onChange?: (value: string) => void;
+  placeholder?: string;
+}) {
+  const defaultPlaceholder = "Add notes here...";
+  const finalPlaceholder = placeholder || defaultPlaceholder;
 
-export function Plugins({ onChange }: { onChange?: (value: string) => void }) {
   const [floatingAnchorElem, setFloatingAnchorElem] =
     useState<HTMLDivElement | null>(null);
 
@@ -407,7 +420,7 @@ export function Plugins({ onChange }: { onChange?: (value: string) => void }) {
             <div className="">
               <div className="" ref={onRef}>
                 <ContentEditable
-                  placeholder={placeholder}
+                  placeholder={finalPlaceholder}
                   className="ContentEditable__root relative block min-h-[2.5rem] text-left overflow-auto
 px-3 pt-2 focus:outline-none"
                 />
