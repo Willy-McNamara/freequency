@@ -1,14 +1,14 @@
-# Stage 1: Build the React app (v3_frontend)
-FROM node:16 AS frontend-build
+# Stage 1: Build the React app (frontend)
+FROM node:20 AS frontend-build
 
-WORKDIR /app/v3_frontend
+WORKDIR /app/frontend
 
 # Copy package files
-COPY v3_frontend/package.json v3_frontend/package-lock.json ./
+COPY frontend/package.json frontend/package-lock.json ./
 RUN npm install
 
 # Copy source code
-COPY v3_frontend ./
+COPY frontend ./
 
 # Build with environment variables (can be overridden at build time)
 ARG VITE_API_BASE_URL=http://localhost:3000
@@ -17,7 +17,7 @@ ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 RUN npm run build
 
 # Stage 2: Build the backend
-FROM node:16 AS backend-build
+FROM node:20 AS backend-build
 
 WORKDIR /app/api
 
@@ -29,7 +29,7 @@ COPY api ./
 RUN npm run build
 
 # Stage 3: Combine the built frontend and backend, and run the application
-FROM node:16
+FROM node:20
 
 WORKDIR /app
 
@@ -40,7 +40,7 @@ RUN npm install --only=production
 COPY --from=backend-build /app/api/dist /app/api/dist
 
 # Copy built frontend code to the expected location
-COPY --from=frontend-build /app/v3_frontend/dist /app/frontend/dist
+COPY --from=frontend-build /app/frontend/dist /app/frontend/dist
 
 # Copy database seed file to a known location
 # swithing to RDS, so commenting out this step (for local db hosting)

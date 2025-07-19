@@ -34,8 +34,10 @@ export const apiClient = {
       });
 
       if (response.status === 401) {
-        // Redirect to login on authentication failure
-        window.location.href = "/login";
+        // Redirect to login on authentication failure if not already on /login
+        if (window.location.pathname !== "/login") {
+          window.location.href = "/login";
+        }
         throw new Error("Authentication required");
       }
 

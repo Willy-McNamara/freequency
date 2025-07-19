@@ -1,40 +1,27 @@
-import React, { ReactNode } from 'react';
+import { ReactNode } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 
-interface ErrorBoundaryProps {
+interface ErrorBoundaryWrapperProps {
   children: ReactNode;
 }
 
-interface ErrorBoundaryState {
-  hasError: boolean;
+function ErrorFallback({ error }: { error: unknown }) {
+  if (error instanceof Error) {
+    return (
+      <div>
+        <h1>Something went wrong</h1>
+        <p>{error.message}</p>
+        <pre>{error.stack}</pre>
+      </div>
+    );
+  }
+  return <h1>Unknown Error</h1>;
 }
 
-class ErrorBoundary extends React.Component<
-  ErrorBoundaryProps,
-  ErrorBoundaryState
-> {
-  constructor(props: ErrorBoundaryProps) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError(_: Error): ErrorBoundaryState {
-    // Update state so the next render will show the fallback UI.
-    return { hasError: true };
-  }
-
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
-    // You can also log the error to an error reporting service
-    console.error(error, errorInfo);
-  }
-
-  render(): React.ReactNode {
-    if (this.state.hasError) {
-      // You can render any custom fallback UI
-      return <h1>Something went wrong.</h1>;
-    }
-
-    return this.props.children;
-  }
+export default function ErrorBoundaryWrapper({
+  children,
+}: ErrorBoundaryWrapperProps) {
+  return (
+    <ErrorBoundary FallbackComponent={ErrorFallback}>{children}</ErrorBoundary>
+  );
 }
-
-export default ErrorBoundary;
