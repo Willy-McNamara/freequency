@@ -29,7 +29,7 @@ import { TagsController } from './tags/tags.controller';
     MusiciansModule,
     TasksModule,
     ServeStaticModule.forRoot({
-      rootPath: join(process.cwd(), '../v3_frontend/dist'),
+      rootPath: join(process.cwd(), '../frontend/dist'),
       serveRoot: '/',
     }),
     AuthModule,

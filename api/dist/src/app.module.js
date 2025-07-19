@@ -43,7 +43,7 @@ exports.AppModule = AppModule = __decorate([
             musicians_module_1.MusiciansModule,
             tasks_module_1.TasksModule,
             serve_static_1.ServeStaticModule.forRoot({
-                rootPath: (0, path_1.join)(process.cwd(), '../v3_frontend/dist'),
+                rootPath: (0, path_1.join)(process.cwd(), '../frontend/dist'),
                 serveRoot: '/',
             }),
             auth_module_1.AuthModule,
