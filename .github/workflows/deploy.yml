@@ -71,32 +71,32 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-  export AWS_REGION=${{ secrets.AWS_REGION }}
-  export ECR_REPOSITORY=${{ secrets.ECR_REPOSITORY }}
-  export DATABASE_URL_V3='${{ secrets.DATABASE_URL_V3 }}'
-  export GOOGLE_CLIENT_ID='${{ secrets.GOOGLE_CLIENT_ID }}'
-  export GOOGLE_CLIENT_SECRET='${{ secrets.GOOGLE_CLIENT_SECRET }}'
-  export JWT_SECRET='${{ secrets.JWT_SECRET }}'
-  export AWS_S3_BUCKET_NAME='${{ secrets.AWS_S3_BUCKET_NAME }}'
-  export AWS_BUCKET_REGION='${{ secrets.AWS_BUCKET_REGION }}'
-  export AWS_S3_DEV_ACCESS_KEY='${{ secrets.AWS_S3_DEV_ACCESS_KEY }}'
-  export AWS_S3_DEV_SECRET_ACCESS_KEY='${{ secrets.AWS_S3_DEV_SECRET_ACCESS_KEY }}'
-  export BACKEND_URL='${{ secrets.BACKEND_URL }}'
-  export DEBUG='${{ secrets.DEBUG }}'
+            export AWS_REGION=${{ secrets.AWS_REGION }}
+            export ECR_REPOSITORY=${{ secrets.ECR_REPOSITORY }}
+            export DATABASE_URL_V3='${{ secrets.DATABASE_URL_V3 }}'
+            export GOOGLE_CLIENT_ID='${{ secrets.GOOGLE_CLIENT_ID }}'
+            export GOOGLE_CLIENT_SECRET='${{ secrets.GOOGLE_CLIENT_SECRET }}'
+            export JWT_SECRET='${{ secrets.JWT_SECRET }}'
+            export AWS_S3_BUCKET_NAME='${{ secrets.AWS_S3_BUCKET_NAME }}'
+            export AWS_BUCKET_REGION='${{ secrets.AWS_BUCKET_REGION }}'
+            export AWS_S3_DEV_ACCESS_KEY='${{ secrets.AWS_S3_DEV_ACCESS_KEY }}'
+            export AWS_S3_DEV_SECRET_ACCESS_KEY='${{ secrets.AWS_S3_DEV_SECRET_ACCESS_KEY }}'
+            export BACKEND_URL='${{ secrets.BACKEND_URL }}'
+            export DEBUG='${{ secrets.DEBUG }}'
 
-  aws ecr get-login-password --region $AWS_REGION | sudo docker login --username AWS --password-stdin $ECR_REPOSITORY
-  sudo docker stop freequency-app || true
-  sudo docker rm freequency-app || true
-  sudo docker pull $ECR_REPOSITORY:latest
-  sudo docker run --name freequency-app \
-    -e DATABASE_URL_V3="$DATABASE_URL_V3" \
-    -e GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID" \
-    -e GOOGLE_CLIENT_SECRET="$GOOGLE_CLIENT_SECRET" \
-    -e JWT_SECRET="$JWT_SECRET" \
-    -e AWS_S3_BUCKET_NAME="$AWS_S3_BUCKET_NAME" \
-    -e AWS_BUCKET_REGION="$AWS_BUCKET_REGION" \
-    -e AWS_S3_DEV_ACCESS_KEY="$AWS_S3_DEV_ACCESS_KEY" \
-    -e AWS_S3_DEV_SECRET_ACCESS_KEY="$AWS_S3_DEV_SECRET_ACCESS_KEY" \
-    -e BACKEND_URL="$BACKEND_URL" \
-    -e DEBUG="$DEBUG" \
-    -p 3000:3000 -d $ECR_REPOSITORY:latest
+            aws ecr get-login-password --region $AWS_REGION | sudo docker login --username AWS --password-stdin $ECR_REPOSITORY
+            sudo docker stop freequency-app || true
+            sudo docker rm freequency-app || true
+            sudo docker pull $ECR_REPOSITORY:latest
+            sudo docker run --name freequency-app \
+              -e DATABASE_URL_V3="$DATABASE_URL_V3" \
+              -e GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID" \
+              -e GOOGLE_CLIENT_SECRET="$GOOGLE_CLIENT_SECRET" \
+              -e JWT_SECRET="$JWT_SECRET" \
+              -e AWS_S3_BUCKET_NAME="$AWS_S3_BUCKET_NAME" \
+              -e AWS_BUCKET_REGION="$AWS_BUCKET_REGION" \
+              -e AWS_S3_DEV_ACCESS_KEY="$AWS_S3_DEV_ACCESS_KEY" \
+              -e AWS_S3_DEV_SECRET_ACCESS_KEY="$AWS_S3_DEV_SECRET_ACCESS_KEY" \
+              -e BACKEND_URL="$BACKEND_URL" \
+              -e DEBUG="$DEBUG" \
+              -p 3000:3000 -d $ECR_REPOSITORY:latest
