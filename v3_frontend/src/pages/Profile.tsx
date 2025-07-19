@@ -15,8 +15,8 @@ import { Container } from "../components/layout/Container";
 import { Section } from "../components/layout/Section";
 import { useAuth } from "../components/auth/AuthProvider";
 import { apiConfig } from "../config/api";
-import { Music, Clock, Fuel, Pencil, ChevronDown } from "lucide-react";
-import { ALL_INSTRUMENTS } from "../types/instruments.types";
+import { Music, Clock, Fuel, Pencil, X } from "lucide-react";
+import { InstrumentModal } from "../components/InstrumentModal";
 
 interface Instrument {
   id: number;
@@ -71,11 +71,10 @@ export default function Profile() {
   const [isSaving, setIsSaving] = useState(false);
   // Remove allInstruments state and fetch logic
   // const [allInstruments, setAllInstruments] = useState<{ id: number; label: string }[]>([]);
-  const [instrumentDropdownOpen, setInstrumentDropdownOpen] = useState(false);
-  const [instrumentSearch, setInstrumentSearch] = useState("");
   const [isFollowing, setIsFollowing] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const navigate = useNavigate();
+  const [instrumentModalOpen, setInstrumentModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -132,7 +131,15 @@ export default function Profile() {
   };
   const handleSaveEdit = async () => {
     if (!editData) return;
+
+    // Validate that at least one instrument is selected
+    if (editData.instruments.length === 0) {
+      setError("Your profile must have at least one instrument saved to it");
+      return;
+    }
+
     setIsSaving(true);
+    setError(null);
     try {
       const id = userId;
       if (!id) throw new Error("No user ID");
@@ -222,7 +229,7 @@ export default function Profile() {
       {viewingOwnProfile && (
         <Button
           variant="outline"
-          className="fixed top-4 right-4 z-50 flex items-center gap-2"
+          className="fixed top-20 right-4 z-40 flex items-center gap-2"
           onClick={openEdit}
         >
           <Pencil className="w-4 h-4 mr-1" /> Edit Profile
@@ -230,8 +237,8 @@ export default function Profile() {
       )}
       <Container size="lg">
         {/* Header Section */}
-        <Section spacing="lg">
-          <div className="flex justify-center relative">
+        <Section>
+          <div className="flex justify-center relative mt-12">
             <Avatar>
               <AvatarImage
                 src={data.profilePictureUrl}
@@ -240,10 +247,10 @@ export default function Profile() {
               <AvatarFallback>{data.displayName[0]}</AvatarFallback>
             </Avatar>
           </div>
-          <h2 className="relative self-stretch font-h-2 font-[number:var(--h-2-font-weight)] text-black text-[length:var(--h-2-font-size)] text-center tracking-[var(--h-2-letter-spacing)] leading-[var(--h-2-line-height)] [font-style:var(--h-2-font-style)]">
+          <h2 className="text-2xl font-semibold text-black text-center">
             {data.displayName}
           </h2>
-          <p className="text-center text-muted-foreground">
+          <p className="text-center text-muted-foreground mb-2">
             {"Member since " +
               new Intl.DateTimeFormat("en-US", {
                 month: "long",
@@ -256,10 +263,7 @@ export default function Profile() {
               <Badge
                 key={index}
                 className="rounded-md px-2 py-[0.125rem]"
-                style={{
-                  backgroundColor: skill.color || "#475569",
-                  color: "white",
-                }}
+                variant="default"
               >
                 <span className="text-xs">{skill.label}</span>
               </Badge>
@@ -273,9 +277,9 @@ export default function Profile() {
         </Section>
 
         {/* Actions Section */}
-        <Section spacing="lg">
+        <Section>
           {/* Follow button always visible, disabled if own profile */}
-          <div className="flex justify-center">
+          <div className="flex justify-center mb-4">
             <Button
               variant="secondary"
               className="flex items-center gap-2"
@@ -377,83 +381,84 @@ export default function Profile() {
                 </div>
                 <div className="grid gap-2">
                   <label className="text-sm font-medium">Instruments</label>
-                  <Button
-                    variant="outline"
-                    className="flex items-center gap-2 min-w-[180px] justify-between"
-                    onClick={() => setInstrumentDropdownOpen(true)}
-                    type="button"
-                  >
-                    <span className="flex items-center gap-2">
-                      {editData.instruments.length > 0
-                        ? editData.instruments
-                            .map((inst) => inst.label)
-                            .join(", ")
-                        : "Select instruments"}
-                    </span>
-                    <ChevronDown className="w-4 h-4" />
-                  </Button>
-                  {/* Dropdown dialog for instruments */}
-                  {instrumentDropdownOpen && (
-                    <div className="absolute z-50 bg-white border rounded-md shadow-lg mt-2 w-[300px] p-4">
-                      <Input
-                        placeholder="Search instruments..."
-                        value={instrumentSearch}
-                        onChange={(e) => setInstrumentSearch(e.target.value)}
-                        className="mb-2"
-                      />
-                      <div className="max-h-60 overflow-y-auto space-y-1">
-                        {ALL_INSTRUMENTS.filter((inst) =>
-                          inst.label
-                            .toLowerCase()
-                            .includes(instrumentSearch.toLowerCase())
-                        ).map((inst) => {
-                          const selected = editData.instruments.some(
-                            (i) => i.label === inst.label
-                          );
-                          return (
-                            <button
-                              key={inst.id}
-                              className={`w-full text-left px-3 py-2 rounded-md hover:bg-muted transition-colors flex items-center gap-2 ${
-                                selected ? "bg-primary/10 font-semibold" : ""
-                              }`}
-                              onClick={() => {
-                                setEditData((prev) => {
-                                  if (!prev) return prev;
-                                  const alreadySelected = prev.instruments.some(
-                                    (i) => i.label === inst.label
-                                  );
-                                  let newInstruments;
-                                  if (alreadySelected) {
-                                    newInstruments = prev.instruments.filter(
-                                      (i) => i.label !== inst.label
-                                    );
-                                  } else {
-                                    newInstruments = [
-                                      ...prev.instruments,
-                                      {
-                                        id: inst.id,
-                                        label: inst.label,
-                                        color: null,
-                                        createdAt: new Date().toISOString(),
-                                      },
-                                    ];
-                                  }
-                                  return {
-                                    ...prev,
-                                    instruments: newInstruments,
-                                  };
-                                });
-                              }}
-                            >
-                              <span>{inst.label}</span>
-                              {selected && <span>✓</span>}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
+                  <div className="flex flex-wrap gap-2 items-center">
+                    <button
+                      type="button"
+                      onClick={() => setInstrumentModalOpen(true)}
+                      className="focus:outline-none"
+                    >
+                      <Badge
+                        variant="secondary"
+                        className="max-h-[1.2rem] flex items-center px-2.5 cursor-pointer select-none"
+                      >
+                        + add
+                      </Badge>
+                    </button>
+                    {editData.instruments.map((inst) => (
+                      <span key={inst.id} className="relative group">
+                        <Badge
+                          variant="default"
+                          className="h-5 px-3 py-2 rounded-md select-none flex items-center"
+                        >
+                          <span>{inst.label}</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditData((prev) => {
+                                if (!prev) return prev;
+                                return {
+                                  ...prev,
+                                  instruments: prev.instruments.filter(
+                                    (i) => i.id !== inst.id
+                                  ),
+                                };
+                              });
+                            }}
+                            className="ml-1 p-0 bg-transparent cursor-pointer border-none outline-none focus:outline-none flex items-center"
+                            style={{ pointerEvents: "auto" }}
+                            aria-label={`Remove instrument ${inst.label}`}
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </Badge>
+                      </span>
+                    ))}
+                  </div>
+                  <InstrumentModal
+                    isOpen={instrumentModalOpen}
+                    onClose={() => setInstrumentModalOpen(false)}
+                    onInstrumentSelected={(inst: {
+                      id: number;
+                      label: string;
+                    }) => {
+                      setEditData((prev) => {
+                        if (!prev) return prev;
+                        if (prev.instruments.some((i) => i.id === inst.id))
+                          return prev;
+                        return {
+                          ...prev,
+                          instruments: [
+                            ...prev.instruments,
+                            {
+                              id: inst.id,
+                              label: inst.label,
+                              color: null,
+                              createdAt: new Date().toISOString(),
+                            },
+                          ],
+                        };
+                      });
+                    }}
+                  />
+                  {editData && editData.instruments.length === 0 && (
+                    <p className="text-sm text-red-500 mt-1">
+                      Your profile must have at least one instrument
+                    </p>
                   )}
                 </div>
+                {error && (
+                  <div className="text-sm text-red-500 mt-2">{error}</div>
+                )}
                 <div className="flex gap-2 pt-4">
                   <Button
                     variant="outline"
@@ -464,7 +469,9 @@ export default function Profile() {
                   </Button>
                   <Button
                     onClick={handleSaveEdit}
-                    disabled={isSaving}
+                    disabled={
+                      isSaving || !editData || editData.instruments.length === 0
+                    }
                     className="flex-1"
                   >
                     {isSaving ? "Saving..." : "Save Changes"}

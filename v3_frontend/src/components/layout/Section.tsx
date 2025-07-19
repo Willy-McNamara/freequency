@@ -68,13 +68,13 @@ export const Section = React.forwardRef<HTMLElement, SectionProps>(
         ref={ref}
         className={cn(
           {
-            "py-xs": effectiveSpacing === "xs",
-            "py-sm": effectiveSpacing === "sm",
-            "py-md": effectiveSpacing === "md",
-            "py-lg": effectiveSpacing === "lg",
-            "py-xl": effectiveSpacing === "xl",
-            "py-2xl": effectiveSpacing === "2xl",
-            "py-3xl": effectiveSpacing === "3xl",
+            "py-1": effectiveSpacing === "xs",
+            "py-2": effectiveSpacing === "sm",
+            "py-4": effectiveSpacing === "md",
+            "py-6": effectiveSpacing === "lg",
+            "py-8": effectiveSpacing === "xl",
+            "py-12": effectiveSpacing === "2xl",
+            "py-16": effectiveSpacing === "3xl",
           },
           className
         )}
