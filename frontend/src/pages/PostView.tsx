@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, MessageSquare, Heart, Clock, User } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/badge";
 import { RichTextRenderer } from "@/components/rich-text";
 import { Button } from "@/components/ui/button";
 import { sessionService } from "@/services/sessions";

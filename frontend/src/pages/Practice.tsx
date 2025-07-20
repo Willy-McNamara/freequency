@@ -9,7 +9,7 @@ import type {
   SessionTask,
   SessionContextValue,
 } from "@/components/SessionContext";
-import { ArrowLeft, Loader2, Trash2 } from "lucide-react";
+import { ArrowLeft, Trash2 } from "lucide-react";
 import { sessionService } from "../services/sessions";
 import { useAuth } from "../components/auth/AuthProvider";
 import { apiConfig } from "../config/api";

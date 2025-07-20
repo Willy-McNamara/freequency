@@ -1,7 +1,6 @@
 import { JSX } from "react";
 import { useNavigate } from "react-router";
 import { Avatar, AvatarFallback } from "./ui/avatar";
-import { Badge } from "./badge";
 import { MessageSquareIcon, ThumbsUpIcon, Clock } from "lucide-react";
 import { RichTextRenderer } from "./rich-text";
 import { TagList } from "./TagList";
@@ -101,9 +100,6 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
 
   //   return Array.from(tagMap.values());
   // }, [postData.tags, postData.tasks]);
-
-  const instruments = postData.instruments;
-  const regularTags = postData.tags;
 
   // Data for engagement metrics
   const engagementData = [
