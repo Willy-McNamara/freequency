@@ -449,16 +449,19 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
       {/* Task in Session view*/}
       {selectedTask ? (
         <Section spacing="sm">
-          <div className="w-full mx-auto bg-card rounded-xl shadow-lg p-4 md:p-8 flex flex-col items-stretch relative align-start">
-            {/* Back Arrow at top left */}
-            <button
-              type="button"
-              className="absolute top-4 left-4 p-2 rounded-full hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring"
+          <Section spacing="md">
+            {/* Header */}
+            <Button
+              variant="outline"
+              size="sm"
               onClick={handleBack}
-              aria-label="Back to Session"
+              className="flex items-center gap-2 text-foreground hover:text-foreground"
             >
-              <ArrowLeft className="w-6 h-6" />
-            </button>
+              <ArrowLeft className="w-4 h-4" />
+              Back to Session
+            </Button>
+          </Section>
+          <div className="w-full mx-auto bg-card rounded-xl shadow-lg p-4 md:p-8 flex flex-col items-stretch relative align-start">
             {/* Task Title and Timer */}
             <Section spacing="md">
               <div className="w-full flex flex-col items-center justify-center">
