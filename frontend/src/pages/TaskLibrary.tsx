@@ -323,22 +323,39 @@ const TaskLibrary: React.FC = () => {
       )
     );
 
+    console.log("hasMatchingINstrument", hasMatchingInstrument);
+
     if (hasMatchingInstrument) {
-      console.log(
-        "Task instrument matches session instrument - returning early"
-      );
+      // Add the task to the session if not already present
+      if (!session.tasks.some((t) => t.id === String(task.id))) {
+        session.setTasks([
+          ...session.tasks,
+          {
+            id: String(task.id),
+            title: task.title,
+            description: task.description,
+            tags:
+              task.tags?.map((tag) => ({
+                id: String(tag.id),
+                label: tag.label,
+              })) || [],
+            checklist:
+              task.checklist?.map((item) => ({ item, checked: false })) || [],
+          },
+        ]);
+      }
+      // Set a flag in localStorage for the selected task
+      localStorage.setItem("practiceSelectedTaskId", String(task.id));
+      navigate("/practice", { replace: true });
       return;
     }
-
-    // Show warning modal for different instrument
-    setTaskWithDifferentInstrument(task);
     setShowInstrumentWarningModal(true);
+    setTaskWithDifferentInstrument(task);
   };
 
   const handleViewTaskDetails = () => {
     if (!taskWithDifferentInstrument) return;
     setShowInstrumentWarningModal(false);
-    setTaskWithDifferentInstrument(null);
     handleViewDetails(taskWithDifferentInstrument.id);
   };
 
