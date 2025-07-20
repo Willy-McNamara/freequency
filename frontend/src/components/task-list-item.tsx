@@ -8,8 +8,6 @@ import {
   Music,
   ArrowRight,
 } from "lucide-react";
-import { Badge } from "./badge";
-import { ALL_INSTRUMENTS } from "../types/instruments.types";
 import { cn } from "../lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
