@@ -9,7 +9,7 @@ import type {
   SessionTask,
   SessionContextValue,
 } from "@/components/SessionContext";
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { ArrowLeft, Loader2, Trash2 } from "lucide-react";
 import { sessionService } from "../services/sessions";
 import { useAuth } from "../components/auth/AuthProvider";
 import { apiConfig } from "../config/api";
@@ -27,6 +27,8 @@ import { TagList } from "../components/TagList";
 import { InstrumentModal } from "../components/InstrumentModal";
 import { ALL_INSTRUMENTS } from "../types/instruments.types";
 import { Badge } from "../components/badge";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
 
 const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   session,
@@ -46,7 +48,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
     (t: SessionTask) => t.id === selectedTaskId
   );
   const { user } = useAuth();
-
+  const [isSaving, setIsSaving] = useState(false);
   const [showInstrumentTagModal, setShowInstrumentTagModal] = useState(false);
   const [showDeleteSessionModal, setShowDeleteSessionModal] = useState(false);
   const [instrumentModalOpen, setInstrumentModalOpen] = useState(false);
@@ -246,6 +248,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   };
 
   const handleSaveSession = async () => {
+    setIsSaving(true);
     // Validate: must have at least one instrument tag
     const instruments = ALL_INSTRUMENTS.map((i) => i.label.toLowerCase());
     const hasInstrumentTag = session.tags.some((tag) =>
@@ -295,8 +298,18 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
           tags: Array.isArray(task.tags) ? task.tags.map((t) => t.label) : [],
         })),
       };
-      await sessionService.saveSession(sessionData);
 
+      const apiPromise = sessionService.saveSession(sessionData);
+      // makes api call a promise var so it can be used in the toast logic
+      toast.promise(apiPromise, {
+        loading: "Saving session...",
+        success: () => {
+          return `Successful save! Routing to your posts...`;
+        },
+        error: "Error",
+      });
+      await apiPromise;
+      await new Promise((resolve) => setTimeout(resolve, 2500)); // Pause so the user can read the toast before redirect
       // Clear all session state after successful save
       session.setSessionTitle("Untitled Session");
       session.setTags([]);
@@ -309,6 +322,8 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
       // Clear localStorage
       localStorage.removeItem("practiceSession");
       localStorage.removeItem("practiceSelectedTaskId");
+
+      setIsSaving(false);
 
       // Navigate to feed with filter for user's sessions
       navigate("/feed?filter=my-sessions");
@@ -357,6 +372,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   // Main Practice view
   return (
     <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 min-h-screen mb-8">
+      <Toaster position="bottom-center" />
       {/* Start Session Custom Overlay */}
       {showStartModal && (
         <>
@@ -743,6 +759,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                 type="button"
                 className="px-6 py-2 rounded-md bg-primary text-primary-foreground font-semibold shadow hover:bg-primary/80 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                 onClick={handleSaveSession}
+                disabled={isSaving}
               >
                 Save Session
               </button>
