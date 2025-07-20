@@ -9,6 +9,7 @@ import { sessionService } from "@/services/sessions";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { Container } from "@/components/layout/Container";
 import { Section } from "@/components/layout/Section";
+import { TaskTagList } from "@/components/TaskTagList";
 
 interface PostViewTask {
   id: number;
@@ -388,37 +389,14 @@ export const PostView: React.FC = () => {
                 </span>
               </div>
             </div>
-
             {/* Instruments and Tags */}
-            <div className="flex flex-wrap gap-2 mb-4">
-              {post.instruments.map((instrument) => (
-                <Badge
-                  key={instrument.id}
-                  variant="default"
-                  className="!hover:bg-none !hover:bg-transparent text-xs sm:text-sm"
-                >
-                  {instrument.label}
-                </Badge>
-              ))}
-              {post.tags
-                .filter(
-                  (tag) =>
-                    !post.instruments.some(
-                      (instrument) =>
-                        instrument.label.toLowerCase() ===
-                        tag.label.toLowerCase()
-                    )
-                )
-                .map((tag) => (
-                  <Badge
-                    key={tag.id}
-                    variant="secondary"
-                    className="!hover:bg-none !hover:bg-transparent text-xs sm:text-sm"
-                  >
-                    {tag.label}
-                  </Badge>
-                ))}
-            </div>
+            <Section spacing="sm">
+              <TaskTagList
+                tags={post.tags
+                  .map((tag) => tag.label)
+                  .concat(post.instruments.map((i) => i.label))}
+              />
+            </Section>
 
             {/* Session Title */}
             <h1 className="text-xl sm:text-2xl font-bold mb-4 text-left">
@@ -606,17 +584,11 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onViewTaskDefinition }) => {
         <div className="border-t border-border p-3 sm:p-4 bg-muted/20">
           {/* Task Tags */}
           {task.taskDefinition.tags && task.taskDefinition.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-3 sm:mb-4">
-              {task.taskDefinition.tags.map((tag) => (
-                <Badge
-                  key={tag.id}
-                  variant="secondary"
-                  className="text-xs !hover:bg-none !hover:bg-transparent"
-                >
-                  {tag.label}
-                </Badge>
-              ))}
-            </div>
+            <Section spacing="sm">
+              <TaskTagList
+                tags={task.taskDefinition.tags.map((t) => t.label)}
+              />
+            </Section>
           )}
 
           {/* Task Notes */}
