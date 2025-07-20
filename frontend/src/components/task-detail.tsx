@@ -14,6 +14,7 @@ import { Button } from "./ui/button";
 import { Section } from "./layout/Section";
 import { apiConfig } from "../config/api";
 import { RichTextRenderer } from "./rich-text";
+import { TaskTagList } from "./TaskTagList";
 
 async function saveTask(taskId: number) {
   return fetch(`${apiConfig.endpoints.tasks}/${taskId}/save`, {
@@ -104,47 +105,20 @@ export function TaskDetail({
         </div>
 
         {/* Description */}
-        <h3 className="text-sm font-medium text-muted-foreground mb-2 text-left">
-          Description
-        </h3>
-        <RichTextRenderer
-          content={task.description}
-          noTruncate={true}
-          className="font-['Inter',Helvetica] text-foreground text-sm font-normal leading-6 mb-2"
-        />
-
-        {/* Tags */}
-        <div className="mb-6">
+        <Section spacing="sm">
           <h3 className="text-sm font-medium text-muted-foreground mb-2 text-left">
-            Tags
+            Description
           </h3>
-          <div className="flex flex-wrap gap-2">
-            <Badge
-              variant="default"
-              className="text-sm !hover:bg-none !hover:bg-transparent"
-            >
-              {task.instrument}
-            </Badge>
-            {task.tags
-              .filter(
-                (tag) =>
-                  tag.label.toLowerCase() !== task.instrument.toLowerCase()
-              )
-              .map((tag) => (
-                <Badge
-                  key={tag.id}
-                  variant="secondary"
-                  className="text-sm !hover:bg-none !hover:bg-transparent"
-                >
-                  {tag.label}
-                </Badge>
-              ))}
-          </div>
-        </div>
+          <RichTextRenderer
+            content={task.description}
+            noTruncate={true}
+            className="font-['Inter',Helvetica] text-foreground text-sm font-normal leading-6"
+          />
+        </Section>
 
         {/* Checklist */}
         {task.checklist && task.checklist.length > 0 && (
-          <div className="mb-6">
+          <Section spacing="sm">
             <h3 className="text-sm font-medium text-muted-foreground mb-3 text-left">
               Checklist
             </h3>
@@ -161,8 +135,17 @@ export function TaskDetail({
                 </div>
               ))}
             </div>
-          </div>
+          </Section>
         )}
+        {/* Tags */}
+        <Section spacing="sm" className="mb-2">
+          <h3 className="text-sm font-medium text-muted-foreground mb-2 text-left">
+            Tags
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            <TaskTagList tags={task.tags.map((t) => t.label)} />
+          </div>
+        </Section>
 
         {/* Stats and Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
