@@ -37,23 +37,6 @@ export function ChartBarLabel<T extends Record<string, string | number>>({
   title = "Bar Chart",
   description = "",
 }: ChartBarLabelProps<T>) {
-  console.log("[BarChart] Received data:", data);
-  console.log("[BarChart] Data length:", data.length);
-  // Log each entry's xAxis and yAxis value and type
-  console.log("[BarChart] Data for current view:", data);
-  data.forEach((entry, idx) => {
-    console.log(
-      `[BarChart] Entry #${idx}:`,
-      entry,
-      "xAxis:",
-      entry[String(xAxisKey)],
-      "yAxis:",
-      entry[String(yAxisKey)],
-      "yAxis type:",
-      typeof entry[String(yAxisKey)]
-    );
-  });
-
   if (!data || data.length === 0) {
     return (
       <Card>

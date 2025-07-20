@@ -9,7 +9,7 @@ export interface TaskTagListProps {
   onRemoveTag?: (tag: string) => void;
 }
 
-export const TaskTagList: React.FC<TaskTagListProps> = ({
+export const TagList: React.FC<TaskTagListProps> = ({
   tags,
   className,
   onRemoveTag,

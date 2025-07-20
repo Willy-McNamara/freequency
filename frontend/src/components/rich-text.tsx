@@ -44,8 +44,6 @@ export const RichTextRenderer: React.FC<RichTextRendererProps> = ({
   noTruncate = false,
   className = "",
 }) => {
-  console.log("RichTextRenderer input:", { content, maxLength, maxLines });
-
   // Simple HTML sanitization - remove potentially dangerous attributes and tags
   const sanitizeHtml = (html: string): string => {
     return (
@@ -70,28 +68,22 @@ export const RichTextRenderer: React.FC<RichTextRendererProps> = ({
     maxLength: number,
     maxLines: number
   ): string => {
-    console.log("truncateHtml called with:", { html, maxLength, maxLines });
-
     // Create a temporary div to parse the HTML
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = html;
 
     // Get text content for length calculation
     const textContent = tempDiv.textContent || tempDiv.innerText || "";
-    console.log("Text content:", textContent);
-    console.log("Text content length:", textContent.length);
 
     if (textContent.length <= maxLength) {
       // Even if under character limit, check line count
       const lineCount = countLines(tempDiv);
-      console.log("Line count:", lineCount);
+
       if (lineCount <= maxLines) {
-        console.log("No truncation needed - under both limits");
         return html;
       }
     }
 
-    console.log("Truncation needed - starting node walk");
     // Find where to truncate
     let currentLength = 0;
     let currentLines = 0;
@@ -254,11 +246,6 @@ export const RichTextRenderer: React.FC<RichTextRendererProps> = ({
       lineCount = Math.ceil(text.length / 80);
     }
 
-    console.log("countLines for element:", {
-      text: element.textContent?.substring(0, 100) + "...",
-      lineCount,
-      html: element.innerHTML.substring(0, 200) + "...",
-    });
     return lineCount;
   };
 
@@ -270,12 +257,7 @@ export const RichTextRenderer: React.FC<RichTextRendererProps> = ({
     // Estimate additional lines from text length (assuming ~80 chars per line)
     const estimatedLines = Math.ceil(text.length / 80);
     const result = Math.max(explicitLines, estimatedLines);
-    console.log("countTextLines:", {
-      text,
-      explicitLines,
-      estimatedLines,
-      result,
-    });
+
     return result;
   };
 
@@ -283,8 +265,6 @@ export const RichTextRenderer: React.FC<RichTextRendererProps> = ({
   const finalContent = noTruncate
     ? sanitizedContent
     : truncateHtml(sanitizedContent, maxLength, maxLines);
-
-  console.log("Final output:", finalContent);
 
   return (
     <div
