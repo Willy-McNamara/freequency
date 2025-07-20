@@ -239,7 +239,6 @@ export const PostView: React.FC = () => {
         post.id,
         newComment
       );
-      console.log("Comment added:", newCommentData);
 
       // Add the new comment to the post state
       setPost((prevPost) => {
@@ -279,7 +278,6 @@ export const PostView: React.FC = () => {
       }
 
       const newGasUpData = await sessionService.addGasUp(post.id, user.id);
-      console.log("Gas up added:", newGasUpData);
 
       // Add the new gas up to the post state
       setPost((prevPost) => {

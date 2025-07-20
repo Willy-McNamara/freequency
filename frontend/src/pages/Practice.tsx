@@ -251,8 +251,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
     const hasInstrumentTag = session.tags.some((tag) =>
       instruments.includes(tag.label.toLowerCase())
     );
-    console.log("instruments", instruments);
-    console.log("session tags", session.tags);
+
     if (!hasInstrumentTag) {
       setShowInstrumentTagModal(true);
       return;
@@ -265,12 +264,6 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
       const regularTags = session.tags.filter(
         (tag) => !instruments.includes(tag.label.toLowerCase())
       );
-
-      // Debug logging
-      console.log("Instrument labels:", instruments);
-      console.log("All session tags:", session.tags);
-      console.log("Instrument tags:", instrumentTags);
-      console.log("Regular tags:", regularTags);
 
       // Explicitly type sessionData to match backend DTO
       const sessionData: {

@@ -44,9 +44,6 @@ export function ChartPieDonutActive({
   title = "% of practice time by tag",
   description = "",
 }: ChartPieDonutActiveProps) {
-  console.log("[PieChart] Received data:", data);
-  console.log("[PieChart] Data length:", data.length);
-
   if (!data || data.length === 0) {
     return (
       <Card className="flex flex-col border-0 shadow-none">

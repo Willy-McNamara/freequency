@@ -323,8 +323,6 @@ const TaskLibrary: React.FC = () => {
       )
     );
 
-    console.log("hasMatchingINstrument", hasMatchingInstrument);
-
     if (hasMatchingInstrument) {
       // Add the task to the session if not already present
       if (!session.tasks.some((t) => t.id === String(task.id))) {

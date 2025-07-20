@@ -141,7 +141,6 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
       postData.tags
     );
     const tagNamesAsStrings = allTags.map((tag) => tag.label);
-    console.log("all tags", tagNamesAsStrings);
     const dedupedTags = [...new Set(tagNamesAsStrings)];
     return dedupedTags;
   };

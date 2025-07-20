@@ -75,16 +75,6 @@ export function TaskListItem({
     onViewDetails?.(task.id);
   };
 
-  // Debug logging
-  React.useEffect(() => {
-    console.log("TaskListItem render - task:", task);
-    console.log("Task tags:", task.tags);
-    console.log(
-      "ALL_INSTRUMENTS labels:",
-      ALL_INSTRUMENTS.map((i) => i.label.toLowerCase())
-    );
-  }, [task]);
-
   return (
     <div
       className={cn(

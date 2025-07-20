@@ -68,7 +68,6 @@ export function TaskDetail({
   };
 
   const handleModifyTask = () => {
-    console.log("Modify button clicked for task:", task);
     onModifyTask?.(task);
   };
 
