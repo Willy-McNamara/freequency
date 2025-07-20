@@ -7,7 +7,6 @@ import {
   BookmarkIcon,
   Edit,
 } from "lucide-react";
-import { Badge } from "./badge";
 import { cn } from "../lib/utils";
 import { Task } from "./task-list-item";
 import { Button } from "./ui/button";
@@ -61,7 +60,7 @@ export function TaskDetail({
       } else {
         await unsaveTask(task.id);
       }
-    } catch (error) {
+    } catch {
       setIsSaved(!newSavedState);
       // Optionally show error to user
     }
