@@ -14,7 +14,7 @@ import { cn } from "../lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { RichTextRenderer } from "./rich-text";
-import { TaskTagList } from "./TaskTagList";
+import { TagList } from "./TagList";
 
 export interface Task {
   id: number;
@@ -177,7 +177,7 @@ export function TaskListItem({
           </h4>
           {task.tags && task.tags.length > 0 && (
             <div className="flex flex-wrap gap-2 justify-start mt-2">
-              <TaskTagList tags={task.tags.map((t) => t.label)} />
+              <TagList tags={task.tags.map((t) => t.label)} />
             </div>
           )}
 

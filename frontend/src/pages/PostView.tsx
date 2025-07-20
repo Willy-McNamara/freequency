@@ -9,7 +9,7 @@ import { sessionService } from "@/services/sessions";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { Container } from "@/components/layout/Container";
 import { Section } from "@/components/layout/Section";
-import { TaskTagList } from "@/components/TaskTagList";
+import { TagList } from "@/components/TagList";
 
 interface PostViewTask {
   id: number;
@@ -391,7 +391,7 @@ export const PostView: React.FC = () => {
             </div>
             {/* Instruments and Tags */}
             <Section spacing="sm">
-              <TaskTagList
+              <TagList
                 tags={post.tags
                   .map((tag) => tag.label)
                   .concat(post.instruments.map((i) => i.label))}
@@ -585,9 +585,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onViewTaskDefinition }) => {
           {/* Task Tags */}
           {task.taskDefinition.tags && task.taskDefinition.tags.length > 0 && (
             <Section spacing="sm">
-              <TaskTagList
-                tags={task.taskDefinition.tags.map((t) => t.label)}
-              />
+              <TagList tags={task.taskDefinition.tags.map((t) => t.label)} />
             </Section>
           )}
 

@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback } from "./ui/avatar";
 import { Badge } from "./badge";
 import { MessageSquareIcon, ThumbsUpIcon, Clock } from "lucide-react";
 import { RichTextRenderer } from "./rich-text";
-import { TaskTagList } from "./TaskTagList";
+import { TagList } from "./TagList";
 
 interface PostData {
   id: number;
@@ -169,7 +169,7 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
           </div>
         </div>
         <div className="flex items-center gap-4 flex-wrap">
-          <TaskTagList tags={getAllTagsFromSession()} />
+          <TagList tags={getAllTagsFromSession()} />
         </div>
       </div>
       {/* splicing in metadata */}

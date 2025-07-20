@@ -23,7 +23,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Section } from "@/components/layout/Section";
 // import { Container } from "@/components/layout/Container";
-import { TaskTagList } from "../components/TaskTagList";
+import { TagList } from "../components/TagList";
 import { InstrumentModal } from "../components/InstrumentModal";
 import { ALL_INSTRUMENTS } from "../types/instruments.types";
 import { Badge } from "../components/badge";
@@ -504,7 +504,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                     + add
                   </Badge>
                 </button>
-                <TaskTagList
+                <TagList
                   tags={selectedTask.tags?.map((t) => t.label) || []}
                   onRemoveTag={(tagLabel) => {
                     // Remove tag from selected task's tags
@@ -731,7 +731,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                   + add
                 </Badge>
               </button>
-              <TaskTagList
+              <TagList
                 tags={tags.map((t) => t.label)}
                 onRemoveTag={(tagLabel) => {
                   setTags(tags.filter((t) => t.label !== tagLabel));

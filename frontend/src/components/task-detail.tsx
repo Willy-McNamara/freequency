@@ -14,7 +14,7 @@ import { Button } from "./ui/button";
 import { Section } from "./layout/Section";
 import { apiConfig } from "../config/api";
 import { RichTextRenderer } from "./rich-text";
-import { TaskTagList } from "./TaskTagList";
+import { TagList } from "./TagList";
 
 async function saveTask(taskId: number) {
   return fetch(`${apiConfig.endpoints.tasks}/${taskId}/save`, {
@@ -143,7 +143,7 @@ export function TaskDetail({
             Tags
           </h3>
           <div className="flex flex-wrap gap-2">
-            <TaskTagList tags={task.tags.map((t) => t.label)} />
+            <TagList tags={task.tags.map((t) => t.label)} />
           </div>
         </Section>
 
