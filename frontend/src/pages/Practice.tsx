@@ -2,7 +2,6 @@ import React, { useContext, useEffect, useState, useRef, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { RichTextEditor, RichTextRenderer } from "@/components/rich-text";
 import { PracticeTaskList } from "@/components/practice-task-list";
-import { PracticeTagList } from "@/components/practice-tag-list";
 import { PracticeTimer, PracticeTimerRef } from "@/components/practice-timer";
 import { TagModal } from "@/components/TagModal";
 import { SessionContext } from "@/components/SessionContext";
@@ -438,6 +437,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
           </div>
         </DialogContent>
       </Dialog>
+      {/* Task in Session view*/}
       {selectedTask ? (
         <Section spacing="sm">
           <div className="w-full mx-auto bg-card rounded-xl shadow-lg p-4 md:p-8 flex flex-col items-stretch relative align-start">
@@ -490,14 +490,26 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
             </Section>
             {/* Task Tags */}
             <Section spacing="sm">
-              <div className="w-full">
-                <PracticeTagList
-                  tags={selectedTask.tags || []}
-                  onAddTag={() => setTagModalOpen(true)}
-                  onRemoveTag={(tagId) => {
+              <h4 className="text-sm font-semibold mb-1 text-left">Tags</h4>
+              <div className="flex flex-wrap gap-2 mb-3 items-center">
+                <button
+                  type="button"
+                  onClick={() => setTagModalOpen(true)}
+                  className="focus:outline-none"
+                >
+                  <Badge
+                    variant="secondary"
+                    className="max-h-[1.2rem] flex items-center px-2.5 cursor-pointer select-none"
+                  >
+                    + add
+                  </Badge>
+                </button>
+                <TaskTagList
+                  tags={selectedTask.tags?.map((t) => t.label) || []}
+                  onRemoveTag={(tagLabel) => {
                     // Remove tag from selected task's tags
                     const updatedTags = (selectedTask.tags || []).filter(
-                      (t) => t.id !== tagId
+                      (t) => t.label !== tagLabel
                     );
                     session.setTasks(
                       session.tasks.map((task) =>

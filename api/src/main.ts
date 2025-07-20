@@ -4,10 +4,15 @@ import { config } from 'dotenv';
 import cookieParser from 'cookie-parser';
 import { AllExceptionsFilter } from './filters/all-exceptions.filter';
 import { join } from 'path';
+import { existsSync } from 'fs';
 
 async function bootstrap() {
-  // config({ path: '.env.local' }); // since git issue with .env, this workaround to use .env.local . Need for local development I think
   config();
+
+  if (existsSync('.env.local')) {
+    config({ path: '.env.local' }); // since git issue with .env, this workaround to use .env.local . Need for local development I think
+  }
+
   const app = await NestFactory.create(AppModule);
   app.enableCors({
     origin: [

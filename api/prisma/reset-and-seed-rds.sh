@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# May need to make executable  chmod +x /api/prisma/reset-and-seed-rds.sh
 # Usage: ./reset-and-seed-rds.sh <DATABASE_URL>
 # Example: ./reset-and-seed-rds.sh "postgresql://user:pass@host:5432/dbname"
 
