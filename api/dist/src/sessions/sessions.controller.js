@@ -24,7 +24,7 @@ let SessionsController = class SessionsController {
         this.s3service = s3service;
         this.mediaService = mediaService;
     }
-    async getSessionsOnRender(req, cursor, users, instruments, tags, saved, following) {
+    async getSessions(req, cursor, users, instruments, tags, saved, following) {
         let userIdList = users
             ? users
                 .split(',')
@@ -87,7 +87,7 @@ __decorate([
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, String, String, String, String, String, String]),
     __metadata("design:returntype", Promise)
-], SessionsController.prototype, "getSessionsOnRender", null);
+], SessionsController.prototype, "getSessions", null);
 __decorate([
     (0, common_1.Post)('newSessionWithoutAudio'),
     (0, common_1.UseGuards)(jwt_guard_1.JwtAuthGuard),

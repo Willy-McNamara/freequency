@@ -40,7 +40,7 @@ export class SessionsController {
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  async getSessionsOnRender(
+  async getSessions(
     @Req() req: any,
     @Query('cursor') cursor?: string,
     @Query('users') users?: string,
