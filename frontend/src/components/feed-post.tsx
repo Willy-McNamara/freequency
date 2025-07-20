@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback } from "./ui/avatar";
 import { Badge } from "./badge";
 import { MessageSquareIcon, ThumbsUpIcon, Clock } from "lucide-react";
 import { RichTextRenderer } from "./rich-text";
+import { TagList } from "./TagList";
 
 interface PostData {
   id: number;
@@ -134,6 +135,16 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
     return `${minutes}m`;
   };
 
+  const getAllTagsFromSession = () => {
+    const allTags = postData.tasks.reduce(
+      (a, c) => a.concat(c.taskDefinition.tags),
+      postData.tags
+    );
+    const tagNamesAsStrings = allTags.map((tag) => tag.label);
+    const dedupedTags = [...new Set(tagNamesAsStrings)];
+    return dedupedTags;
+  };
+
   return (
     <div
       className="cursor-pointer hover:bg-accent/50 transition-colors duration-200 rounded-lg p-4 -m-4"
@@ -157,34 +168,7 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
           </div>
         </div>
         <div className="flex items-center gap-4 flex-wrap">
-          {instruments.map(
-            (
-              tag: { id: number; label: string; color: string | null },
-              index: number
-            ) => (
-              <Badge
-                key={index}
-                className={`h-5 px-3 py-2 rounded-md !hover:bg-none !hover:bg-transparent`}
-                variant="default"
-              >
-                <span className="font-small">{tag.label}</span>
-              </Badge>
-            )
-          )}
-          {regularTags.map(
-            (
-              tag: { id: number; label: string; color: string | null },
-              index: number
-            ) => (
-              <Badge
-                key={index}
-                className={`h-5 px-3 py-2 rounded-md !hover:bg-none !hover:bg-transparent`}
-                variant="secondary"
-              >
-                <span className="font-small">{tag.label}</span>
-              </Badge>
-            )
-          )}
+          <TagList tags={getAllTagsFromSession()} />
         </div>
       </div>
       {/* splicing in metadata */}

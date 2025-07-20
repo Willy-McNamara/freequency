@@ -8,7 +8,7 @@ export declare class SessionsController {
     private readonly s3service;
     private readonly mediaService;
     constructor(sessionsService: SessionsService, s3service: S3Service, mediaService: MediaService);
-    getSessionsOnRender(req: any, cursor?: string, users?: string, instruments?: string, tags?: string, saved?: string, following?: string): Promise<{
+    getSessions(req: any, cursor?: string, users?: string, instruments?: string, tags?: string, saved?: string, following?: string): Promise<{
         sessions: NewFrontendSessionDTO[];
         nextCursor?: string;
     }>;

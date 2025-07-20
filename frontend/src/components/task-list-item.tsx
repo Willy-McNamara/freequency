@@ -14,6 +14,7 @@ import { cn } from "../lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { RichTextRenderer } from "./rich-text";
+import { TagList } from "./TagList";
 
 export interface Task {
   id: number;
@@ -161,40 +162,12 @@ export function TaskListItem({
           </div>
 
           {/* Tags */}
+          <h4 className="text-sm font-medium text-muted-foreground mb-1 text-left">
+            Tags
+          </h4>
           {task.tags && task.tags.length > 0 && (
             <div className="flex flex-wrap gap-2 justify-start mt-2">
-              {/* Instrument tags first, then regular tags */}
-              {(() => {
-                const instrumentLabels = ALL_INSTRUMENTS.map((i) =>
-                  i.label.toLowerCase()
-                );
-                const instrumentTags = task.tags.filter((tag) =>
-                  instrumentLabels.includes(tag.label.toLowerCase())
-                );
-                const regularTags = task.tags.filter(
-                  (tag) => !instrumentLabels.includes(tag.label.toLowerCase())
-                );
-                return [
-                  ...instrumentTags.map((tag) => (
-                    <Badge
-                      key={tag.id}
-                      variant="default"
-                      className="!hover:bg-none !hover:bg-transparent"
-                    >
-                      {tag.label}
-                    </Badge>
-                  )),
-                  ...regularTags.map((tag) => (
-                    <Badge
-                      key={tag.id}
-                      variant="secondary"
-                      className="!hover:bg-none !hover:bg-transparent"
-                    >
-                      {tag.label}
-                    </Badge>
-                  )),
-                ];
-              })()}
+              <TagList tags={task.tags.map((t) => t.label)} />
             </div>
           )}
 

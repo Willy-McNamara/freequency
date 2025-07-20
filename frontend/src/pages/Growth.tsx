@@ -121,7 +121,6 @@ const Growth: React.FC = () => {
     if (!user?.id) return;
     await deleteGoal(user.id, goalId);
     setGoals((prevGoals) => prevGoals.filter((goal) => goal.id !== goalId));
-    console.log(`Deleted goal with ID: ${goalId}`);
   }
   async function handleCreateGoal() {
     if (!user?.id) return;
@@ -130,7 +129,6 @@ const Growth: React.FC = () => {
       ...prevGoals,
       { ...created, id: String(created.id) },
     ]);
-    console.log("Created new goal:", created);
     setIsGoalModalOpen(false);
   }
   function handleEditGoal() {
@@ -139,7 +137,6 @@ const Growth: React.FC = () => {
         goal.id === editingGoal?.id ? editingGoal : goal
       )
     );
-    console.log("Editing goal:", editingGoal);
     setIsGoalModalOpen(false);
   }
 
@@ -199,15 +196,12 @@ const Growth: React.FC = () => {
     const musicianId = user?.id || 26; // Fallback to 26 if no user
 
     fetchUserTags().then((tags) => {
-      console.log("[Growth] Tags from API:", tags);
       setUserTags(tags);
     });
     fetchAllTasksInUse().then((tasks) => {
-      console.log("[Growth] TasksInUse from API:", tasks);
       setAllTasksInUse(tasks);
     });
     fetchGoals(musicianId).then((goals) => {
-      console.log("[Growth] Goals from API:", goals);
       setGoals(goals);
     });
   }, [user]); // Add user as dependency

@@ -17,6 +17,7 @@ import { useAuth } from "../components/auth/AuthProvider";
 import { apiConfig } from "../config/api";
 import { Music, Clock, Fuel, Pencil, X } from "lucide-react";
 import { InstrumentModal } from "../components/InstrumentModal";
+import { AlertTriangle, Loader2 } from "lucide-react";
 
 interface Instrument {
   id: number;
@@ -210,17 +211,53 @@ export default function Profile() {
   };
 
   if (loading) {
-    return <div className="text-center py-10">Loading profile...</div>;
+    return (
+      <Container>
+        <Section spacing="lg">
+          <div className="flex flex-col items-center justify-center min-h-[300px]">
+            <Loader2 className="animate-spin w-8 h-8 text-primary mb-4" />
+            <div className="text-lg font-semibold text-muted-foreground">
+              Loading profile...
+            </div>
+          </div>
+        </Section>
+      </Container>
+    );
   }
   if (error) {
     return (
-      <div className="text-center py-10 text-red-500">
-        Error loading profile: {error}
-      </div>
+      <Container>
+        <Section spacing="lg">
+          <div className="flex flex-col items-center justify-center min-h-[300px]">
+            <AlertTriangle className="w-8 h-8 text-destructive mb-4" />
+            <div className="text-lg font-semibold text-destructive mb-2">
+              Error loading profile
+            </div>
+            <div className="text-muted-foreground mb-4">{error}</div>
+            <Button onClick={() => window.location.reload()} variant="outline">
+              Try Again
+            </Button>
+          </div>
+        </Section>
+      </Container>
     );
   }
   if (!data) {
-    return <div className="text-center py-10">No profile data found.</div>;
+    return (
+      <Container>
+        <Section spacing="lg">
+          <div className="flex flex-col items-center justify-center min-h-[300px]">
+            <AlertTriangle className="w-8 h-8 text-muted-foreground mb-4" />
+            <div className="text-lg font-semibold text-muted-foreground mb-2">
+              No profile data found
+            </div>
+            <div className="text-muted-foreground mb-4">
+              Try refreshing or check your connection.
+            </div>
+          </div>
+        </Section>
+      </Container>
+    );
   }
 
   return (

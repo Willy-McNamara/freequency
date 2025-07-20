@@ -2,7 +2,6 @@ import React, { useContext, useEffect, useState, useRef, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { RichTextEditor, RichTextRenderer } from "@/components/rich-text";
 import { PracticeTaskList } from "@/components/practice-task-list";
-import { PracticeTagList } from "@/components/practice-tag-list";
 import { PracticeTimer, PracticeTimerRef } from "@/components/practice-timer";
 import { TagModal } from "@/components/TagModal";
 import { SessionContext } from "@/components/SessionContext";
@@ -10,7 +9,7 @@ import type {
   SessionTask,
   SessionContextValue,
 } from "@/components/SessionContext";
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { ArrowLeft, Loader2, Trash2 } from "lucide-react";
 import { sessionService } from "../services/sessions";
 import { useAuth } from "../components/auth/AuthProvider";
 import { apiConfig } from "../config/api";
@@ -24,10 +23,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Section } from "@/components/layout/Section";
 // import { Container } from "@/components/layout/Container";
-import { TaskTagList } from "../components/TaskTagList";
+import { TagList } from "../components/TagList";
 import { InstrumentModal } from "../components/InstrumentModal";
 import { ALL_INSTRUMENTS } from "../types/instruments.types";
 import { Badge } from "../components/badge";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
 
 const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   session,
@@ -47,7 +48,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
     (t: SessionTask) => t.id === selectedTaskId
   );
   const { user } = useAuth();
-
+  const [isSaving, setIsSaving] = useState(false);
   const [showInstrumentTagModal, setShowInstrumentTagModal] = useState(false);
   const [showDeleteSessionModal, setShowDeleteSessionModal] = useState(false);
   const [instrumentModalOpen, setInstrumentModalOpen] = useState(false);
@@ -247,13 +248,13 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   };
 
   const handleSaveSession = async () => {
+    setIsSaving(true);
     // Validate: must have at least one instrument tag
     const instruments = ALL_INSTRUMENTS.map((i) => i.label.toLowerCase());
     const hasInstrumentTag = session.tags.some((tag) =>
       instruments.includes(tag.label.toLowerCase())
     );
-    console.log("instruments", instruments);
-    console.log("session tags", session.tags);
+
     if (!hasInstrumentTag) {
       setShowInstrumentTagModal(true);
       return;
@@ -266,12 +267,6 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
       const regularTags = session.tags.filter(
         (tag) => !instruments.includes(tag.label.toLowerCase())
       );
-
-      // Debug logging
-      console.log("Instrument labels:", instruments);
-      console.log("All session tags:", session.tags);
-      console.log("Instrument tags:", instrumentTags);
-      console.log("Regular tags:", regularTags);
 
       // Explicitly type sessionData to match backend DTO
       const sessionData: {
@@ -303,8 +298,18 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
           tags: Array.isArray(task.tags) ? task.tags.map((t) => t.label) : [],
         })),
       };
-      await sessionService.saveSession(sessionData);
 
+      const apiPromise = sessionService.saveSession(sessionData);
+      // makes api call a promise var so it can be used in the toast logic
+      toast.promise(apiPromise, {
+        loading: "Saving session...",
+        success: () => {
+          return `Successful save! Routing to your posts...`;
+        },
+        error: "Error",
+      });
+      await apiPromise;
+      await new Promise((resolve) => setTimeout(resolve, 2500)); // Pause so the user can read the toast before redirect
       // Clear all session state after successful save
       session.setSessionTitle("Untitled Session");
       session.setTags([]);
@@ -317,6 +322,8 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
       // Clear localStorage
       localStorage.removeItem("practiceSession");
       localStorage.removeItem("practiceSelectedTaskId");
+
+      setIsSaving(false);
 
       // Navigate to feed with filter for user's sessions
       navigate("/feed?filter=my-sessions");
@@ -365,6 +372,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   // Main Practice view
   return (
     <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 min-h-screen mb-8">
+      <Toaster position="bottom-center" />
       {/* Start Session Custom Overlay */}
       {showStartModal && (
         <>
@@ -438,18 +446,22 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
           </div>
         </DialogContent>
       </Dialog>
+      {/* Task in Session view*/}
       {selectedTask ? (
         <Section spacing="sm">
-          <div className="w-full mx-auto bg-card rounded-xl shadow-lg p-4 md:p-8 flex flex-col items-stretch relative align-start">
-            {/* Back Arrow at top left */}
-            <button
-              type="button"
-              className="absolute top-4 left-4 p-2 rounded-full hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring"
+          <Section spacing="md">
+            {/* Header */}
+            <Button
+              variant="outline"
+              size="sm"
               onClick={handleBack}
-              aria-label="Back to Session"
+              className="flex items-center gap-2 text-foreground hover:text-foreground"
             >
-              <ArrowLeft className="w-6 h-6" />
-            </button>
+              <ArrowLeft className="w-4 h-4" />
+              Back to Session
+            </Button>
+          </Section>
+          <div className="w-full mx-auto bg-card rounded-xl shadow-lg p-4 md:p-8 flex flex-col items-stretch relative align-start">
             {/* Task Title and Timer */}
             <Section spacing="md">
               <div className="w-full flex flex-col items-center justify-center">
@@ -490,14 +502,26 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
             </Section>
             {/* Task Tags */}
             <Section spacing="sm">
-              <div className="w-full">
-                <PracticeTagList
-                  tags={selectedTask.tags || []}
-                  onAddTag={() => setTagModalOpen(true)}
-                  onRemoveTag={(tagId) => {
+              <h4 className="text-sm font-semibold mb-1 text-left">Tags</h4>
+              <div className="flex flex-wrap gap-2 mb-3 items-center">
+                <button
+                  type="button"
+                  onClick={() => setTagModalOpen(true)}
+                  className="focus:outline-none"
+                >
+                  <Badge
+                    variant="secondary"
+                    className="max-h-[1.2rem] flex items-center px-2.5 cursor-pointer select-none"
+                  >
+                    + add
+                  </Badge>
+                </button>
+                <TagList
+                  tags={selectedTask.tags?.map((t) => t.label) || []}
+                  onRemoveTag={(tagLabel) => {
                     // Remove tag from selected task's tags
                     const updatedTags = (selectedTask.tags || []).filter(
-                      (t) => t.id !== tagId
+                      (t) => t.label !== tagLabel
                     );
                     session.setTasks(
                       session.tasks.map((task) =>
@@ -719,7 +743,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                   + add
                 </Badge>
               </button>
-              <TaskTagList
+              <TagList
                 tags={tags.map((t) => t.label)}
                 onRemoveTag={(tagLabel) => {
                   setTags(tags.filter((t) => t.label !== tagLabel));
@@ -738,6 +762,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                 type="button"
                 className="px-6 py-2 rounded-md bg-primary text-primary-foreground font-semibold shadow hover:bg-primary/80 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                 onClick={handleSaveSession}
+                disabled={isSaving}
               >
                 Save Session
               </button>

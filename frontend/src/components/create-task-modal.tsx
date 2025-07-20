@@ -6,7 +6,7 @@ import { TagModal } from "./TagModal";
 import { Button } from "./ui/button";
 import { InstrumentModal } from "./InstrumentModal";
 import { ALL_INSTRUMENTS } from "../types/instruments.types";
-import { TaskTagList } from "./TaskTagList";
+import { TagList } from "./TagList";
 import { RichTextEditor } from "./rich-text";
 
 export interface CreateTaskData {
@@ -307,7 +307,7 @@ export function CreateTaskModal({
                   + add
                 </Badge>
               </button>
-              <TaskTagList tags={formData.tags} onRemoveTag={removeTag} />
+              <TagList tags={formData.tags} onRemoveTag={removeTag} />
             </div>
             <TagModal
               isOpen={tagModalOpen}

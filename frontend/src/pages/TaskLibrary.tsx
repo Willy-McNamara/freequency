@@ -27,6 +27,13 @@ import { Button } from "@/components/ui/button";
 import { ALL_INSTRUMENTS } from "../types/instruments.types";
 import { Container } from "@/components/layout/Container";
 import { Section } from "@/components/layout/Section";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 const TaskLibrary: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -38,6 +45,10 @@ const TaskLibrary: React.FC = () => {
   const [modifyTaskData, setModifyTaskData] = useState<
     CreateTaskData | undefined
   >(undefined);
+  const [showInstrumentWarningModal, setShowInstrumentWarningModal] =
+    useState(false);
+  const [taskWithDifferentInstrument, setTaskWithDifferentInstrument] =
+    useState<Task | null>(null);
   const isSettingFromUrl = useRef(false);
   const previousFilterState = useRef<string>("");
   const hasProcessedUrlParam = useRef(false);
@@ -300,27 +311,50 @@ const TaskLibrary: React.FC = () => {
 
   const handleUseInCurrentSession = (task: Task) => {
     if (!session) return;
-    // Add the task to the session if not already present
-    if (!session.tasks.some((t) => t.id === String(task.id))) {
-      session.setTasks([
-        ...session.tasks,
-        {
-          id: String(task.id),
-          title: task.title,
-          description: task.description,
-          tags:
-            task.tags?.map((tag) => ({
-              id: String(tag.id),
-              label: tag.label,
-            })) || [],
-          checklist:
-            task.checklist?.map((item) => ({ item, checked: false })) || [],
-        },
-      ]);
+
+    // Check if task instrument matches session instrument
+    const instrumentLabels = ALL_INSTRUMENTS.map((i) => i.label.toLowerCase());
+    const hasMatchingInstrument = task.tags?.some((taskTag) =>
+      session.tags?.some(
+        (sessionTag) =>
+          instrumentLabels.includes(taskTag.label.toLowerCase()) &&
+          instrumentLabels.includes(sessionTag.label.toLowerCase()) &&
+          taskTag.label.toLowerCase() === sessionTag.label.toLowerCase()
+      )
+    );
+
+    if (hasMatchingInstrument) {
+      // Add the task to the session if not already present
+      if (!session.tasks.some((t) => t.id === String(task.id))) {
+        session.setTasks([
+          ...session.tasks,
+          {
+            id: String(task.id),
+            title: task.title,
+            description: task.description,
+            tags:
+              task.tags?.map((tag) => ({
+                id: String(tag.id),
+                label: tag.label,
+              })) || [],
+            checklist:
+              task.checklist?.map((item) => ({ item, checked: false })) || [],
+          },
+        ]);
+      }
+      // Set a flag in localStorage for the selected task
+      localStorage.setItem("practiceSelectedTaskId", String(task.id));
+      navigate("/practice", { replace: true });
+      return;
     }
-    // Set a flag in localStorage for the selected task
-    localStorage.setItem("practiceSelectedTaskId", String(task.id));
-    navigate("/practice", { replace: true });
+    setShowInstrumentWarningModal(true);
+    setTaskWithDifferentInstrument(task);
+  };
+
+  const handleViewTaskDetails = () => {
+    if (!taskWithDifferentInstrument) return;
+    setShowInstrumentWarningModal(false);
+    handleViewDetails(taskWithDifferentInstrument.id);
   };
 
   const handleViewDetails = (taskId: number) => {
@@ -482,6 +516,46 @@ const TaskLibrary: React.FC = () => {
           onSubmit={handleModifySubmit}
           initialData={modifyTaskData}
         />
+        {/* Instrument Warning Modal */}
+        <Dialog
+          open={showInstrumentWarningModal}
+          onOpenChange={(open) => {
+            if (!open) {
+              setShowInstrumentWarningModal(false);
+              setTaskWithDifferentInstrument(null);
+            }
+          }}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Hold yer horses!</DialogTitle>
+              <DialogDescription>
+                This task is designed for a different instrument than you're
+                using in your current practice session. To use this task, just
+                "Make it your own" in the Task Details view to create a
+                different version of it with the instrument of your choosing!
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-3 mt-4">
+              <Button
+                onClick={() => {
+                  setShowInstrumentWarningModal(false);
+                  setTaskWithDifferentInstrument(null);
+                }}
+                className="w-full"
+              >
+                Got it
+              </Button>
+              <Button
+                onClick={handleViewTaskDetails}
+                className="w-full"
+                variant="outline"
+              >
+                View Task Details
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </>
     );
   }
@@ -574,6 +648,46 @@ const TaskLibrary: React.FC = () => {
         onSubmit={handleModifySubmit}
         initialData={modifyTaskData}
       />
+      {/* Instrument Warning Modal */}
+      <Dialog
+        open={showInstrumentWarningModal}
+        onOpenChange={(open) => {
+          if (!open) {
+            setShowInstrumentWarningModal(false);
+            setTaskWithDifferentInstrument(null);
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Hold yer horses!</DialogTitle>
+            <DialogDescription>
+              This task is designed for a different instrument than you're using
+              in your current practice session. To use this task, just "Make it
+              your own" in the Task Details view to create a different version
+              of it with the instrument of your choosing!
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 mt-4">
+            <Button
+              onClick={() => {
+                setShowInstrumentWarningModal(false);
+                setTaskWithDifferentInstrument(null);
+              }}
+              className="w-full"
+            >
+              Got it
+            </Button>
+            <Button
+              onClick={handleViewTaskDetails}
+              className="w-full"
+              variant="outline"
+            >
+              View Task Details
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Container>
   );
 };

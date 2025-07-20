@@ -12,6 +12,7 @@ async function main() {
     await prisma.comment.deleteMany();
     await prisma.media.deleteMany();
     await prisma.taskInUse.deleteMany();
+    await prisma.savedTask.deleteMany();
     await prisma.taskDefinition.deleteMany();
     await prisma.session.deleteMany();
     await prisma.goal.deleteMany();
@@ -171,7 +172,7 @@ async function main() {
     const baeTask1 = await prisma.taskDefinition.create({
         data: {
             title: 'Listening Practice',
-            description: 'per tune you listen to, make an observation about each checklist item. "learning to improvise is learning to compose in real time. this is helped by having your own ideas about aesthetics- what you like and don\'t like, why" - ted case',
+            description: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Per tune you listen to, make an observation about each checklist item. <i>"Learning to improvise is learning to compose in real time. This is helped by having your own ideas about aesthetics—what you like and don't like, why."</i> <b>- Ted Case</b></span></p>`,
             checklist: [
                 'the form',
                 'the instrumentation',
@@ -188,7 +189,7 @@ async function main() {
     const baeTask2 = await prisma.taskDefinition.create({
         data: {
             title: 'transcription (30 mins)',
-            description: 'Set a timer and focus on a single transcription for 30 minutes',
+            description: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Set a timer and focus on a single transcription for <b>30 minutes</b>.</span></p>`,
             checklist: [
                 'Matching the pitches',
                 'Replicating the feel, timing',
@@ -206,7 +207,7 @@ async function main() {
     const baeTask3 = await prisma.taskDefinition.create({
         data: {
             title: 'transcription transposition (15 mins)',
-            description: 'Set a timer and focus on a single transcribing a transcription for 15 minutes',
+            description: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Set a timer and focus on transposing a transcription for <b>15 minutes</b>. Try to <u>sing the scale degrees</u> and apply them to other keys.</span></p>`,
             checklist: [
                 'Understand the song form',
                 'Sing the scale degrees',
@@ -223,7 +224,7 @@ async function main() {
     const moeTask1 = await prisma.taskDefinition.create({
         data: {
             title: 'repertoire (basic)',
-            description: 'For a specific song you are trying to get familiar with, go through this progression 2x each until memorized. When this gets comfortable, take it into a new key.',
+            description: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">For a specific song you are trying to get familiar with, go through this progression <b>2x each</b> until memorized. When this gets comfortable, take it into a new key.</span></p>`,
             checklist: [
                 'Bass',
                 'Melody',
@@ -242,7 +243,7 @@ async function main() {
     const moeTask2 = await prisma.taskDefinition.create({
         data: {
             title: 'repertoire (advanced)',
-            description: 'To thoroughly memorize a specific song, go through this progression. Once these are comfortable, take into new keys.',
+            description: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">To thoroughly memorize a specific song, go through this progression. Once these are comfortable, take into new keys. <b>Try singing the bass with scale degrees while playing melody.</b></span></p>`,
             checklist: [
                 'Play bass while singing melody',
                 'Sing melody with scale degrees',
@@ -264,7 +265,7 @@ async function main() {
     const moeTask3 = await prisma.taskDefinition.create({
         data: {
             title: 'jazz jam repertoire',
-            description: 'Prepping a specific chart for a jazz jam. Execute the following 2x each. Explore different voicings.',
+            description: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Prepping a specific chart for a jazz jam. Execute the following <b>2x each</b>. <u>Explore different voicings</u>.</span></p>`,
             checklist: [
                 'RH Rootless',
                 'Bass + Rootless',
@@ -287,7 +288,7 @@ async function main() {
     const kilometersTask1 = await prisma.taskDefinition.create({
         data: {
             title: 'Big Scale Exercise',
-            description: "For a given chart, move through the following progression. Use this reference for chord scale options... Maj7: Ionian -> Lydian -> Lydian #5, min7: Dorian -> Aeolian -> Phrygian, min7b5: Locrian -> Locrian natural 9, dom7: Mixo -> Lyd b7 -> b9 diminished scale -> altered scale, dom7#5: Whole tone scale, dom7b9b13: harmonic minor scale (+ it's modes, especially 5th mode), min major 7 or maj7#5: Augmented scale",
+            description: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">For a given chart, move through the progression in the checklist. Here is one reference for chord scale options, though this is not exhaustive:</span><br><br><b><strong class="font-bold" style="white-space: pre-wrap;">Maj7</strong></b><span style="white-space: pre-wrap;">: Ionian -&gt; Lydian -&gt; Lydian #5</span><br><b><strong class="font-bold" style="white-space: pre-wrap;">min7</strong></b><span style="white-space: pre-wrap;">: Dorian -&gt; Aeolian -&gt; Phrygian</span><br><span style="white-space: pre-wrap;">   Phrygian = 1 b2 b3 4 5 b6 b7&nbsp; </span><br><b><strong class="font-bold" style="white-space: pre-wrap;">min7b5</strong></b><span style="white-space: pre-wrap;">: Locrian -&gt; Locrian natural 9</span><br><span style="white-space: pre-wrap;">   Locrian = 1 b2 b3 4 b5 b6 b7 </span><br><b><strong class="font-bold" style="white-space: pre-wrap;">dom7</strong></b><span style="white-space: pre-wrap;">: Mixo -&gt; Lyd b7 -&gt; b9 diminished scale -&gt; altered scale</span><br><span style="white-space: pre-wrap;">   Altered = 1 b2 b3 3 b5 b6 b7</span><br><b><strong class="font-bold" style="white-space: pre-wrap;">dom7#5</strong></b><span style="white-space: pre-wrap;">: Whole tone scale = 1 2 3 #4 #5 b7</span><br><b><strong class="font-bold" style="white-space: pre-wrap;">dom7b9b13</strong></b><span style="white-space: pre-wrap;">: harmonic minor scale (+ it's modes, especially 5th mode)</span><br><span style="white-space: pre-wrap;">   HM = 1 2 b3 4 5 b6 7</span><br><span style="white-space: pre-wrap;">   HM 5th Mode = 1 b2/b9 3 4 5 b6/b13 b7</span><br><b><strong class="font-bold" style="white-space: pre-wrap;">min major 7</strong></b><span style="white-space: pre-wrap;"> or </span><b><strong class="font-bold" style="white-space: pre-wrap;">maj7#5</strong></b><span style="white-space: pre-wrap;">: Augmented scale = 1 b3 3 5 #5 7</span><br><br><u><b><strong class="font-bold underline" style="white-space: pre-wrap;">Bebop alterations</strong></b></u><br><b><strong class="font-bold" style="white-space: pre-wrap;">Scales with a major 7th (major and melodic minor)</strong></b><br><span style="white-space: pre-wrap;">   Add a #5</span><br><b><strong class="font-bold" style="white-space: pre-wrap;">Scales with a flatted 7th (mixo, dorian</strong></b><span style="white-space: pre-wrap;">*</span><b><strong class="font-bold" style="white-space: pre-wrap;">, lydian b7, altered)</strong></b><br><span style="white-space: pre-wrap;">   Add a maj 7</span><br><span style="white-space: pre-wrap;">   *</span><i><em class="italic" style="white-space: pre-wrap;">sometimes the maj3 is added to dorian minor instead of the 7th</em></i></p>`,
             checklist: [
                 '(prereq) Play all chord scale options out of time for each change',
                 '(prereq) Play each chord scale from the root in time',
@@ -312,7 +313,7 @@ async function main() {
     const mandyTask1 = await prisma.taskDefinition.create({
         data: {
             title: 'alternate picking (basic)',
-            description: 'A progression to help get comfortable with alternate picking',
+            description: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">A progression to help get comfortable with <b>alternate picking</b>. Try with open strings, then with a chord shape underneath.</span></p>`,
             checklist: [
                 'With open strings, alternate pick 1-2 1-3 1-4 etc, 2-2 2-3 etc … 6-5 6-4 etc',
                 'With a chord shape underneath, alternate pick 12312313, 12412414,125 etc.',
@@ -329,7 +330,7 @@ async function main() {
     const mandyTask2 = await prisma.taskDefinition.create({
         data: {
             title: 'chromatic picking (basic)',
-            description: 'A progression to help get comfortable fingers while alternate picking',
+            description: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">A progression to help get comfortable fingers while alternate picking. <b>Use a metronome</b> and work your way up the neck.</span></p>`,
             checklist: [
                 'Pick 01234 from low to high strings, then back 43210',
                 'Work your way up the neck',
@@ -462,7 +463,7 @@ async function main() {
         prisma.session.create({
             data: {
                 title: 'Morning Listening Session',
-                notes: 'Focused on Bill Evans trio recordings. The form analysis really helped me understand the harmonic movement better.',
+                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Focused on <b>Bill Evans trio</b> recordings. The <u>form analysis</u> really helped me understand the harmonic movement better.</span></p>`,
                 duration: 1800,
                 isPublic: true,
                 musicianId: baeThoven.id,
@@ -475,7 +476,7 @@ async function main() {
         prisma.session.create({
             data: {
                 title: 'Transcription Practice - Take Five',
-                notes: "Working on Paul Desmond's solo. The timing is tricky but getting better at matching the feel.",
+                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Working on <b>Paul Desmond's solo</b>. The timing is tricky but getting better at matching the feel.</span></p>`,
                 duration: 1800,
                 isPublic: true,
                 musicianId: baeThoven.id,
@@ -488,7 +489,7 @@ async function main() {
         prisma.session.create({
             data: {
                 title: 'Transposition Work - Autumn Leaves',
-                notes: 'Transposing the melody to different keys. Singing scale degrees really helps with internalizing the harmony.',
+                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Transposing the melody to different keys. <u>Singing scale degrees</u> really helps with internalizing the harmony.</span></p>`,
                 duration: 900,
                 isPublic: true,
                 musicianId: baeThoven.id,
@@ -501,7 +502,7 @@ async function main() {
         prisma.session.create({
             data: {
                 title: 'Evening Listening - Classical Focus',
-                notes: "Analyzed Beethoven's Moonlight Sonata. The form is so clear and the emotional arc is incredible.",
+                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Analyzed <b>Beethoven's Moonlight Sonata</b>. The form is so clear and the emotional arc is incredible.</span></p>`,
                 duration: 1200,
                 isPublic: true,
                 musicianId: baeThoven.id,
@@ -514,7 +515,7 @@ async function main() {
         prisma.session.create({
             data: {
                 title: 'Basic Repertoire - All of Me',
-                notes: 'Working through the basic progression. Bass + melody is getting more comfortable.',
+                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Working through the basic progression. <b>Bass + melody</b> is getting more comfortable.</span></p>`,
                 duration: 2400,
                 isPublic: true,
                 musicianId: moeTissart.id,
@@ -525,7 +526,7 @@ async function main() {
         prisma.session.create({
             data: {
                 title: 'Advanced Repertoire - Misty',
-                notes: 'Singing bass with scale degrees while playing melody. This is challenging but really helps with memorization.',
+                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Singing bass with scale degrees while playing melody. This is challenging but really helps with memorization.</span></p>`,
                 duration: 2700,
                 isPublic: true,
                 musicianId: moeTissart.id,
@@ -536,7 +537,7 @@ async function main() {
         prisma.session.create({
             data: {
                 title: 'Jazz Jam Prep - Blue Bossa',
-                notes: 'Prepping for the jazz jam tonight. Rootless voicings are sounding good.',
+                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Prepping for the jazz jam tonight. <b>Rootless voicings</b> are sounding good.</span></p>`,
                 duration: 1800,
                 isPublic: true,
                 musicianId: moeTissart.id,
@@ -553,7 +554,7 @@ async function main() {
         prisma.session.create({
             data: {
                 title: 'Guitar Repertoire - Yesterday',
-                notes: 'Working on the Beatles tune on guitar. The chord changes are beautiful.',
+                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Working on the Beatles tune on guitar. The chord changes are beautiful.</span></p>`,
                 duration: 1500,
                 isPublic: true,
                 musicianId: moeTissart.id,
@@ -564,7 +565,7 @@ async function main() {
         prisma.session.create({
             data: {
                 title: 'Big Scale Exercise - Giant Steps',
-                notes: 'Working through all the chord scale options. The bebop alterations are adding some nice tension.',
+                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Working through all the chord scale options. The <b>bebop alterations</b> are adding some nice tension.</span></p>`,
                 duration: 3600,
                 isPublic: true,
                 musicianId: kilometersDavis.id,
@@ -581,7 +582,7 @@ async function main() {
         prisma.session.create({
             data: {
                 title: 'Scale Practice - Modal Jazz',
-                notes: 'Focusing on Dorian and Mixolydian modes. The rhythmic variations are helping with time feel.',
+                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Focusing on <b>Dorian</b> and <b>Mixolydian</b> modes. The rhythmic variations are helping with time feel.</span></p>`,
                 duration: 2700,
                 isPublic: true,
                 musicianId: kilometersDavis.id,
@@ -598,7 +599,7 @@ async function main() {
         prisma.session.create({
             data: {
                 title: 'Jazz Standards - So What',
-                notes: 'Working on the Miles Davis classic. The modal approach is really freeing.',
+                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Working on the Miles Davis classic. The modal approach is really freeing.</span></p>`,
                 duration: 2400,
                 isPublic: true,
                 musicianId: kilometersDavis.id,
@@ -615,7 +616,7 @@ async function main() {
         prisma.session.create({
             data: {
                 title: 'Alternate Picking Basics',
-                notes: 'Working on the basic patterns. The chord shapes underneath are helping with coordination.',
+                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Working on the basic patterns. The chord shapes underneath are helping with coordination.</span></p>`,
                 duration: 1800,
                 isPublic: true,
                 musicianId: mandyLin.id,
@@ -626,7 +627,7 @@ async function main() {
         prisma.session.create({
             data: {
                 title: 'Chromatic Picking Practice',
-                notes: 'Working up the neck with chromatic patterns. Metronome at 80 BPM.',
+                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Working up the neck with chromatic patterns. <b>Metronome at 80 BPM</b>.</span></p>`,
                 duration: 1200,
                 isPublic: true,
                 musicianId: mandyLin.id,
@@ -637,7 +638,7 @@ async function main() {
         prisma.session.create({
             data: {
                 title: 'Bluegrass Tune - Cripple Creek',
-                notes: 'Learning the basic melody and working on the picking pattern.',
+                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Learning the basic melody and working on the picking pattern.</span></p>`,
                 duration: 1500,
                 isPublic: true,
                 musicianId: mandyLin.id,
