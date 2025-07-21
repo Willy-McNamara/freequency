@@ -134,7 +134,7 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
   const getAllTagsFromSession = () => {
     const allTags = postData.tasks.reduce(
       (a, c) => a.concat(c.taskDefinition.tags),
-      postData.tags
+      postData.tags.concat(postData.instruments)
     );
     const tagNamesAsStrings = allTags.map((tag) => tag.label);
     const dedupedTags = [...new Set(tagNamesAsStrings)];
