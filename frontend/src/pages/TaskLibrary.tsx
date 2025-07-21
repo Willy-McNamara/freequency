@@ -88,6 +88,26 @@ const TaskLibrary: React.FC = () => {
   const session = useContext(SessionContext);
   const navigate = useNavigate();
 
+  // --- Live session timer logic ---
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    if (session && session.sessionTimerRunning) {
+      const interval = setInterval(() => setTick((t) => t + 1), 1000);
+      return () => clearInterval(interval);
+    }
+  }, [session && session.sessionTimerRunning]);
+
+  function getLiveSessionTime() {
+    if (!session) return 0;
+    if (session.sessionTimerRunning && session.sessionTimerStartTime != null) {
+      return (
+        (session.sessionTimerAccumulated || 0) +
+        Math.floor((Date.now() - session.sessionTimerStartTime) / 1000)
+      );
+    }
+    return session.sessionTimerAccumulated || 0;
+  }
+
   // Fetch tasks from API
   const fetchTasks = useCallback(async (filters?: FilterState[]) => {
     try {
@@ -446,12 +466,6 @@ const TaskLibrary: React.FC = () => {
     ? tasks.find((task) => task.id === selectedTaskId)
     : null;
 
-  // Helper: get total session time (sum of all task timeSpent)
-  const getSessionTime = () => {
-    if (!session) return 0;
-    return session.sessionTimerSeconds || 0;
-  };
-
   const hasActiveSession = session && session.isActive;
 
   if (loading) {
@@ -571,7 +585,9 @@ const TaskLibrary: React.FC = () => {
             <span className="ml-2 text-sm text-muted-foreground flex items-center gap-1">
               <Play className="w-4 h-4 inline-block" />
               {(() => {
-                const total = getSessionTime();
+                // Use tick to force re-render
+                void tick;
+                const total = getLiveSessionTime();
                 const min = Math.floor(total / 60);
                 const sec = String(total % 60).padStart(2, "0");
                 return `${min}:${sec}`;
