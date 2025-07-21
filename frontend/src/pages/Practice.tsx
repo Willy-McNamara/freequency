@@ -37,8 +37,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   const [tagModalOpen, setTagModalOpen] = useState(false);
   const sessionTimerRef = useRef<PracticeTimerRef>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-  const [taskTimer, setTaskTimer] = useState<number>(0);
-  const [taskTimerRunning, setTaskTimerRunning] = useState(false);
+  // --- Per-task timer state ---
   const [taskNotes, setTaskNotes] = useState<string>("");
   const [checklist, setChecklist] = useState<
     { item: string; checked: boolean }[]
@@ -53,18 +52,18 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   const [showDeleteSessionModal, setShowDeleteSessionModal] = useState(false);
   const [instrumentModalOpen, setInstrumentModalOpen] = useState(false);
   const [showStartModal, setShowStartModal] = useState(
-    !session.sessionTimerRunning && (session.sessionTimerSeconds ?? 0) === 0
+    !session.sessionTimerRunning && (session.sessionTimerAccumulated || 0) === 0
   );
 
   useEffect(() => {
     // Show modal if session timer is reset to 0 and not running
     if (
       !session.sessionTimerRunning &&
-      (session.sessionTimerSeconds ?? 0) === 0
+      (session.sessionTimerAccumulated || 0) === 0
     ) {
       setShowStartModal(true);
     }
-  }, [session.sessionTimerRunning, session.sessionTimerSeconds]);
+  }, [session.sessionTimerRunning, session.sessionTimerAccumulated]);
 
   const {
     sessionTitle,
@@ -74,12 +73,6 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
     sessionNotes,
     setSessionNotes,
   } = session;
-
-  const timeAlreadyAddedToSession = useRef(0);
-  const lastTaskRef = useRef<{ id: string | null; notes: string }>({
-    id: null,
-    notes: "",
-  });
 
   const lastPersistedTaskId = useRef<string | null>(null);
   const lastTaskNotesRef = useRef<string>("");
@@ -150,46 +143,58 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
     }
   };
 
-  // Fix useEffect: Only set timer when selectedTaskId changes, not selectedTask (which can change on every keystroke)
+  // When entering Task-in-Session view, start the task timer if not running
   useEffect(() => {
-    if (selectedTaskId) {
-      const foundTask = session.tasks.find((t) => t.id === selectedTaskId);
-      setTaskTimer(foundTask?.timeSpent || 0);
-      setChecklist(foundTask?.checklist || []);
-      setTaskTimerRunning(true);
-
-      // Only update if the task or notes actually changed
-      if (
-        lastTaskRef.current.id !== selectedTaskId ||
-        lastTaskRef.current.notes !== (foundTask?.notes || "")
-      ) {
-        setTaskNotes(foundTask?.notes || "");
-        lastTaskRef.current = {
-          id: selectedTaskId,
-          notes: foundTask?.notes || "",
-        };
+    if (selectedTaskId && selectedTask) {
+      setChecklist(selectedTask.checklist || []);
+      setTaskNotes(selectedTask.notes || "");
+      // Start the task timer if not running
+      if (!selectedTask.taskTimerRunning) {
+        session.setTaskTimerRunning(selectedTask.id, true);
+        session.setTaskTimerStartTime(selectedTask.id, Date.now());
       }
-
-      // Track time already added to session timer
-      timeAlreadyAddedToSession.current = foundTask?.timeSpent || 0;
-
-      // Pause session timer
-      if (session.sessionTimerRunning) {
-        session.setSessionTimerRunning(false);
-      }
+      // Do NOT pause or accumulate the session timer
     }
     // eslint-disable-next-line
   }, [selectedTaskId]);
 
-  // Timer logic for Task-in-Session (independent from session timer)
-  useEffect(() => {
-    if (taskTimerRunning) {
-      const interval = setInterval(() => {
-        setTaskTimer((prev: number) => prev + 1);
-      }, 1000);
-      return () => clearInterval(interval);
+  // When leaving Task-in-Session view, pause the task timer and accumulate time
+  const handleBack = () => {
+    if (selectedTask) {
+      if (
+        selectedTask.taskTimerRunning &&
+        selectedTask.taskTimerStartTime != null
+      ) {
+        const elapsed = Math.floor(
+          (Date.now() - selectedTask.taskTimerStartTime) / 1000
+        );
+        session.setTaskTimerAccumulated(
+          selectedTask.id,
+          (selectedTask.taskTimerAccumulated || 0) + elapsed
+        );
+        session.setTaskTimerStartTime(selectedTask.id, null);
+        session.setTaskTimerRunning(selectedTask.id, false);
+      }
     }
-  }, [taskTimerRunning]);
+    // Do NOT resume or start the session timer here
+    localStorage.removeItem("practiceSelectedTaskId");
+    setSelectedTaskId(null);
+  };
+
+  // --- Per-task timer state ---
+  function getTaskElapsed() {
+    if (!selectedTask) return 0;
+    if (
+      selectedTask.taskTimerRunning &&
+      selectedTask.taskTimerStartTime != null
+    ) {
+      return (
+        (selectedTask.taskTimerAccumulated || 0) +
+        Math.floor((Date.now() - selectedTask.taskTimerStartTime) / 1000)
+      );
+    }
+    return selectedTask.taskTimerAccumulated || 0;
+  }
 
   // Task Notes persistence
   useEffect(() => {
@@ -228,25 +233,6 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   };
 
   // Handle leaving Task-in-Session view
-  const handleBack = () => {
-    if (selectedTask && typeof session.updateTaskTime === "function") {
-      session.updateTaskTime(selectedTask.id, taskTimer);
-      // Add only the incremental time to session timer
-      const incrementalTime = taskTimer - timeAlreadyAddedToSession.current;
-      if (incrementalTime > 0) {
-        session.setSessionTimerSeconds(
-          (session.sessionTimerSeconds || 0) + incrementalTime
-        );
-      }
-    }
-    setTaskTimerRunning(false);
-    // Always resume session timer when returning to Practice view
-    // The session timer should be running by default unless user explicitly paused it
-    session.setSessionTimerRunning(true);
-    localStorage.removeItem("practiceSelectedTaskId");
-    setSelectedTaskId(null);
-  };
-
   const handleSaveSession = async () => {
     setIsSaving(true);
     // Validate: must have at least one instrument tag
@@ -288,7 +274,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
         notes: session.sessionNotes || "",
         instruments: instrumentTags.map((t) => t.label), // Send instrument labels
         tags: regularTags.map((t) => t.label), // Send regular tag labels
-        duration: session.sessionTimerSeconds || 0,
+        duration: getSessionElapsed(),
         tasks: (session.tasks || []).map((task) => ({
           id: Number(task.id),
           title: task.title || "",
@@ -315,7 +301,8 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
       session.setTags([]);
       session.setTasks([]);
       session.setIsActive(false);
-      session.setSessionTimerSeconds(0);
+      session.setSessionTimerAccumulated(0);
+      session.setSessionTimerStartTime(null);
       session.setSessionTimerRunning(false);
       session.setSessionNotes("");
 
@@ -369,12 +356,23 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
     // eslint-disable-next-line
   }, [showStartModal]);
 
+  // Helper to get elapsed session time
+  function getSessionElapsed() {
+    if (session.sessionTimerRunning && session.sessionTimerStartTime != null) {
+      return (
+        (session.sessionTimerAccumulated || 0) +
+        Math.floor((Date.now() - session.sessionTimerStartTime) / 1000)
+      );
+    }
+    return session.sessionTimerAccumulated || 0;
+  }
+
   // Main Practice view
   return (
     <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 min-h-screen mb-8">
       <Toaster position="bottom-center" />
-      {/* Start Session Custom Overlay */}
-      {showStartModal && (
+      {/* Start/Resume Session Custom Overlay - only show if not in Task-in-Session view */}
+      {!session.sessionTimerRunning && !selectedTaskId && (
         <>
           {/* Overlay below TopBar */}
           <div
@@ -398,7 +396,9 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
             }}
           >
             <div className="text-lg font-semibold leading-none tracking-tight text-center w-full mb-2">
-              Ready to practice?
+              {(session.sessionTimerAccumulated || 0) > 0
+                ? "Ready to resume?"
+                : "Ready to practice?"}
             </div>
             <Button
               style={{
@@ -412,6 +412,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
               }}
               onClick={() => {
                 session.setSessionTimerRunning(true);
+                session.setSessionTimerStartTime(Date.now());
                 session.setIsActive(true);
                 setShowStartModal(false);
               }}
@@ -468,11 +469,40 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                 <span className="text-2xl font-bold mb-2 text-center">
                   {selectedTask.title}
                 </span>
+                {/* In Task-in-Session view, use PracticeTimer with per-task timer state */}
                 <PracticeTimer
-                  value={taskTimer}
-                  onChange={setTaskTimer}
-                  runningValue={taskTimerRunning}
-                  onRunningChange={setTaskTimerRunning}
+                  value={getTaskElapsed()}
+                  onChange={() => {}}
+                  runningValue={selectedTask?.taskTimerRunning}
+                  onRunningChange={(newRunning) => {
+                    if (!selectedTask) return;
+                    if (newRunning) {
+                      // Start timer
+                      if (!selectedTask.taskTimerRunning) {
+                        session.setTaskTimerRunning(selectedTask.id, true);
+                        session.setTaskTimerStartTime(
+                          selectedTask.id,
+                          Date.now()
+                        );
+                      }
+                    } else {
+                      // Pause timer
+                      if (
+                        selectedTask.taskTimerRunning &&
+                        selectedTask.taskTimerStartTime != null
+                      ) {
+                        const elapsed = Math.floor(
+                          (Date.now() - selectedTask.taskTimerStartTime) / 1000
+                        );
+                        session.setTaskTimerAccumulated(
+                          selectedTask.id,
+                          (selectedTask.taskTimerAccumulated || 0) + elapsed
+                        );
+                        session.setTaskTimerStartTime(selectedTask.id, null);
+                        session.setTaskTimerRunning(selectedTask.id, false);
+                      }
+                    }
+                  }}
                 />
               </div>
             </Section>
@@ -609,11 +639,32 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
             <div className="flex flex-col w-full items-center justify-center">
               <PracticeTimer
                 ref={sessionTimerRef}
-                value={session.sessionTimerSeconds}
-                onChange={session.setSessionTimerSeconds}
+                value={getSessionElapsed()}
+                onChange={() => {}}
                 runningValue={session.sessionTimerRunning}
                 onRunningChange={(newRunning) => {
-                  session.setSessionTimerRunning(newRunning);
+                  if (newRunning) {
+                    // Start timer: set running true and set startTime if not already set
+                    if (!session.sessionTimerRunning) {
+                      session.setSessionTimerRunning(true);
+                      session.setSessionTimerStartTime(Date.now());
+                    }
+                  } else {
+                    // Pause timer: accumulate elapsed, clear startTime
+                    if (
+                      session.sessionTimerRunning &&
+                      session.sessionTimerStartTime != null
+                    ) {
+                      const elapsed = Math.floor(
+                        (Date.now() - session.sessionTimerStartTime) / 1000
+                      );
+                      session.setSessionTimerAccumulated(
+                        (session.sessionTimerAccumulated || 0) + elapsed
+                      );
+                      session.setSessionTimerStartTime(null);
+                      session.setSessionTimerRunning(false);
+                    }
+                  }
                   if (newRunning) {
                     session.setIsActive(true);
                   }
@@ -794,7 +845,8 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                         session.setTags([]);
                         session.setTasks([]);
                         session.setIsActive(false);
-                        session.setSessionTimerSeconds(0);
+                        session.setSessionTimerAccumulated(0);
+                        session.setSessionTimerStartTime(null);
                         session.setSessionTimerRunning(false);
                         session.setSessionNotes("");
                         localStorage.removeItem("practiceSession");

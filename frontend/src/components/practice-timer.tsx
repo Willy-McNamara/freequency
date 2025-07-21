@@ -20,45 +20,79 @@ export const PracticeTimer = React.forwardRef<
   PracticeTimerRef,
   PracticeTimerProps
 >(({ className, value, onChange, runningValue, onRunningChange }, ref) => {
-  const [seconds, setSeconds] = React.useState(value || 0);
+  // New state: accumulated (seconds), startTime (ms or null)
+  const [accumulated, setAccumulated] = React.useState<number>(value || 0);
+  const [startTime, setStartTime] = React.useState<number | null>(null);
+  const [tick, setTick] = React.useState(0); // <-- new state for re-render
   const running = runningValue ?? false;
   const intervalRef = React.useRef<number | null>(null);
 
+  // Calculate elapsed time
+  const getElapsed = React.useCallback(() => {
+    if (running && startTime !== null) {
+      return accumulated + Math.floor((Date.now() - startTime) / 1000);
+    }
+    return accumulated;
+  }, [accumulated, startTime, running, tick]);
+
+  // Expose imperative methods
   React.useImperativeHandle(ref, () => ({
     start: () => onRunningChange?.(true),
     pause: () => onRunningChange?.(false),
-    reset: () => onChange?.(0),
-    getTime: () => seconds,
+    reset: () => {
+      setAccumulated(0);
+      setStartTime(null);
+      setTick(0);
+      onChange?.(0);
+    },
+    getTime: () => getElapsed(),
   }));
 
+  // Handle running/paused state
   React.useEffect(() => {
     if (running) {
+      // When starting, set startTime if not already set
+      if (startTime === null) {
+        setStartTime(Date.now());
+      }
       intervalRef.current = window.setInterval(() => {
-        setSeconds((s) => s + 1);
+        setTick((t) => t + 1); // force re-render
+        if (onChange) onChange(getElapsed());
       }, 1000);
     } else {
+      // When pausing, add elapsed to accumulated and clear startTime
+      if (startTime !== null) {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        setAccumulated((prev) => prev + elapsed);
+        setStartTime(null);
+        if (onChange) onChange(accumulated + elapsed);
+      }
       if (intervalRef.current) clearInterval(intervalRef.current);
     }
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
+    // eslint-disable-next-line
   }, [running]);
 
-  // Sync with value prop
+  // Sync with value prop (external reset)
   React.useEffect(() => {
-    if (typeof value === "number" && value !== seconds) {
-      setSeconds(value);
+    if (typeof value === "number" && value !== getElapsed()) {
+      setAccumulated(value);
+      setStartTime(null);
     }
     // eslint-disable-next-line
   }, [value]);
 
-  // Notify parent of changes
+  // Notify parent of changes (for initial mount and manual changes)
   React.useEffect(() => {
-    if (onChange) onChange(seconds);
-  }, [seconds, onChange]);
+    if (onChange) onChange(getElapsed());
+    // eslint-disable-next-line
+  }, [accumulated, startTime]);
 
-  const minutes = Math.floor(seconds / 60);
-  const secs = seconds % 60;
+  const elapsed = getElapsed();
+  const minutes = Math.floor(elapsed / 60);
+  const secs = elapsed % 60;
   const formatted = `${minutes}:${secs.toString().padStart(2, "0")}`;
 
   return (
