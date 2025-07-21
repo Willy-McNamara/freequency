@@ -5,9 +5,13 @@ export interface SessionTask {
   title: string;
   notes?: string;
   checklist?: { item: string; checked: boolean }[];
-  timeSpent?: number; // in seconds
+  timeSpent?: number; // in seconds (legacy)
   tags?: { id: string; label: string }[];
-  description?: string; // <-- added this line
+  description?: string;
+  // Per-task timer fields:
+  taskTimerAccumulated?: number;
+  taskTimerStartTime?: number | null;
+  taskTimerRunning?: boolean;
 }
 
 export interface SessionTag {
@@ -20,7 +24,8 @@ export interface SessionState {
   tags: SessionTag[];
   tasks: SessionTask[];
   isActive?: boolean;
-  sessionTimerSeconds?: number;
+  sessionTimerAccumulated?: number; // total seconds before last start
+  sessionTimerStartTime?: number | null; // timestamp in ms, or null if paused
   sessionTimerRunning?: boolean;
   sessionNotes?: string;
 }
@@ -30,7 +35,8 @@ export interface SessionContextValue extends SessionState {
   setTags: (tags: SessionTag[]) => void;
   setTasks: (tasks: SessionTask[]) => void;
   setIsActive: (active: boolean) => void;
-  setSessionTimerSeconds: (seconds: number) => void;
+  setSessionTimerAccumulated: (seconds: number) => void;
+  setSessionTimerStartTime: (timestamp: number | null) => void;
   setSessionTimerRunning: (running: boolean) => void;
   setSessionNotes: (notes: string) => void;
   updateTaskNotes: (taskId: string, notes: string) => void;
@@ -39,6 +45,10 @@ export interface SessionContextValue extends SessionState {
     checklist: { item: string; checked: boolean }[]
   ) => void;
   updateTaskTime: (taskId: string, timeSpent: number) => void;
+  // New per-task timer methods:
+  setTaskTimerAccumulated: (taskId: string, seconds: number) => void;
+  setTaskTimerStartTime: (taskId: string, timestamp: number | null) => void;
+  setTaskTimerRunning: (taskId: string, running: boolean) => void;
 }
 
 const defaultSession: SessionState = {
@@ -46,7 +56,8 @@ const defaultSession: SessionState = {
   tags: [],
   tasks: [],
   isActive: false,
-  sessionTimerSeconds: 0,
+  sessionTimerAccumulated: 0,
+  sessionTimerStartTime: null,
   sessionTimerRunning: false,
   sessionNotes: "",
 };
@@ -66,9 +77,11 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isActive, setIsActive] = useState<boolean>(
     defaultSession.isActive || false
   );
-  const [sessionTimerSeconds, setSessionTimerSeconds] = useState<number>(
-    defaultSession.sessionTimerSeconds || 0
-  );
+  const [sessionTimerAccumulated, setSessionTimerAccumulated] =
+    useState<number>(defaultSession.sessionTimerAccumulated || 0);
+  const [sessionTimerStartTime, setSessionTimerStartTime] = useState<
+    number | null
+  >(defaultSession.sessionTimerStartTime || null);
   const [sessionTimerRunning, setSessionTimerRunning] = useState<boolean>(
     defaultSession.sessionTimerRunning || false
   );
@@ -86,12 +99,18 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
         if (parsed.tags) setTags(parsed.tags);
         if (parsed.tasks) setTasks(parsed.tasks);
         if (typeof parsed.isActive === "boolean") setIsActive(parsed.isActive);
-        if (typeof parsed.sessionTimerSeconds === "number")
-          setSessionTimerSeconds(parsed.sessionTimerSeconds);
+        if (typeof parsed.sessionTimerAccumulated === "number")
+          setSessionTimerAccumulated(parsed.sessionTimerAccumulated);
+        if (
+          typeof parsed.sessionTimerStartTime === "number" ||
+          parsed.sessionTimerStartTime === null
+        )
+          setSessionTimerStartTime(parsed.sessionTimerStartTime);
         if (typeof parsed.sessionTimerRunning === "boolean")
           setSessionTimerRunning(parsed.sessionTimerRunning);
         if (typeof parsed.sessionNotes === "string")
           setSessionNotes(parsed.sessionNotes);
+        // --- REMOVE recalculation of elapsed time on mount ---
       } catch {
         /* ignore JSON parse errors */
       }
@@ -107,7 +126,8 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
         tags,
         tasks,
         isActive,
-        sessionTimerSeconds,
+        sessionTimerAccumulated,
+        sessionTimerStartTime,
         sessionTimerRunning,
         sessionNotes,
       })
@@ -117,10 +137,14 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
     tags,
     tasks,
     isActive,
-    sessionTimerSeconds,
+    sessionTimerAccumulated,
+    sessionTimerStartTime,
     sessionTimerRunning,
     sessionNotes,
   ]);
+
+  // REMOVE: Persist session timer state every second while running
+  // (No longer needed; only update accumulated on pause)
 
   const updateTaskNotes = (taskId: string, notes: string) => {
     setTasks((prev) =>
@@ -143,6 +167,29 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
     );
   };
 
+  // Add per-task timer methods
+  const setTaskTimerAccumulated = (taskId: string, seconds: number) => {
+    setTasks((prev) =>
+      prev.map((task) =>
+        task.id === taskId ? { ...task, taskTimerAccumulated: seconds } : task
+      )
+    );
+  };
+  const setTaskTimerStartTime = (taskId: string, timestamp: number | null) => {
+    setTasks((prev) =>
+      prev.map((task) =>
+        task.id === taskId ? { ...task, taskTimerStartTime: timestamp } : task
+      )
+    );
+  };
+  const setTaskTimerRunning = (taskId: string, running: boolean) => {
+    setTasks((prev) =>
+      prev.map((task) =>
+        task.id === taskId ? { ...task, taskTimerRunning: running } : task
+      )
+    );
+  };
+
   const value: SessionContextValue = {
     sessionTitle,
     setSessionTitle,
@@ -152,8 +199,10 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
     setTasks,
     isActive,
     setIsActive,
-    sessionTimerSeconds,
-    setSessionTimerSeconds,
+    sessionTimerAccumulated,
+    setSessionTimerAccumulated,
+    sessionTimerStartTime,
+    setSessionTimerStartTime,
     sessionTimerRunning,
     setSessionTimerRunning,
     sessionNotes,
@@ -161,6 +210,9 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
     updateTaskNotes,
     updateTaskChecklist,
     updateTaskTime,
+    setTaskTimerAccumulated,
+    setTaskTimerStartTime,
+    setTaskTimerRunning,
   };
 
   return (
