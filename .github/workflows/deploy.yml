@@ -46,6 +46,9 @@ jobs:
           npm ci
           npm run deployment-test
 
+      - name: Show latest commit
+        run: git log -1
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -54,11 +57,11 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build --build-arg VITE_API_BASE_URL=$VITE_API_BASE_URL -t freequency-app .
+          docker build --no-cache --build-arg VITE_API_BASE_URL=$VITE_API_BASE_URL -t freequency-dev .
 
       - name: Tag Docker image
         run: |
-          docker tag freequency-app:latest $ECR_REPOSITORY:latest
+          docker tag freequency-dev:latest $ECR_REPOSITORY:latest
 
       - name: Push Docker image to ECR
         run: |
