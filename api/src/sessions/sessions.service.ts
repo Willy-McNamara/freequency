@@ -945,6 +945,7 @@ export class SessionsService {
           include: {
             musician: {
               select: {
+                id: true,
                 displayName: true,
                 avatarUrl: true,
               },
@@ -954,7 +955,19 @@ export class SessionsService {
 
         return createdComment;
       });
-      return createdComment;
+
+      // Return the comment in the expected CreatedCommentDto format
+      return {
+        id: createdComment.id,
+        text: createdComment.text,
+        createdAt: createdComment.createdAt,
+        musicianId: createdComment.musicianId,
+        sessionId: createdComment.sessionId,
+        musician: {
+          displayName: createdComment.musician.displayName,
+          avatarUrl: createdComment.musician.avatarUrl,
+        },
+      };
     } catch (error) {
       // Handle any errors during creation
       throw new Error(`Failed to add comment: ${error.message}`);
@@ -979,6 +992,7 @@ export class SessionsService {
           include: {
             musician: {
               select: {
+                id: true,
                 displayName: true,
                 avatarUrl: true,
               },
@@ -1009,7 +1023,17 @@ export class SessionsService {
 
         return createdGasUp;
       });
-      return createdGasUp;
+
+      // Return the gas up in the expected CreatedGasUpDto format
+      return {
+        id: createdGasUp.id,
+        musicianId: createdGasUp.musicianId,
+        sessionId: createdGasUp.sessionId,
+        musician: {
+          displayName: createdGasUp.musician.displayName,
+          avatarUrl: createdGasUp.musician.avatarUrl,
+        },
+      };
     } catch (error) {
       // Handle any errors during creation
       throw new Error(`Failed to gas up: ${error.message}`);

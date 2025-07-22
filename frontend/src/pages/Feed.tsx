@@ -7,12 +7,18 @@ import {
   FilterType,
   FilterOption,
 } from "../components/filter-bar";
-import { apiConfig } from "../config/api";
+import { apiClient } from "../services/auth";
 import { useAuth } from "../components/auth/AuthProvider";
 import { ALL_INSTRUMENTS } from "../types/instruments.types";
 import { Container } from "../components/layout/Container";
 import { Section } from "../components/layout/Section";
 import { Separator } from "@/components/ui/separator";
+import { Loading } from "../components/ui/loading";
+
+interface SessionsResponse {
+  sessions?: Post[];
+  nextCursor?: string;
+}
 
 interface Post {
   id: number;
@@ -191,15 +197,19 @@ const Feed = () => {
 
         // For initial fetch (new filter), do not use any cursor
         const params = buildQueryParams(cursorOverride);
-        const response = await fetch(
-          `${apiConfig.endpoints.sessions}?${params.toString()}`
+        const response = await apiClient.get<SessionsResponse | Post[]>(
+          `/sessions?${params.toString()}`
         );
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        if (response.error) {
+          throw new Error(response.error);
         }
 
-        const result = await response.json();
+        if (!response.data) {
+          throw new Error("No data received from server");
+        }
+
+        const result = response.data;
 
         // Handle both old format (array) and new format (object with sessions and nextCursor)
         let sessions, nextCursorValue;
@@ -327,12 +337,27 @@ const Feed = () => {
 
   // Fetch all users, instruments, and tags on mount
   useEffect(() => {
-    fetch(apiConfig.endpoints.musicians.allIdNames)
-      .then((res) => res.json())
-      .then((data) => setAllUsers(data));
-    fetch(apiConfig.endpoints.tags.all)
-      .then((res) => res.json())
-      .then((data) => setAllTags(data));
+    const fetchData = async () => {
+      try {
+        const [usersResponse, tagsResponse] = await Promise.all([
+          apiClient.get<{ id: number; displayName: string }[]>(
+            "/musicians/all-id-names"
+          ),
+          apiClient.get<string[]>("/tags/all-labels"),
+        ]);
+
+        if (usersResponse.data) {
+          setAllUsers(usersResponse.data);
+        }
+        if (tagsResponse.data) {
+          setAllTags(tagsResponse.data);
+        }
+      } catch (error) {
+        console.error("Error fetching filter data:", error);
+      }
+    };
+
+    fetchData();
   }, []);
 
   // Update filter options based on available data
@@ -480,32 +505,39 @@ const Feed = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-col w-full justify-start">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading posts...</p>
+      <Container>
+        <Section>
+          <FilterBar
+            filters={activeFilters}
+            onFilterChange={handleFilterChange}
+          />
+        </Section>
+        <Section>
+          <div className="flex items-center justify-center min-h-[400px]">
+            <Loading size="lg" text="Loading posts..." />
           </div>
-        </div>
-      </div>
+        </Section>
+      </Container>
     );
   }
 
   if (error) {
     return (
-      <div className="flex flex-col w-full justify-start">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <p className="text-destructive mb-4">Error: {error}</p>
-            <button
-              onClick={() => fetchSessions(true)}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-            >
-              Try Again
-            </button>
+      <Container>
+        <Section>
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <p className="text-destructive mb-4">Error: {error}</p>
+              <button
+                onClick={() => fetchSessions(true)}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+              >
+                Try Again
+              </button>
+            </div>
           </div>
-        </div>
-      </div>
+        </Section>
+      </Container>
     );
   }
 
@@ -551,10 +583,7 @@ const Feed = () => {
         {/* Loading more indicator */}
         {loadingMore && (
           <div className="flex items-center justify-center w-full py-8">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-            <span className="ml-2 text-muted-foreground">
-              Loading more posts...
-            </span>
+            <Loading size="md" text="Loading more posts..." />
           </div>
         )}
       </div>
