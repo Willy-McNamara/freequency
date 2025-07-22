@@ -851,6 +851,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                         session.setSessionNotes("");
                         localStorage.removeItem("practiceSession");
                         localStorage.removeItem("practiceSelectedTaskId");
+                        sessionTimerRef.current?.reset();
                         setShowDeleteSessionModal(false);
                       }}
                     >
