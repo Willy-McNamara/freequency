@@ -376,14 +376,21 @@ const Feed = () => {
             ) || false,
       }));
 
-      const tagOptions = allTags.map((tag) => ({
-        id: tag.toLowerCase().replace(/\s+/g, ""),
-        label: tag,
-        checked:
-          activeFilters
-            .find((f) => f.type === "tag")
-            ?.options?.some((opt) => opt.label === tag && opt.checked) || false,
-      }));
+      const instrumentLabels = ALL_INSTRUMENTS.map((instrument) =>
+        instrument.label.toLowerCase()
+      );
+
+      const tagOptions = allTags
+        .filter((tag) => !instrumentLabels.includes(tag.toLowerCase()))
+        .map((tag) => ({
+          id: tag.toLowerCase().replace(/\s+/g, ""),
+          label: tag,
+          checked:
+            activeFilters
+              .find((f) => f.type === "tag")
+              ?.options?.some((opt) => opt.label === tag && opt.checked) ||
+            false,
+        }));
 
       // If my-sessions filter is active, automatically select the current user
       let updatedUserOptions = allUserOptions;
