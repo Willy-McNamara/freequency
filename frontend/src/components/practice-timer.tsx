@@ -80,6 +80,7 @@ export const PracticeTimer = React.forwardRef<
     if (typeof value === "number" && value !== getElapsed()) {
       setAccumulated(value);
       setStartTime(null);
+      setTick(0); // Reset tick to ensure clean state
     }
     // eslint-disable-next-line
   }, [value]);
