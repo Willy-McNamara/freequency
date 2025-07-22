@@ -1,4 +1,3 @@
-import React from "react";
 import { Container } from "../components/layout/Container";
 import { Section } from "../components/layout/Section";
 import {
@@ -65,7 +64,7 @@ export default function About() {
   return (
     <Container size="md" className="py-8">
       <h1 className="text-3xl font-bold mb-8 text-center">Welcome!</h1>
-      {aboutSections.map((section, i) => (
+      {aboutSections.map((section) => (
         <Section key={section.title} spacing={{ base: "md", md: "lg" }}>
           <Card className="mx-auto max-w-xl">
             <CardHeader>
