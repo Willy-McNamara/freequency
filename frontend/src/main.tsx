@@ -19,6 +19,7 @@ const Profile = lazy(() => import("./pages/Profile"));
 const PostView = lazy(() =>
   import("./pages/PostView").then((m) => ({ default: m.PostView }))
 );
+const About = lazy(() => import("./pages/About"));
 const SessionProvider = lazy(() =>
   import("./components/SessionContext").then((m) => ({
     default: m.SessionProvider,
@@ -119,6 +120,14 @@ ReactDOM.createRoot(root).render(
               element={
                 <Suspense fallback={<LoadingScreen />}>
                   <PostView />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/about"
+              element={
+                <Suspense fallback={<LoadingScreen />}>
+                  <About />
                 </Suspense>
               }
             />

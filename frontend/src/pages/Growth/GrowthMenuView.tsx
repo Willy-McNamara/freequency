@@ -27,7 +27,7 @@ export const GrowthMenuView: React.FC<GrowthMenuViewProps> = ({
       <Section>
         <h1 className="text-2xl font-bold text-center mb-4">Growth</h1>
         <p className="text-center text-muted-foreground">
-          Track your musical practice over time.
+          Track your practice over time.
         </p>
       </Section>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
