@@ -505,29 +505,39 @@ const Feed = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-col w-full justify-start">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <Loading size="lg" text="Loading posts..." />
-        </div>
-      </div>
+      <Container>
+        <Section>
+          <FilterBar
+            filters={activeFilters}
+            onFilterChange={handleFilterChange}
+          />
+        </Section>
+        <Section>
+          <div className="flex items-center justify-center min-h-[400px]">
+            <Loading size="lg" text="Loading posts..." />
+          </div>
+        </Section>
+      </Container>
     );
   }
 
   if (error) {
     return (
-      <div className="flex flex-col w-full justify-start">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <p className="text-destructive mb-4">Error: {error}</p>
-            <button
-              onClick={() => fetchSessions(true)}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-            >
-              Try Again
-            </button>
+      <Container>
+        <Section>
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <p className="text-destructive mb-4">Error: {error}</p>
+              <button
+                onClick={() => fetchSessions(true)}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+              >
+                Try Again
+              </button>
+            </div>
           </div>
-        </div>
-      </div>
+        </Section>
+      </Container>
     );
   }
 

@@ -28,7 +28,9 @@ export const Loading: React.FC<LoadingProps> = ({
   fullScreen = false,
 }) => {
   const content = (
-    <div className={`flex flex-col items-center justify-center ${className}`}>
+    <div
+      className={`flex flex-col items-center justify-center w-full ${className}`}
+    >
       <Loader2
         className={`animate-spin text-primary mb-2 ${sizeClasses[size]}`}
       />
@@ -40,7 +42,7 @@ export const Loading: React.FC<LoadingProps> = ({
 
   if (fullScreen) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen w-full">
         {content}
       </div>
     );
