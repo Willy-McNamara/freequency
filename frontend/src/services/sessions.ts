@@ -1,4 +1,29 @@
-import { buildApiUrl } from "../config/api";
+import { apiClient } from "./auth";
+
+// Type definitions for API responses
+interface CreatedCommentDto {
+  id: number;
+  text: string;
+  createdAt: string;
+  musicianId: number;
+  sessionId: number;
+  musician: {
+    id: number;
+    displayName: string;
+    avatarUrl: string | null;
+  };
+}
+
+interface CreatedGasUpDto {
+  id: number;
+  musicianId: number;
+  sessionId: number;
+  musician: {
+    id: number;
+    displayName: string;
+    avatarUrl: string | null;
+  };
+}
 
 export const sessionService = {
   async saveSession(sessionData: {
@@ -16,62 +41,61 @@ export const sessionService = {
       tags: string[];
     }>;
   }) {
-    const response = await fetch(
-      buildApiUrl("/sessions/newSessionWithoutAudio"),
-      {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(sessionData),
-      }
+    const response = await apiClient.post(
+      "/sessions/newSessionWithoutAudio",
+      sessionData
     );
-    if (!response.ok) {
-      throw new Error("Failed to save session");
+    if (response.error) {
+      throw new Error(response.error);
     }
-    return response.json();
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
+    return response.data;
   },
 
   async getSessionById(sessionId: number) {
-    const response = await fetch(buildApiUrl(`/sessions/${sessionId}`), {
-      method: "GET",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-    });
-    if (!response.ok) {
-      throw new Error("Failed to fetch session");
+    const response = await apiClient.get(`/sessions/${sessionId}`);
+    if (response.error) {
+      throw new Error(response.error);
     }
-    return response.json();
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
+    return response.data;
   },
 
-  async addComment(sessionId: number, commentText: string) {
-    const response = await fetch(buildApiUrl("/sessions/addComment"), {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        text: commentText,
-        sessionId: sessionId,
-      }),
+  async addComment(
+    sessionId: number,
+    commentText: string
+  ): Promise<CreatedCommentDto> {
+    const response = await apiClient.post("/sessions/addComment", {
+      text: commentText,
+      sessionId: sessionId,
     });
-    if (!response.ok) {
-      throw new Error("Failed to add comment");
+    if (response.error) {
+      throw new Error(response.error);
     }
-    return response.json();
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
+    return response.data as CreatedCommentDto;
   },
 
-  async addGasUp(sessionId: number, musicianId: number) {
-    const response = await fetch(buildApiUrl("/sessions/addGasUp"), {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        sessionId: sessionId,
-        musicianId: musicianId,
-      }),
+  async addGasUp(
+    sessionId: number,
+    musicianId: number
+  ): Promise<CreatedGasUpDto> {
+    const response = await apiClient.post("/sessions/addGasUp", {
+      sessionId: sessionId,
+      musicianId: musicianId,
     });
-    if (!response.ok) {
-      throw new Error("Failed to add gas up");
+    if (response.error) {
+      throw new Error(response.error);
     }
-    return response.json();
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
+    return response.data as CreatedGasUpDto;
   },
 };
