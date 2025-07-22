@@ -7,12 +7,17 @@ import {
   FilterType,
   FilterOption,
 } from "../components/filter-bar";
-import { apiConfig } from "../config/api";
+import { apiClient } from "../services/auth";
 import { useAuth } from "../components/auth/AuthProvider";
 import { ALL_INSTRUMENTS } from "../types/instruments.types";
 import { Container } from "../components/layout/Container";
 import { Section } from "../components/layout/Section";
 import { Separator } from "@/components/ui/separator";
+
+interface SessionsResponse {
+  sessions?: Post[];
+  nextCursor?: string;
+}
 
 interface Post {
   id: number;
@@ -191,15 +196,19 @@ const Feed = () => {
 
         // For initial fetch (new filter), do not use any cursor
         const params = buildQueryParams(cursorOverride);
-        const response = await fetch(
-          `${apiConfig.endpoints.sessions}?${params.toString()}`
+        const response = await apiClient.get<SessionsResponse | Post[]>(
+          `/sessions?${params.toString()}`
         );
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        if (response.error) {
+          throw new Error(response.error);
         }
 
-        const result = await response.json();
+        if (!response.data) {
+          throw new Error("No data received from server");
+        }
+
+        const result = response.data;
 
         // Handle both old format (array) and new format (object with sessions and nextCursor)
         let sessions, nextCursorValue;
@@ -327,12 +336,27 @@ const Feed = () => {
 
   // Fetch all users, instruments, and tags on mount
   useEffect(() => {
-    fetch(apiConfig.endpoints.musicians.allIdNames)
-      .then((res) => res.json())
-      .then((data) => setAllUsers(data));
-    fetch(apiConfig.endpoints.tags.all)
-      .then((res) => res.json())
-      .then((data) => setAllTags(data));
+    const fetchData = async () => {
+      try {
+        const [usersResponse, tagsResponse] = await Promise.all([
+          apiClient.get<{ id: number; displayName: string }[]>(
+            "/musicians/all-id-names"
+          ),
+          apiClient.get<string[]>("/tags/all-labels"),
+        ]);
+
+        if (usersResponse.data) {
+          setAllUsers(usersResponse.data);
+        }
+        if (tagsResponse.data) {
+          setAllTags(tagsResponse.data);
+        }
+      } catch (error) {
+        console.error("Error fetching filter data:", error);
+      }
+    };
+
+    fetchData();
   }, []);
 
   // Update filter options based on available data

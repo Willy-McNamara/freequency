@@ -10,7 +10,7 @@ interface User {
 }
 
 interface ApiResponse<T> {
-  data: T;
+  data: T | null;
   error?: string;
 }
 
@@ -45,7 +45,20 @@ export const apiClient = {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
+      // Check if response has content before parsing JSON
+      const contentType = response.headers.get("content-type");
+      const hasContent =
+        contentType && contentType.includes("application/json");
+
+      let data: T | null = null;
+      if (hasContent) {
+        try {
+          data = await response.json();
+        } catch (parseError) {
+          console.warn("Failed to parse JSON response:", parseError);
+        }
+      }
+
       return { data };
     } catch (error) {
       console.error("API request failed:", error);

@@ -5,6 +5,7 @@ import { Suspense, lazy } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router";
 import Login from "./pages/Login";
+import NotFound from "./pages/NotFound";
 import ErrorBoundaryWrapper from "./ErrorBoundary.tsx";
 import { AuthProvider } from "./components/auth/AuthProvider";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
@@ -132,7 +133,7 @@ ReactDOM.createRoot(root).render(
               }
             />
             {/* Fallback for unknown routes */}
-            <Route path="*" element={<h1>Page Not Found</h1>} />
+            <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
       </AuthProvider>

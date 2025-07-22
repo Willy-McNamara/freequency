@@ -276,7 +276,10 @@ export const PostView: React.FC = () => {
         return;
       }
 
-      const newGasUpData = await sessionService.addGasUp(post.id, user.id);
+      const newGasUpData = await sessionService.addGasUp(
+        post.id,
+        post.musician.id
+      );
 
       // Add the new gas up to the post state
       setPost((prevPost) => {
@@ -307,6 +310,10 @@ export const PostView: React.FC = () => {
   const handleMusicianClick = (musicianId: number) => {
     navigate(`/profile?user=${musicianId}`);
   };
+
+  // Check if current user has already given a gas up
+  const hasUserGasUp =
+    user && post?.gasUps.some((gasUp) => gasUp.musician.id === user.id);
 
   if (loading) {
     return (
@@ -437,13 +444,18 @@ export const PostView: React.FC = () => {
           <div className="p-4 sm:p-6 bg-muted/20">
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Button
-                variant="outline"
+                variant={hasUserGasUp ? "secondary" : "outline"}
                 onClick={handleAddGasUp}
-                className="flex-1"
+                disabled={!!hasUserGasUp}
+                className={`flex-1 ${hasUserGasUp ? "opacity-75" : ""}`}
                 size="sm"
               >
-                <Heart className="w-4 h-4 mr-2" />
-                Gas Up ({post.gasUps.length})
+                <Heart
+                  className={`w-4 h-4 mr-2 ${
+                    hasUserGasUp ? "fill-current text-red-500" : ""
+                  }`}
+                />
+                {hasUserGasUp ? "Gassed Up" : "Gas Up"} ({post.gasUps.length})
               </Button>
               <Button
                 variant="outline"
@@ -469,7 +481,7 @@ export const PostView: React.FC = () => {
                   Comments ({post.comments.length})
                 </h3>
                 <Button
-                  variant="ghost"
+                  variant="secondary"
                   size="sm"
                   onClick={() => setShowCommentModal(false)}
                 >
@@ -524,7 +536,7 @@ export const PostView: React.FC = () => {
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
                     placeholder="Write a comment..."
-                    className="flex-1 p-2 sm:p-3 border border-border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary min-h-[60px] sm:min-h-[80px] text-sm"
+                    className="flex-1 p-2 sm:p-3 border border-border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary min-h-[60px] sm:min-h-[80px] text-sm bg-background text-foreground placeholder:text-muted-foreground"
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && e.metaKey) {
                         handleSubmitComment();

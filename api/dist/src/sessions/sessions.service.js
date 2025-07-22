@@ -770,6 +770,7 @@ let SessionsService = class SessionsService {
                     include: {
                         musician: {
                             select: {
+                                id: true,
                                 displayName: true,
                                 avatarUrl: true,
                             },
@@ -778,7 +779,17 @@ let SessionsService = class SessionsService {
                 });
                 return createdComment;
             });
-            return createdComment;
+            return {
+                id: createdComment.id,
+                text: createdComment.text,
+                createdAt: createdComment.createdAt,
+                musicianId: createdComment.musicianId,
+                sessionId: createdComment.sessionId,
+                musician: {
+                    displayName: createdComment.musician.displayName,
+                    avatarUrl: createdComment.musician.avatarUrl,
+                },
+            };
         }
         catch (error) {
             throw new Error(`Failed to add comment: ${error.message}`);
@@ -800,6 +811,7 @@ let SessionsService = class SessionsService {
                     include: {
                         musician: {
                             select: {
+                                id: true,
                                 displayName: true,
                                 avatarUrl: true,
                             },
@@ -824,7 +836,15 @@ let SessionsService = class SessionsService {
                 });
                 return createdGasUp;
             });
-            return createdGasUp;
+            return {
+                id: createdGasUp.id,
+                musicianId: createdGasUp.musicianId,
+                sessionId: createdGasUp.sessionId,
+                musician: {
+                    displayName: createdGasUp.musician.displayName,
+                    avatarUrl: createdGasUp.musician.avatarUrl,
+                },
+            };
         }
         catch (error) {
             throw new Error(`Failed to gas up: ${error.message}`);
