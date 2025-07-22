@@ -121,7 +121,7 @@ export class MusiciansService {
             familyName: createMusicianDto.familyName,
             email: createMusicianDto.email,
             avatarUrl: createMusicianDto.profilePictureUrl,
-            bio: 'Tell us about yourself as a musician! Eventually other users may be able to see your profile :)',
+            bio: 'A place for you to describe yourself as a musician :)',
             totalSessions: 0,
             totalPracticeSeconds: 0,
             totalGasUpsGiven: 0,
