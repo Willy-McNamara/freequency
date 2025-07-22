@@ -68,10 +68,47 @@ export function TopBar() {
               Profile
             </NavLink>
           </nav>
+          <div className="flex flex-col items-start justify-end flex-1 h-full">
+            <NavLink
+              to="/about"
+              className={({ isActive }) =>
+                `mt-auto mb-4 ml-1 flex items-center gap-2 px-2 py-2 rounded-full transition-colors text-base font-medium ${
+                  isActive
+                    ? "bg-primary text-primary-foreground"
+                    : "hover:bg-accent hover:text-accent-foreground"
+                }`
+              }
+              style={{ position: "absolute", bottom: 16, left: 16 }}
+              title="About / Info"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-5 w-5"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="16" x2="12" y2="12" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+              </svg>
+            </NavLink>
+          </div>
         </HamburgerMenu>
       </div>
       <div className="flex-shrink-0">
-        <img src="/logo.svg" alt="Logo" className="h-10 w-auto ml-auto" />
+        <NavLink to="/about" title="About / Info">
+          <img
+            src="/logo.svg"
+            alt="Logo"
+            className="h-10 w-auto ml-auto cursor-pointer"
+          />
+        </NavLink>
       </div>
     </header>
   );
