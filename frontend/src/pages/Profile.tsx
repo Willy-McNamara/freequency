@@ -17,7 +17,8 @@ import { useAuth } from "../components/auth/AuthProvider";
 import { apiConfig } from "../config/api";
 import { Music, Clock, Fuel, Pencil, X } from "lucide-react";
 import { InstrumentModal } from "../components/InstrumentModal";
-import { AlertTriangle, Loader2 } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
+import { Loading } from "../components/ui/loading";
 
 interface Instrument {
   id: number;
@@ -215,10 +216,7 @@ export default function Profile() {
       <Container>
         <Section spacing="lg">
           <div className="flex flex-col items-center justify-center min-h-[300px]">
-            <Loader2 className="animate-spin w-8 h-8 text-primary mb-4" />
-            <div className="text-lg font-semibold text-muted-foreground">
-              Loading profile...
-            </div>
+            <Loading size="lg" text="Loading profile..." />
           </div>
         </Section>
       </Container>

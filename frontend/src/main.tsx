@@ -9,6 +9,7 @@ import NotFound from "./pages/NotFound";
 import ErrorBoundaryWrapper from "./ErrorBoundary.tsx";
 import { AuthProvider } from "./components/auth/AuthProvider";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+import { Loading } from "./components/ui/loading";
 
 // Lazy load all protected components
 const App = lazy(() => import("./App"));
@@ -27,11 +28,7 @@ const SessionProvider = lazy(() =>
   }))
 );
 
-const LoadingScreen = () => (
-  <div className="flex items-center justify-center min-h-screen text-lg">
-    Loading...
-  </div>
-);
+const LoadingScreen = () => <Loading size="lg" text="Loading..." fullScreen />;
 
 const root = document.getElementById("root");
 

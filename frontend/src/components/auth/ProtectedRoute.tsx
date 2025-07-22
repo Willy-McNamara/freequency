@@ -1,6 +1,7 @@
 import React from "react";
 import { Navigate, useLocation } from "react-router";
 import { useAuth } from "./AuthProvider";
+import { Loading } from "../ui/loading";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -12,11 +13,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
   if (isLoading) {
     // Show loading spinner while checking auth status
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <Loading size="xl" fullScreen />;
   }
 
   if (!isAuthenticated) {

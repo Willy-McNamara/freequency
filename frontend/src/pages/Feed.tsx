@@ -13,6 +13,7 @@ import { ALL_INSTRUMENTS } from "../types/instruments.types";
 import { Container } from "../components/layout/Container";
 import { Section } from "../components/layout/Section";
 import { Separator } from "@/components/ui/separator";
+import { Loading } from "../components/ui/loading";
 
 interface SessionsResponse {
   sessions?: Post[];
@@ -506,10 +507,7 @@ const Feed = () => {
     return (
       <div className="flex flex-col w-full justify-start">
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading posts...</p>
-          </div>
+          <Loading size="lg" text="Loading posts..." />
         </div>
       </div>
     );
@@ -575,10 +573,7 @@ const Feed = () => {
         {/* Loading more indicator */}
         {loadingMore && (
           <div className="flex items-center justify-center w-full py-8">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-            <span className="ml-2 text-muted-foreground">
-              Loading more posts...
-            </span>
+            <Loading size="md" text="Loading more posts..." />
           </div>
         )}
       </div>

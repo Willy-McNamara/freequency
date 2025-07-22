@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { Loading } from "./components/ui/loading";
 
 interface ErrorBoundaryWrapperProps {
   children: ReactNode;
@@ -32,11 +33,7 @@ function ErrorFallback({ error }: { error: unknown }) {
     }, 0);
 
     // Return a minimal loading state while redirecting
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <Loading size="xl" fullScreen />;
   }
 
   // For non-auth errors, show the original error fallback
