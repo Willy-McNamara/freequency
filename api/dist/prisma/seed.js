@@ -463,7 +463,7 @@ async function main() {
         prisma.session.create({
             data: {
                 title: 'Morning Listening Session',
-                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Focused on <b>Bill Evans trio</b> recordings. The <u>form analysis</u> really helped me understand the harmonic movement better.</span></p>`,
+                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Focused on <b>Bill Evans trio</b> recordings. The <u>form analysis</u> really helped me understand the harmonic movement better. I paid close attention to the instrumentation and how each part contributed to the overall sound. Noticed some subtle dynamic shifts that I hadn't caught before. I also reflected on what I liked and didn't like about the performance, which gave me new ideas for my own playing.</span></p>`,
                 duration: 1800,
                 isPublic: true,
                 musicianId: baeThoven.id,
@@ -475,47 +475,19 @@ async function main() {
         }),
         prisma.session.create({
             data: {
-                title: 'Transcription Practice - Take Five',
-                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Working on <b>Paul Desmond's solo</b>. The timing is tricky but getting better at matching the feel.</span></p>`,
+                title: 'Alternate Picking Basics',
+                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Working on the basic patterns. The chord shapes underneath are helping with coordination. I tried alternating between open strings and chord shapes, focusing on keeping my picking hand relaxed. Noticed that my timing improves when I use a metronome. Still need to work on string crossing, but it's getting smoother.</span></p>`,
                 duration: 1800,
                 isPublic: true,
-                musicianId: baeThoven.id,
-                instruments: { connect: [{ id: listeningTag.id }] },
-                tags: {
-                    connect: [{ id: listeningTag.id }, { id: musicianshipTag.id }],
-                },
-            },
-        }),
-        prisma.session.create({
-            data: {
-                title: 'Transposition Work - Autumn Leaves',
-                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Transposing the melody to different keys. <u>Singing scale degrees</u> really helps with internalizing the harmony.</span></p>`,
-                duration: 900,
-                isPublic: true,
-                musicianId: baeThoven.id,
-                instruments: { connect: [{ id: pianoTag.id }] },
-                tags: {
-                    connect: [{ id: listeningTag.id }, { id: musicianshipTag.id }],
-                },
-            },
-        }),
-        prisma.session.create({
-            data: {
-                title: 'Evening Listening - Classical Focus',
-                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Analyzed <b>Beethoven's Moonlight Sonata</b>. The form is so clear and the emotional arc is incredible.</span></p>`,
-                duration: 1200,
-                isPublic: true,
-                musicianId: baeThoven.id,
-                instruments: { connect: [{ id: listeningTag.id }] },
-                tags: {
-                    connect: [{ id: listeningTag.id }, { id: musicianshipTag.id }],
-                },
+                musicianId: mandyLin.id,
+                instruments: { connect: [{ id: guitarTag.id }] },
+                tags: { connect: [{ id: guitarTag.id }, { id: bluegrassTag.id }] },
             },
         }),
         prisma.session.create({
             data: {
                 title: 'Basic Repertoire - All of Me',
-                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Working through the basic progression. <b>Bass + melody</b> is getting more comfortable.</span></p>`,
+                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Working through the basic progression. <b>Bass + melody</b> is getting more comfortable. I focused on memorizing the changes and tried to play the melody with different fingerings. Practiced the bass line separately before combining it with the melody. I want to try this in a new key next time.</span></p>`,
                 duration: 2400,
                 isPublic: true,
                 musicianId: moeTissart.id,
@@ -525,47 +497,8 @@ async function main() {
         }),
         prisma.session.create({
             data: {
-                title: 'Advanced Repertoire - Misty',
-                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Singing bass with scale degrees while playing melody. This is challenging but really helps with memorization.</span></p>`,
-                duration: 2700,
-                isPublic: true,
-                musicianId: moeTissart.id,
-                instruments: { connect: [{ id: pianoTag.id }] },
-                tags: { connect: [{ id: pianoTag.id }, { id: repertoireTag.id }] },
-            },
-        }),
-        prisma.session.create({
-            data: {
-                title: 'Jazz Jam Prep - Blue Bossa',
-                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Prepping for the jazz jam tonight. <b>Rootless voicings</b> are sounding good.</span></p>`,
-                duration: 1800,
-                isPublic: true,
-                musicianId: moeTissart.id,
-                instruments: { connect: [{ id: pianoTag.id }] },
-                tags: {
-                    connect: [
-                        { id: pianoTag.id },
-                        { id: repertoireTag.id },
-                        { id: jazzTag.id },
-                    ],
-                },
-            },
-        }),
-        prisma.session.create({
-            data: {
-                title: 'Guitar Repertoire - Yesterday',
-                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Working on the Beatles tune on guitar. The chord changes are beautiful.</span></p>`,
-                duration: 1500,
-                isPublic: true,
-                musicianId: moeTissart.id,
-                instruments: { connect: [{ id: guitarTag.id }] },
-                tags: { connect: [{ id: guitarTag.id }, { id: repertoireTag.id }] },
-            },
-        }),
-        prisma.session.create({
-            data: {
                 title: 'Big Scale Exercise - Giant Steps',
-                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Working through all the chord scale options. The <b>bebop alterations</b> are adding some nice tension.</span></p>`,
+                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Working through all the chord scale options. The <b>bebop alterations</b> are adding some nice tension. I started by playing each scale out of time, then tried to connect them smoothly over the changes. Practiced switching directions randomly and using different rhythmic values. This really stretched my technique and ear.</span></p>`,
                 duration: 3600,
                 isPublic: true,
                 musicianId: kilometersDavis.id,
@@ -581,8 +514,84 @@ async function main() {
         }),
         prisma.session.create({
             data: {
+                title: 'Chromatic Picking Practice',
+                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Working up the neck with chromatic patterns. <b>Metronome at 80 BPM</b>. I focused on keeping my fingers close to the fretboard and making sure each note was clear. String 5 still trips me up sometimes, but it's improving. I alternated between ascending and descending patterns for variety.</span></p>`,
+                duration: 1200,
+                isPublic: true,
+                musicianId: mandyLin.id,
+                instruments: { connect: [{ id: guitarTag.id }] },
+                tags: { connect: [{ id: guitarTag.id }] },
+            },
+        }),
+        prisma.session.create({
+            data: {
+                title: 'Transcription Practice - Take Five',
+                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Working on <b>Paul Desmond's solo</b>. The timing is tricky but getting better at matching the feel. I spent time matching the pitches and replicating the phrasing. Practiced at a reduced tempo before trying it at full speed. Noticed some subtle articulation details that make a big difference.</span></p>`,
+                duration: 1800,
+                isPublic: true,
+                musicianId: baeThoven.id,
+                instruments: { connect: [{ id: listeningTag.id }] },
+                tags: {
+                    connect: [{ id: listeningTag.id }, { id: musicianshipTag.id }],
+                },
+            },
+        }),
+        prisma.session.create({
+            data: {
+                title: 'Advanced Repertoire - Misty',
+                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Singing bass with scale degrees while playing melody. This is challenging but really helps with memorization. I tried to sing the melody with scale degrees and then play the bass while singing. Combining both at once is tough but rewarding. I want to keep working on this approach.</span></p>`,
+                duration: 2700,
+                isPublic: true,
+                musicianId: moeTissart.id,
+                instruments: { connect: [{ id: pianoTag.id }] },
+                tags: { connect: [{ id: pianoTag.id }, { id: repertoireTag.id }] },
+            },
+        }),
+        prisma.session.create({
+            data: {
+                title: 'Bluegrass Tune - Cripple Creek',
+                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Learning the basic melody and working on the picking pattern. I focused on keeping my right hand relaxed and consistent. Tried to play the tune at different tempos. The bluegrass feel is starting to come through. Still need to work on transitions between sections.</span></p>`,
+                duration: 1500,
+                isPublic: true,
+                musicianId: mandyLin.id,
+                instruments: { connect: [{ id: guitarTag.id }] },
+                tags: { connect: [{ id: guitarTag.id }, { id: bluegrassTag.id }] },
+            },
+        }),
+        prisma.session.create({
+            data: {
+                title: 'Transposition Work - Autumn Leaves',
+                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Transposing the melody to different keys. <u>Singing scale degrees</u> really helps with internalizing the harmony. I started by understanding the song form, then sang the scale degrees before playing. Applying the melody to other keys was challenging but rewarding. The checklist helped me stay organized. I want to keep practicing this with other tunes. Singing the scale degrees is especially helpful.</span></p>`,
+                duration: 900,
+                isPublic: true,
+                musicianId: baeThoven.id,
+                instruments: { connect: [{ id: pianoTag.id }] },
+                tags: {
+                    connect: [{ id: listeningTag.id }, { id: musicianshipTag.id }],
+                },
+            },
+        }),
+        prisma.session.create({
+            data: {
+                title: 'Jazz Jam Prep - Blue Bossa',
+                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Prepping for the jazz jam tonight. <b>Rootless voicings</b> are sounding good. I explored different voicings and tried to connect them smoothly. Practiced the progression 2x each as suggested. Looking forward to trying this at the jam. The checklist gave me a clear structure. Rootless drop 2 voicings are sounding better.</span></p>`,
+                duration: 1800,
+                isPublic: true,
+                musicianId: moeTissart.id,
+                instruments: { connect: [{ id: pianoTag.id }] },
+                tags: {
+                    connect: [
+                        { id: pianoTag.id },
+                        { id: repertoireTag.id },
+                        { id: jazzTag.id },
+                    ],
+                },
+            },
+        }),
+        prisma.session.create({
+            data: {
                 title: 'Scale Practice - Modal Jazz',
-                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Focusing on <b>Dorian</b> and <b>Mixolydian</b> modes. The rhythmic variations are helping with time feel.</span></p>`,
+                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Focusing on <b>Dorian</b> and <b>Mixolydian</b> modes. The rhythmic variations are helping with time feel. I tried different rhythmic values and started at random places in the scale. Practiced switching directions and keeping the groove steady. The checklist helped me stay organized. This session really helped my modal playing. I want to keep exploring these modes.</span></p>`,
                 duration: 2700,
                 isPublic: true,
                 musicianId: kilometersDavis.id,
@@ -593,6 +602,30 @@ async function main() {
                         { id: jazzTag.id },
                         { id: scalesTag.id },
                     ],
+                },
+            },
+        }),
+        prisma.session.create({
+            data: {
+                title: 'Guitar Repertoire - Yesterday',
+                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Working on the Beatles tune on guitar. The chord changes are beautiful. I practiced the melody and tried to memorize the progression. Playing the bass and melody together is still a challenge. The checklist steps helped me break down the process. I want to try this with a metronome next time. The chord changes are beautiful. I'm making progress.</span></p>`,
+                duration: 1500,
+                isPublic: true,
+                musicianId: moeTissart.id,
+                instruments: { connect: [{ id: guitarTag.id }] },
+                tags: { connect: [{ id: guitarTag.id }, { id: repertoireTag.id }] },
+            },
+        }),
+        prisma.session.create({
+            data: {
+                title: 'Evening Listening - Classical Focus',
+                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Analyzed <b>Beethoven's Moonlight Sonata</b>. The form is so clear and the emotional arc is incredible.</span></p>`,
+                duration: 1200,
+                isPublic: true,
+                musicianId: baeThoven.id,
+                instruments: { connect: [{ id: listeningTag.id }] },
+                tags: {
+                    connect: [{ id: listeningTag.id }, { id: musicianshipTag.id }],
                 },
             },
         }),
@@ -613,138 +646,105 @@ async function main() {
                 },
             },
         }),
-        prisma.session.create({
-            data: {
-                title: 'Alternate Picking Basics',
-                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Working on the basic patterns. The chord shapes underneath are helping with coordination.</span></p>`,
-                duration: 1800,
-                isPublic: true,
-                musicianId: mandyLin.id,
-                instruments: { connect: [{ id: guitarTag.id }] },
-                tags: { connect: [{ id: guitarTag.id }, { id: bluegrassTag.id }] },
-            },
-        }),
-        prisma.session.create({
-            data: {
-                title: 'Chromatic Picking Practice',
-                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Working up the neck with chromatic patterns. <b>Metronome at 80 BPM</b>.</span></p>`,
-                duration: 1200,
-                isPublic: true,
-                musicianId: mandyLin.id,
-                instruments: { connect: [{ id: guitarTag.id }] },
-                tags: { connect: [{ id: guitarTag.id }] },
-            },
-        }),
-        prisma.session.create({
-            data: {
-                title: 'Bluegrass Tune - Cripple Creek',
-                notes: `<p class="leading-7 [&:not(:first-child)]:mt-6" dir="ltr"><span style="white-space: pre-wrap;">Learning the basic melody and working on the picking pattern.</span></p>`,
-                duration: 1500,
-                isPublic: true,
-                musicianId: mandyLin.id,
-                instruments: { connect: [{ id: guitarTag.id }] },
-                tags: { connect: [{ id: guitarTag.id }, { id: bluegrassTag.id }] },
-            },
-        }),
     ]);
     const sessionTaskMap = [
         {
             sessionIdx: 0,
             task: baeTask1,
             duration: 1500,
-            notes: 'Form analysis',
+            notes: "Today I focused on analyzing the form and instrumentation of the Bill Evans trio recordings. I paid special attention to how the instruments interact and support each other. I also reflected on what I liked and didn't like about the performance, which gave me new ideas for my own playing. The checklist helped me stay organized and thorough. I want to keep developing my ear for these details. Overall, a very productive listening session.",
             tags: [listeningTag.id, musicianshipTag.id],
         },
         {
             sessionIdx: 1,
-            task: baeTask2,
+            task: mandyTask1,
             duration: 1500,
-            notes: 'Transcription focus',
-            tags: [listeningTag.id, musicianshipTag.id],
+            notes: "I worked on alternate picking with both open strings and chord shapes underneath. The checklist was helpful for keeping my practice structured. I noticed my picking hand is getting more relaxed, but string crossing still needs work. Using a metronome made a big difference in my timing. I'm starting to feel more comfortable with the patterns. Next time, I'll try to increase the tempo.",
+            tags: [guitarTag.id, bluegrassTag.id],
         },
         {
             sessionIdx: 2,
-            task: baeTask3,
-            duration: 900,
-            notes: 'Transposing melody',
-            tags: [listeningTag.id, musicianshipTag.id],
+            task: moeTask1,
+            duration: 2000,
+            notes: "I went through the basic progression for All of Me, focusing on bass and melody separately before combining them. The checklist steps helped me memorize the changes. Playing bass + melody together is getting easier. I want to try this in a new key next time. Practicing the root position with melody was especially useful. I'm making steady progress.",
+            tags: [pianoTag.id, repertoireTag.id],
         },
         {
             sessionIdx: 3,
-            task: baeTask1,
-            duration: 1000,
-            notes: 'Classical listening',
-            tags: [listeningTag.id, musicianshipTag.id],
+            task: kilometersTask1,
+            duration: 3000,
+            notes: 'I started by playing all the chord scale options out of time for each change. Then I played each scale from the root in time, focusing on smooth transitions. I experimented with starting at random places in the scale and switching directions. Using different rhythmic values helped me explore faster tempos. The bebop alterations added some nice tension. This exercise really stretched my technique and ear.',
+            tags: [pianoTag.id, jazzTag.id, scalesTag.id],
         },
         {
             sessionIdx: 4,
-            task: moeTask1,
-            duration: 2000,
-            notes: 'Basic progression',
-            tags: [pianoTag.id, repertoireTag.id],
-        },
-        {
-            sessionIdx: 5,
-            task: moeTask2,
-            duration: 2200,
-            notes: 'Advanced memorization',
-            tags: [pianoTag.id, repertoireTag.id],
-        },
-        {
-            sessionIdx: 6,
-            task: moeTask3,
-            duration: 1500,
-            notes: 'Jazz jam prep',
-            tags: [pianoTag.id, repertoireTag.id, jazzTag.id],
-        },
-        {
-            sessionIdx: 7,
-            task: moeTask1,
-            duration: 1200,
-            notes: 'Guitar melody',
-            tags: [guitarTag.id, repertoireTag.id],
-        },
-        {
-            sessionIdx: 8,
-            task: kilometersTask1,
-            duration: 3000,
-            notes: 'Big scale exercise',
-            tags: [pianoTag.id, jazzTag.id, scalesTag.id],
-        },
-        {
-            sessionIdx: 9,
-            task: kilometersTask1,
-            duration: 2000,
-            notes: 'Modal practice',
-            tags: [pianoTag.id, jazzTag.id, scalesTag.id],
-        },
-        {
-            sessionIdx: 10,
-            task: moeTask2,
-            duration: 1200,
-            notes: 'Jazz standards',
-            tags: [pianoTag.id, jazzTag.id, repertoireTag.id],
-        },
-        {
-            sessionIdx: 11,
-            task: mandyTask1,
-            duration: 1500,
-            notes: 'Alternate picking',
-            tags: [guitarTag.id, bluegrassTag.id],
-        },
-        {
-            sessionIdx: 12,
             task: mandyTask2,
             duration: 1000,
-            notes: 'Chromatic picking',
+            notes: "I practiced chromatic picking up and down the neck, focusing on keeping my fingers close to the fretboard. The checklist reminded me to watch out for string 5, which still trips me up sometimes. Using a metronome at 80 BPM helped keep my timing steady. I alternated between ascending and descending patterns. My picking is getting cleaner, but there's still room for improvement. I'll keep working on this.",
             tags: [guitarTag.id],
         },
         {
-            sessionIdx: 13,
+            sessionIdx: 5,
+            task: baeTask2,
+            duration: 1500,
+            notes: "I focused on transcribing Paul Desmond's solo, matching the pitches and replicating the feel. Practiced at a reduced tempo before trying it at full speed. The checklist helped me break down the process into manageable steps. I noticed some subtle articulation details that make a big difference. Timing is still tricky, but I'm getting better. I want to keep refining this transcription.",
+            tags: [listeningTag.id, musicianshipTag.id],
+        },
+        {
+            sessionIdx: 6,
+            task: moeTask2,
+            duration: 2200,
+            notes: 'I worked on advanced repertoire, singing the bass with scale degrees while playing the melody. Combining both at once is tough but rewarding. The checklist gave me a clear progression to follow. I want to keep working on this approach and try it in new keys. Memorization is improving. This method is challenging but effective.',
+            tags: [pianoTag.id, repertoireTag.id],
+        },
+        {
+            sessionIdx: 7,
             task: mandyTask1,
             duration: 900,
-            notes: 'Bluegrass tune',
+            notes: "I practiced the bluegrass tune Cripple Creek, focusing on the picking pattern and keeping my right hand relaxed. Tried to play the tune at different tempos. The checklist steps helped me break down the melody and transitions. The bluegrass feel is starting to come through. Still need to work on transitions between sections. I'm enjoying the process.",
             tags: [guitarTag.id, bluegrassTag.id],
+        },
+        {
+            sessionIdx: 8,
+            task: baeTask3,
+            duration: 900,
+            notes: 'I worked on transposing a transcription for 15 minutes, starting by understanding the song form. Sang the scale degrees before playing, which helped internalize the harmony. Applying the melody to other keys was challenging but rewarding. The checklist kept me focused on the process. I want to keep practicing this with other tunes. Singing the scale degrees is especially helpful.',
+            tags: [listeningTag.id, musicianshipTag.id],
+        },
+        {
+            sessionIdx: 9,
+            task: moeTask3,
+            duration: 1500,
+            notes: 'I prepped for the jazz jam by working through the checklist progression 2x each. Explored different rootless voicings and tried to connect them smoothly. Practiced the progression as suggested. Looking forward to trying this at the jam. The checklist gave me a clear structure. Rootless drop 2 voicings are sounding better.',
+            tags: [pianoTag.id, repertoireTag.id, jazzTag.id],
+        },
+        {
+            sessionIdx: 10,
+            task: kilometersTask1,
+            duration: 2000,
+            notes: 'I focused on modal jazz, practicing Dorian and Mixolydian modes. Tried different rhythmic values and started at random places in the scale. Practiced switching directions and keeping the groove steady. The checklist helped me stay organized. This session really helped my modal playing. I want to keep exploring these modes.',
+            tags: [pianoTag.id, jazzTag.id, scalesTag.id],
+        },
+        {
+            sessionIdx: 11,
+            task: moeTask1,
+            duration: 1200,
+            notes: "I worked on the Beatles tune Yesterday, practicing the melody and trying to memorize the progression. Playing the bass and melody together is still a challenge. The checklist steps helped me break down the process. I want to try this with a metronome next time. The chord changes are beautiful. I'm making progress.",
+            tags: [guitarTag.id, repertoireTag.id],
+        },
+        {
+            sessionIdx: 12,
+            task: baeTask1,
+            duration: 1000,
+            notes: "I listened to Beethoven's Moonlight Sonata and focused on the form and emotional arc. The checklist helped me analyze the structure. I reflected on what I liked about the performance. The clarity of the form stood out to me. I want to apply this kind of analysis to other pieces. Short but insightful session.",
+            tags: [listeningTag.id, musicianshipTag.id],
+        },
+        {
+            sessionIdx: 13,
+            task: moeTask2,
+            duration: 1200,
+            notes: 'I worked on jazz standards, focusing on singing the melody with scale degrees and playing bass. The checklist progression was helpful. Practiced maintaining the form while switching between roles. The modal approach is really freeing. I want to keep developing this skill. Enjoyed the process.',
+            tags: [pianoTag.id, jazzTag.id, repertoireTag.id],
         },
     ];
     for (const entry of sessionTaskMap) {
@@ -768,7 +768,7 @@ async function main() {
             isSessionTask: true,
             checklistCompletions: [],
             musicianId: moeTissart.id,
-            sessionId: sessions[5].id,
+            sessionId: sessions[6].id,
             tags: { connect: [{ id: pianoTag.id }, { id: repertoireTag.id }] },
         },
     });
@@ -779,7 +779,7 @@ async function main() {
             isSessionTask: true,
             checklistCompletions: [],
             musicianId: mandyLin.id,
-            sessionId: sessions[12].id,
+            sessionId: sessions[4].id,
             tags: { connect: [{ id: guitarTag.id }] },
         },
     });
@@ -793,8 +793,8 @@ async function main() {
         }),
         prisma.comment.create({
             data: {
-                text: 'Take Five is such a great tune for transcription. The 5/4 time signature makes it really interesting!',
-                musicianId: kilometersDavis.id,
+                text: 'Great work on the alternate picking! The coordination will come with practice.',
+                musicianId: baeThoven.id,
                 sessionId: sessions[1].id,
             },
         }),
@@ -802,85 +802,106 @@ async function main() {
             data: {
                 text: 'All of Me is a classic! The bass + melody approach is really solid.',
                 musicianId: baeThoven.id,
-                sessionId: sessions[4].id,
-            },
-        }),
-        prisma.comment.create({
-            data: {
-                text: 'Misty is beautiful. The scale degree singing is such a powerful tool.',
-                musicianId: kilometersDavis.id,
-                sessionId: sessions[5].id,
-            },
-        }),
-        prisma.comment.create({
-            data: {
-                text: 'Blue Bossa is perfect for jazz jams! Rootless voicings sound great.',
-                musicianId: baeThoven.id,
-                sessionId: sessions[6].id,
+                sessionId: sessions[2].id,
             },
         }),
         prisma.comment.create({
             data: {
                 text: 'Giant Steps! Those chord scale options are intense but so rewarding.',
                 musicianId: moeTissart.id,
+                sessionId: sessions[3].id,
+            },
+        }),
+        prisma.comment.create({
+            data: {
+                text: 'Working up the neck with chromatic patterns is a great way to build finger strength!',
+                musicianId: kilometersDavis.id,
+                sessionId: sessions[4].id,
+            },
+        }),
+        prisma.comment.create({
+            data: {
+                text: 'Take Five is such a great tune for transcription. The 5/4 time signature makes it really interesting!',
+                musicianId: kilometersDavis.id,
+                sessionId: sessions[5].id,
+            },
+        }),
+        prisma.comment.create({
+            data: {
+                text: 'Misty is beautiful. The scale degree singing is such a powerful tool.',
+                musicianId: kilometersDavis.id,
+                sessionId: sessions[6].id,
+            },
+        }),
+        prisma.comment.create({
+            data: {
+                text: 'Bluegrass tunes are so much fun! Keep working on those transitions.',
+                musicianId: baeThoven.id,
+                sessionId: sessions[7].id,
+            },
+        }),
+        prisma.comment.create({
+            data: {
+                text: 'Transposing melodies is a great way to internalize harmony.',
+                musicianId: mandyLin.id,
                 sessionId: sessions[8].id,
             },
         }),
         prisma.comment.create({
             data: {
-                text: 'Great work on the alternate picking! The coordination will come with practice.',
+                text: 'Blue Bossa is perfect for jazz jams! Rootless voicings sound great.',
                 musicianId: baeThoven.id,
+                sessionId: sessions[9].id,
+            },
+        }),
+        prisma.comment.create({
+            data: {
+                text: 'Modal jazz practice really opens up new possibilities.',
+                musicianId: mandyLin.id,
+                sessionId: sessions[10].id,
+            },
+        }),
+        prisma.comment.create({
+            data: {
+                text: 'Yesterday is such a beautiful tune. Great job working on the melody and bass together!',
+                musicianId: kilometersDavis.id,
                 sessionId: sessions[11].id,
             },
         }),
-    ]);
-    await Promise.all([
-        prisma.gasUp.create({
-            data: { musicianId: moeTissart.id, sessionId: sessions[0].id },
+        prisma.comment.create({
+            data: {
+                text: 'Love the focus on form and emotional arc in classical pieces.',
+                musicianId: moeTissart.id,
+                sessionId: sessions[12].id,
+            },
         }),
-        prisma.gasUp.create({
-            data: { musicianId: kilometersDavis.id, sessionId: sessions[0].id },
-        }),
-        prisma.gasUp.create({
-            data: { musicianId: mandyLin.id, sessionId: sessions[0].id },
-        }),
-        prisma.gasUp.create({
-            data: { musicianId: baeThoven.id, sessionId: sessions[1].id },
-        }),
-        prisma.gasUp.create({
-            data: { musicianId: kilometersDavis.id, sessionId: sessions[1].id },
-        }),
-        prisma.gasUp.create({
-            data: { musicianId: baeThoven.id, sessionId: sessions[4].id },
-        }),
-        prisma.gasUp.create({
-            data: { musicianId: kilometersDavis.id, sessionId: sessions[4].id },
-        }),
-        prisma.gasUp.create({
-            data: { musicianId: baeThoven.id, sessionId: sessions[5].id },
-        }),
-        prisma.gasUp.create({
-            data: { musicianId: moeTissart.id, sessionId: sessions[5].id },
-        }),
-        prisma.gasUp.create({
-            data: { musicianId: baeThoven.id, sessionId: sessions[6].id },
-        }),
-        prisma.gasUp.create({
-            data: { musicianId: kilometersDavis.id, sessionId: sessions[6].id },
-        }),
-        prisma.gasUp.create({
-            data: { musicianId: moeTissart.id, sessionId: sessions[8].id },
-        }),
-        prisma.gasUp.create({
-            data: { musicianId: baeThoven.id, sessionId: sessions[8].id },
-        }),
-        prisma.gasUp.create({
-            data: { musicianId: moeTissart.id, sessionId: sessions[11].id },
-        }),
-        prisma.gasUp.create({
-            data: { musicianId: kilometersDavis.id, sessionId: sessions[11].id },
+        prisma.comment.create({
+            data: {
+                text: 'So What is a classic! The modal approach is really freeing.',
+                musicianId: baeThoven.id,
+                sessionId: sessions[13].id,
+            },
         }),
     ]);
+    const allMusicians = [
+        baeThoven,
+        moeTissart,
+        kilometersDavis,
+        mandyLin,
+        devUser,
+    ];
+    for (let i = 0; i < sessions.length; i++) {
+        const session = sessions[i];
+        const possibleLikers = allMusicians.filter((m) => m.id !== session.musicianId);
+        const numLikes = Math.floor(Math.random() * 4) + 1;
+        const shuffled = possibleLikers.sort(() => 0.5 - Math.random());
+        const likers = shuffled.slice(0, numLikes);
+        for (const liker of likers) {
+            await prisma.gasUp.create({
+                data: { musicianId: liker.id, sessionId: session.id },
+            });
+        }
+    }
     await Promise.all([
         prisma.media.create({
             data: {
@@ -892,10 +913,18 @@ async function main() {
         }),
         prisma.media.create({
             data: {
+                musicianId: mandyLin.id,
+                url: 'https://via.placeholder.com/600/E74C3C/FFFFFF?text=Guitar+Practice',
+                type: 'image',
+                sessionId: sessions[1].id,
+            },
+        }),
+        prisma.media.create({
+            data: {
                 musicianId: moeTissart.id,
                 url: 'https://via.placeholder.com/600/7ED321/000000?text=Repertoire+Practice',
                 type: 'image',
-                sessionId: sessions[4].id,
+                sessionId: sessions[2].id,
             },
         }),
         prisma.media.create({
@@ -903,15 +932,7 @@ async function main() {
                 musicianId: kilometersDavis.id,
                 url: 'https://via.placeholder.com/600/9B59B6/FFFFFF?text=Jazz+Scales',
                 type: 'image',
-                sessionId: sessions[8].id,
-            },
-        }),
-        prisma.media.create({
-            data: {
-                musicianId: mandyLin.id,
-                url: 'https://via.placeholder.com/600/E74C3C/FFFFFF?text=Guitar+Practice',
-                type: 'image',
-                sessionId: sessions[11].id,
+                sessionId: sessions[3].id,
             },
         }),
     ]);

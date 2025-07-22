@@ -32,9 +32,10 @@ const aboutSections = [
     content: (
       <>
         Tasks are repeatable parts of your practice routine. In the{" "}
-        <strong>Task Library</strong> you can see Tasks made by musicians across
-        the platform and make your own! You can add them to your session where
-        you'll be able to save Task-specific notes and tags.
+        <strong>Task Library</strong> you can see <strong>Tasks</strong> made by
+        musicians across the platform and make your own! You can add them to
+        your practice session where you'll be able to save Task-specific notes
+        and tags.
       </>
     ),
   },
