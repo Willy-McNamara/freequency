@@ -294,15 +294,17 @@ export default function Profile() {
               }).format(new Date(data.createdAt))}
           </p>
           <div className="flex flex-wrap justify-center gap-2">
-            {data.instruments.map((skill, index) => (
-              <Badge
-                key={index}
-                className="rounded-md px-2 py-[0.125rem]"
-                variant="default"
-              >
-                <span className="text-xs">{skill.label}</span>
-              </Badge>
-            ))}
+            {data.instruments.map((skill, index) => {
+              return (
+                <Badge
+                  key={index}
+                  className="rounded-md px-2 py-[0.125rem]"
+                  variant="default"
+                >
+                  <span className="text-xs">{skill.label}</span>
+                </Badge>
+              );
+            })}
           </div>
         </Section>
 
@@ -429,35 +431,37 @@ export default function Profile() {
                         + add
                       </Badge>
                     </button>
-                    {editData.instruments.map((inst) => (
-                      <span key={inst.id} className="relative group">
-                        <Badge
-                          variant="default"
-                          className="h-5 px-3 py-2 rounded-md select-none flex items-center"
-                        >
-                          <span>{inst.label}</span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setEditData((prev) => {
-                                if (!prev) return prev;
-                                return {
-                                  ...prev,
-                                  instruments: prev.instruments.filter(
-                                    (i) => i.id !== inst.id
-                                  ),
-                                };
-                              });
-                            }}
-                            className="ml-1 p-0 bg-transparent cursor-pointer border-none outline-none focus:outline-none flex items-center"
-                            style={{ pointerEvents: "auto" }}
-                            aria-label={`Remove instrument ${inst.label}`}
+                    {editData.instruments.map((inst) => {
+                      return (
+                        <span key={inst.id} className="relative group">
+                          <Badge
+                            variant="default"
+                            className="h-5 px-3 py-2 rounded-md select-none flex items-center"
                           >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </Badge>
-                      </span>
-                    ))}
+                            <span>{inst.label}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditData((prev) => {
+                                  if (!prev) return prev;
+                                  return {
+                                    ...prev,
+                                    instruments: prev.instruments.filter(
+                                      (i) => i.id !== inst.id
+                                    ),
+                                  };
+                                });
+                              }}
+                              className="ml-1 p-0 bg-transparent cursor-pointer border-none outline-none focus:outline-none flex items-center"
+                              style={{ pointerEvents: "auto" }}
+                              aria-label={`Remove instrument ${inst.label}`}
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </Badge>
+                        </span>
+                      );
+                    })}
                   </div>
                   <InstrumentModal
                     isOpen={instrumentModalOpen}

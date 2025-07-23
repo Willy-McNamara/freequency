@@ -50,24 +50,26 @@ export const InstrumentModal: React.FC<InstrumentModalProps> = ({
         />
         <div className="flex flex-col gap-2 max-h-48 overflow-y-auto mb-2">
           {filteredInstruments.length > 0 ? (
-            filteredInstruments.map((inst) => (
-              <button
-                key={inst.id}
-                type="button"
-                onClick={() => {
-                  onInstrumentSelected(inst);
-                  onClose();
-                }}
-                className="focus:outline-none text-left"
-              >
-                <Badge
-                  variant="secondary"
-                  className="h-5 px-3 py-2 rounded-md !hover:bg-none !hover:bg-transparent cursor-pointer select-none"
+            filteredInstruments.map((inst) => {
+              return (
+                <button
+                  key={inst.id}
+                  type="button"
+                  onClick={() => {
+                    onInstrumentSelected(inst);
+                    onClose();
+                  }}
+                  className="focus:outline-none text-left"
                 >
-                  {inst.label}
-                </Badge>
-              </button>
-            ))
+                  <Badge
+                    variant="secondary"
+                    className="h-5 px-3 py-2 rounded-md !hover:bg-none !hover:bg-transparent cursor-pointer select-none"
+                  >
+                    {inst.label}
+                  </Badge>
+                </button>
+              );
+            })
           ) : (
             <div className="text-muted-foreground text-sm">
               No instruments found.

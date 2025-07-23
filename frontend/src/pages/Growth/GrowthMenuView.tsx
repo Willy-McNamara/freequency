@@ -64,7 +64,7 @@ export const GrowthMenuView: React.FC<GrowthMenuViewProps> = ({
             View Chronological
           </Button>
         </Card>
-        <Card className="p-6 text-center flex flex-col items-center justify-between">
+        <Card className="p-6 text-center flex flex-col mb-4 items-center justify-between">
           <CardTitle className="text-lg font-semibold mb-2">
             Active Goals
           </CardTitle>

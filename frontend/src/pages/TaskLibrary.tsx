@@ -35,6 +35,8 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Loading } from "@/components/ui/loading";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
 
 const TaskLibrary: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -332,9 +334,11 @@ const TaskLibrary: React.FC = () => {
 
   const handleUseInCurrentSession = (task: Task) => {
     if (!session) return;
+    console.log("task", task);
 
     // Check if task instrument matches session instrument
     const instrumentLabels = ALL_INSTRUMENTS.map((i) => i.label.toLowerCase());
+    console.log("instrumentLabels", instrumentLabels);
     const hasMatchingInstrument = task.tags?.some((taskTag) =>
       session.tags?.some(
         (sessionTag) =>
@@ -343,7 +347,7 @@ const TaskLibrary: React.FC = () => {
           taskTag.label.toLowerCase() === sessionTag.label.toLowerCase()
       )
     );
-
+    console.log("hasMatchingInstrument", hasMatchingInstrument);
     if (hasMatchingInstrument) {
       // Add the task to the session if not already present
       if (!session.tasks.some((t) => t.id === String(task.id))) {
@@ -396,28 +400,37 @@ const TaskLibrary: React.FC = () => {
 
   const handleCreateTask = async (taskData: CreateTaskData) => {
     try {
-      const response = await fetch(apiConfig.endpoints.tasks, {
+      const apiPromise = fetch(apiConfig.endpoints.tasks, {
         method: "POST",
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(taskData),
+      }).then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      // Show toast notification
+      toast.promise(apiPromise, {
+        loading: "Creating task...",
+        success: (newTask) => {
+          // Add the new task to the beginning of the list
+          setTasks((prev) => [newTask, ...prev]);
+          setIsCreateModalOpen(false);
 
-      const newTask = await response.json();
+          return `Task "${newTask.title}" created successfully!`;
+        },
+        error: "Failed to create task. Please try again.",
+      });
 
-      // Add the new task to the beginning of the list
-      setTasks((prev) => [newTask, ...prev]);
-
-      setIsCreateModalOpen(false);
+      await apiPromise;
     } catch (err) {
       console.error("Error creating task:", err);
-      alert("Failed to create task. Please try again.");
+      // Error toast is handled by toast.promise
     }
   };
 
@@ -436,29 +449,38 @@ const TaskLibrary: React.FC = () => {
 
   const handleModifySubmit = async (taskData: CreateTaskData) => {
     try {
-      const response = await fetch(apiConfig.endpoints.tasks, {
+      const apiPromise = fetch(apiConfig.endpoints.tasks, {
         method: "POST",
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(taskData),
+      }).then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      // Show toast notification
+      toast.promise(apiPromise, {
+        loading: "Creating modified task...",
+        success: (newTask) => {
+          // Add the new task to the beginning of the list
+          setTasks((prev) => [newTask, ...prev]);
+          setIsModifyModalOpen(false);
+          setModifyTaskData(undefined);
 
-      const newTask = await response.json();
+          return `Task "${newTask.title}" created successfully!`;
+        },
+        error: "Failed to create modified task. Please try again.",
+      });
 
-      // Add the new task to the beginning of the list
-      setTasks((prev) => [newTask, ...prev]);
-
-      setIsModifyModalOpen(false);
-      setModifyTaskData(undefined);
+      await apiPromise;
     } catch (err) {
       console.error("Error creating modified task:", err);
-      alert("Failed to create modified task. Please try again.");
+      // Error toast is handled by toast.promise
     }
   };
 
@@ -702,6 +724,7 @@ const TaskLibrary: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
+      <Toaster position="bottom-center" />
     </Container>
   );
 };

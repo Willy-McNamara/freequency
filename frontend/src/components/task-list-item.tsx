@@ -1,18 +1,11 @@
 import * as React from "react";
-import {
-  ChevronDown,
-  ChevronRight,
-  Guitar,
-  Piano,
-  Drum,
-  Music,
-  ArrowRight,
-} from "lucide-react";
+import { ChevronDown, ChevronRight, ArrowRight } from "lucide-react";
 import { cn } from "../lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { RichTextRenderer } from "./rich-text";
 import { TagList } from "./TagList";
+import { getInstrumentIcon } from "../utils/instrument-icons";
 
 export interface Task {
   id: number;
@@ -42,15 +35,6 @@ export interface TaskListItemProps {
   hasActiveSession?: boolean;
   onUseInCurrentSession?: (task: Task) => void;
 }
-
-const getInstrumentIcon = (instrument: string) => {
-  const lowerInstrument = instrument.toLowerCase();
-  if (lowerInstrument.includes("guitar")) return Guitar;
-  if (lowerInstrument.includes("piano") || lowerInstrument.includes("keyboard"))
-    return Piano;
-  if (lowerInstrument.includes("drum")) return Drum;
-  return Music; // Default icon
-};
 
 export function TaskListItem({
   task,

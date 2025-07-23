@@ -224,9 +224,11 @@ export const GoalsView: React.FC<GoalsViewProps> = ({
               <Input
                 type="number"
                 min="1"
-                value={editingGoal?.target || newGoal.target}
+                value={editingGoal?.target || newGoal.target || ""}
                 onChange={(e) => {
-                  const value = parseInt(e.target.value) || 0;
+                  const inputValue = e.target.value;
+                  const value =
+                    inputValue === "" ? 0 : parseInt(inputValue) || 0;
                   if (editingGoal) {
                     onEditingGoalChange({ ...editingGoal, target: value });
                   } else {
