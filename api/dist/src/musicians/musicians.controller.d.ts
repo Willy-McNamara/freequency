@@ -11,6 +11,7 @@ export declare class MusiciansController {
     getMusicianById(id: string, req: any): Promise<MusicianFrontendDTO | null>;
     getGoalsForMusician(id: string): Promise<GoalDto[]>;
     createGoalForMusician(id: string, goalDto: GoalDto): Promise<GoalDto>;
+    updateGoalForMusician(id: string, goalId: string, goalDto: GoalDto, req: any): Promise<GoalDto>;
     deleteGoal(id: string, goalId: string): Promise<void>;
     followMusician(id: string, req: any): Promise<void>;
     unfollowMusician(id: string, req: any): Promise<void>;

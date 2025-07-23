@@ -37,6 +37,12 @@ let MusiciansController = class MusiciansController {
     async createGoalForMusician(id, goalDto) {
         return this.musiciansService.createGoalForMusician(Number(id), goalDto);
     }
+    async updateGoalForMusician(id, goalId, goalDto, req) {
+        if (Number(id) !== req.user.id) {
+            throw new Error('Unauthorized: Can only update your own goals');
+        }
+        return this.musiciansService.updateGoalForMusician(Number(id), Number(goalId), goalDto);
+    }
     async deleteGoal(id, goalId) {
         await this.musiciansService.deleteGoalForMusician(Number(id), Number(goalId));
     }
@@ -95,6 +101,17 @@ __decorate([
     __metadata("design:paramtypes", [String, musician_dto_1.GoalDto]),
     __metadata("design:returntype", Promise)
 ], MusiciansController.prototype, "createGoalForMusician", null);
+__decorate([
+    (0, common_1.Put)(':id/goals/:goalId'),
+    (0, common_1.UseGuards)(jwt_guard_1.JwtAuthGuard),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Param)('goalId')),
+    __param(2, (0, common_1.Body)()),
+    __param(3, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, musician_dto_1.GoalDto, Object]),
+    __metadata("design:returntype", Promise)
+], MusiciansController.prototype, "updateGoalForMusician", null);
 __decorate([
     (0, common_1.Delete)(':id/goals/:goalId'),
     (0, common_1.UseGuards)(jwt_guard_1.JwtAuthGuard),
