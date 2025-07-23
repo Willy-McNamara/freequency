@@ -9,6 +9,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { Container } from "@/components/layout/Container";
 import { Section } from "@/components/layout/Section";
 import { TagList } from "@/components/TagList";
+import { isRichTextEmpty } from "@/lib/utils";
 
 interface PostViewTask {
   id: number;
@@ -599,14 +600,19 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onViewTaskDefinition }) => {
           )}
 
           {/* Task Notes */}
-          {task.notes && (
-            <div className="mb-3 sm:mb-4 text-left">
+          <div className="mb-3 sm:mb-4 text-left">
+            {!isRichTextEmpty(task.notes) ? (
               <RichTextRenderer
                 content={task.notes}
                 className="font-['Inter',Helvetica] text-foreground text-xs sm:text-sm font-normal leading-5 sm:leading-6"
+                noTruncate={true}
               />
-            </div>
-          )}
+            ) : (
+              <span className="font-['Inter',Helvetica] text-muted-foreground text-xs sm:text-sm font-normal leading-5 sm:leading-6 italic">
+                No notes on this task.
+              </span>
+            )}
+          </div>
 
           {/* Task Creator and Link */}
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">

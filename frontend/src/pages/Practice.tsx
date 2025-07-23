@@ -279,7 +279,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
           id: Number(task.id),
           title: task.title || "",
           notes: task.notes || "",
-          timeSpent: task.timeSpent || 0,
+          timeSpent: task.taskTimerAccumulated || 0,
           checklist: Array.isArray(task.checklist) ? task.checklist : [],
           tags: Array.isArray(task.tags) ? task.tags.map((t) => t.label) : [],
         })),
