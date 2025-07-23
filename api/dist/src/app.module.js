@@ -29,6 +29,9 @@ const all_exceptions_filter_1 = require("./filters/all-exceptions.filter");
 const throttler_1 = require("@nestjs/throttler");
 const instruments_controller_1 = require("./instruments/instruments.controller");
 const tags_controller_1 = require("./tags/tags.controller");
+const nestjs_pino_1 = require("nestjs-pino");
+const terminus_1 = require("@nestjs/terminus");
+const health_controller_1 = require("./health/health.controller");
 let AppModule = class AppModule {
     configure(consumer) {
         consumer.apply(logger_middleware_1.LoggerMiddleware).forRoutes('*');
@@ -57,8 +60,29 @@ exports.AppModule = AppModule = __decorate([
                     limit: 60,
                 },
             ]),
+            nestjs_pino_1.LoggerModule.forRoot({
+                pinoHttp: {
+                    transport: process.env.NODE_ENV === 'production'
+                        ? undefined
+                        : {
+                            target: 'pino-pretty',
+                            options: { colorize: true },
+                        },
+                    level: process.env.LOG_LEVEL || 'info',
+                    ...(process.env.NODE_ENV !== 'development' ||
+                        process.env.DEBUG !== 'TRUE'
+                        ? { destination: './logs/app.log' }
+                        : {}),
+                },
+            }),
+            terminus_1.TerminusModule,
         ],
-        controllers: [app_controller_1.AppController, instruments_controller_1.InstrumentsController, tags_controller_1.TagsController],
+        controllers: [
+            app_controller_1.AppController,
+            instruments_controller_1.InstrumentsController,
+            tags_controller_1.TagsController,
+            health_controller_1.HealthController,
+        ],
         providers: [
             app_service_1.AppService,
             musicians_service_1.MusiciansService,

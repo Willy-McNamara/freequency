@@ -110,3 +110,5 @@ v3_frontend/dist/
 v3_frontend/build/
 frontend/dist/
 frontend/build/
+
+deployment-and-documentation/POST_DEPLOYMENT_CHECKLIST.md
