@@ -363,6 +363,34 @@ export class MusiciansService {
     });
   }
 
+  async updateGoalForMusician(
+    musicianId: number,
+    goalId: number,
+    goalDto: GoalDto,
+  ): Promise<GoalDto> {
+    const updated = await this.prisma.goal.update({
+      where: {
+        id: goalId,
+        musicianId,
+      },
+      data: {
+        tag: goalDto.tag,
+        type: goalDto.type,
+        target: goalDto.target,
+        timeFrame: goalDto.timeFrame,
+      },
+    });
+    return {
+      id: updated.id,
+      musicianId: updated.musicianId,
+      tag: updated.tag,
+      type: updated.type,
+      target: updated.target,
+      timeFrame: updated.timeFrame,
+      createdAt: updated.createdAt,
+    };
+  }
+
   async followMusician(followerId: number, followingId: number): Promise<void> {
     if (followerId === followingId) {
       throw new Error('Cannot follow yourself');

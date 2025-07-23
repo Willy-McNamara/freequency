@@ -26,7 +26,7 @@ import {
   type TaskInUseMock,
   type Goal,
 } from "./Growth/index";
-import { createGoal, deleteGoal } from "../services/musicians";
+import { createGoal, deleteGoal, updateGoal } from "../services/musicians";
 import { Container } from "@/components/layout/Container";
 
 // Define the possible views as a union type
@@ -131,10 +131,19 @@ const Growth: React.FC = () => {
     ]);
     setIsGoalModalOpen(false);
   }
-  function handleEditGoal() {
+  async function handleEditGoal() {
+    if (!user?.id || !editingGoal) return;
+    const updated = await updateGoal(user.id, editingGoal.id, {
+      tag: editingGoal.tag,
+      type: editingGoal.type,
+      target: editingGoal.target,
+      timeFrame: editingGoal.timeFrame,
+    });
     setGoals((prevGoals) =>
       prevGoals.map((goal) =>
-        goal.id === editingGoal?.id ? editingGoal : goal
+        goal.id === editingGoal.id
+          ? { ...updated, id: String(updated.id) }
+          : goal
       )
     );
     setIsGoalModalOpen(false);

@@ -18,6 +18,24 @@ export async function createGoal(
   return response.data;
 }
 
+export async function updateGoal(
+  musicianId: number,
+  goalId: string | number,
+  goal: Omit<Goal, "id" | "createdAt">
+): Promise<Goal> {
+  const response = await apiClient.put<Goal>(
+    `/musicians/${musicianId}/goals/${goalId}`,
+    goal
+  );
+  if (response.error) {
+    throw new Error(response.error);
+  }
+  if (!response.data) {
+    throw new Error("No data received from server");
+  }
+  return response.data;
+}
+
 export async function deleteGoal(
   musicianId: number,
   goalId: string | number
