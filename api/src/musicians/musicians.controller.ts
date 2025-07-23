@@ -56,6 +56,25 @@ export class MusiciansController {
     return this.musiciansService.createGoalForMusician(Number(id), goalDto);
   }
 
+  @Put(':id/goals/:goalId')
+  @UseGuards(JwtAuthGuard)
+  async updateGoalForMusician(
+    @Param('id') id: string,
+    @Param('goalId') goalId: string,
+    @Body() goalDto: GoalDto,
+    @Req() req: any,
+  ): Promise<GoalDto> {
+    // Ensure user can only update their own goals
+    if (Number(id) !== req.user.id) {
+      throw new Error('Unauthorized: Can only update your own goals');
+    }
+    return this.musiciansService.updateGoalForMusician(
+      Number(id),
+      Number(goalId),
+      goalDto,
+    );
+  }
+
   @Delete(':id/goals/:goalId')
   @UseGuards(JwtAuthGuard)
   async deleteGoal(

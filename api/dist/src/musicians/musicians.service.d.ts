@@ -18,6 +18,7 @@ export declare class MusiciansService {
     }[]>;
     createGoalForMusician(musicianId: number, goalDto: GoalDto): Promise<GoalDto>;
     deleteGoalForMusician(musicianId: number, goalId: number): Promise<void>;
+    updateGoalForMusician(musicianId: number, goalId: number, goalDto: GoalDto): Promise<GoalDto>;
     followMusician(followerId: number, followingId: number): Promise<void>;
     unfollowMusician(followerId: number, followingId: number): Promise<void>;
     getFollowStatus(followerId: number, followingId: number): Promise<{
