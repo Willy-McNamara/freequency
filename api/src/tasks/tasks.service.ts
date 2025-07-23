@@ -17,23 +17,18 @@ export class TasksService {
   async getAllTasks(
     filters?: TaskFilters & { allowedIds?: number[] },
   ): Promise<TaskDTO[]> {
-    console.log('TasksService.getAllTasks called with filters:', filters);
-
     // Build where clause for filtering
     const where: any = {};
 
     // Filter by following users
     if (filters?.following && filters?.userId) {
-      console.log('Following filter enabled for userId:', filters.userId);
       const followingIds = await this.prisma.follow.findMany({
         where: { followerId: filters.userId },
         select: { followingId: true },
       });
-      console.log('Found following IDs:', followingIds);
       where.musicianId = {
         in: followingIds.map((f) => f.followingId),
       };
-      console.log('Where clause for following filter:', where);
     }
 
     // Filter by specific users
@@ -65,14 +60,10 @@ export class TasksService {
     // If allowedIds is provided, only return those tasks
     if (filters?.allowedIds) {
       if (filters.allowedIds.length === 0) {
-        console.log('allowedIds is empty, returning []');
         return [];
       }
       where.id = { in: filters.allowedIds };
-      console.log('allowedIds:', filters.allowedIds);
     }
-
-    console.log('Final where clause:', where);
 
     const tasks = await this.prisma.taskDefinition.findMany({
       where,
@@ -97,8 +88,6 @@ export class TasksService {
       },
     });
 
-    console.log('Found tasks:', tasks.length);
-
     // Fetch saved task IDs for the user, if userId is provided
     let savedTaskIds: number[] = [];
     if (filters?.userId) {
@@ -107,7 +96,6 @@ export class TasksService {
         select: { taskDefinitionId: true },
       });
       savedTaskIds = savedTasks.map((st) => st.taskDefinitionId);
-      console.log('User', filters.userId, 'has saved task IDs:', savedTaskIds);
     }
 
     // Map the database tasks to TaskDTO objects
@@ -115,14 +103,42 @@ export class TasksService {
       const isSaved = filters?.allowedIds
         ? true
         : savedTaskIds.includes(task.id);
-      if (filters?.allowedIds) {
-        console.log(`Task ${task.id} isSaved:`, isSaved);
-      }
+
+      // Determine instrument from task tags (look for instrument tags)
+      const instrumentLabels = [
+        'piano',
+        'guitar',
+        'drums',
+        'bass guitar',
+        'violin',
+        'saxophone',
+        'flute',
+        'clarinet',
+        'trumpet',
+        'trombone',
+        'voice',
+        'cello',
+        'ukulele',
+        'percussion',
+        'double bass',
+        'oboe',
+        'harp',
+        'accordion',
+        'banjo',
+        'djing',
+        'production',
+        'listening',
+      ];
+      const instrumentTag = task.tags.find((tag) =>
+        instrumentLabels.includes(tag.label.toLowerCase()),
+      );
+      const instrument = instrumentTag?.label || 'Unknown';
+
       return {
         id: task.id,
         title: task.title,
         description: task.description,
-        instrument: task.musician.instruments[0]?.label || 'Unknown',
+        instrument: instrument,
         user: {
           displayName: task.musician.displayName,
           avatarUrl: task.musician.avatarUrl,
@@ -174,11 +190,41 @@ export class TasksService {
       return null;
     }
 
+    // Determine instrument from task tags (look for instrument tags)
+    const instrumentLabels = [
+      'piano',
+      'guitar',
+      'drums',
+      'bass guitar',
+      'violin',
+      'saxophone',
+      'flute',
+      'clarinet',
+      'trumpet',
+      'trombone',
+      'voice',
+      'cello',
+      'ukulele',
+      'percussion',
+      'double bass',
+      'oboe',
+      'harp',
+      'accordion',
+      'banjo',
+      'djing',
+      'production',
+      'listening',
+    ];
+    const instrumentTag = task.tags.find((tag) =>
+      instrumentLabels.includes(tag.label.toLowerCase()),
+    );
+    const instrument = instrumentTag?.label || 'Unknown';
+
     return {
       id: task.id,
       title: task.title,
       description: task.description,
-      instrument: task.musician.instruments[0]?.label || 'Unknown',
+      instrument: instrument,
       user: {
         displayName: task.musician.displayName,
         avatarUrl: task.musician.avatarUrl,
@@ -236,7 +282,7 @@ export class TasksService {
       }
     }
 
-    // Create the task definition
+    // Create the task definition WITH tags connected
     const newTask = await this.prisma.taskDefinition.create({
       data: {
         title: createTaskDto.title,
@@ -245,6 +291,10 @@ export class TasksService {
         savedCount: 0,
         usedCount: 0,
         musicianId: musicianId,
+        // Connect tags to the task definition
+        tags: {
+          connect: tagsToConnect.map((tag) => ({ id: tag.id })),
+        },
       },
       include: {
         musician: {
@@ -260,10 +310,11 @@ export class TasksService {
             },
           },
         },
+        tags: true, // Include tags in the response
       },
     });
 
-    // Connect the tags to the musician's instruments
+    // Connect the tags to the musician's instruments (this was already working)
     await this.prisma.musician.update({
       where: { id: musicianId },
       data: {
@@ -283,7 +334,7 @@ export class TasksService {
         displayName: newTask.musician.displayName,
         avatarUrl: newTask.musician.avatarUrl,
       },
-      tags: tagsToConnect.map((tag) => ({
+      tags: newTask.tags.map((tag) => ({
         id: tag.id,
         label: tag.label,
         color: tag.color,
