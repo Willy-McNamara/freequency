@@ -130,7 +130,7 @@ jobs:
             fi
 
             echo "🏥 Checking container health..."
-            if ! curl -f http://localhost:3000/health > /dev/null 2>&1; then
+            if ! curl -f https://demo.freequencyapp.com/health > /dev/null 2>&1; then
               echo "❌ Health check failed!"
               sudo docker logs freequency-app
               exit 1
