@@ -74,6 +74,11 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            set -e  # Exit on any error
+
+            echo "🚀 Starting deployment..."
+
+            # Set environment variables
             export AWS_REGION=${{ secrets.AWS_REGION }}
             export ECR_REPOSITORY=${{ secrets.ECR_REPOSITORY }}
             export DATABASE_URL_V3='${{ secrets.DATABASE_URL_V3 }}'
@@ -87,11 +92,20 @@ jobs:
             export BACKEND_URL='${{ secrets.BACKEND_URL }}'
             export DEBUG='${{ secrets.DEBUG }}'
 
+            echo "🔐 Authenticating with ECR..."
             aws ecr get-login-password --region $AWS_REGION | sudo docker login --username AWS --password-stdin $ECR_REPOSITORY
+
+            echo "🛑 Stopping existing container..."
             sudo docker stop freequency-app || true
             sudo docker rm freequency-app || true
+
+            echo "🧹 Cleaning up old images..."
             sudo docker image prune -a -f
+
+            echo "📥 Pulling latest image..."
             sudo docker pull $ECR_REPOSITORY:latest
+
+            echo "🚀 Starting new container..."
             sudo docker run --name freequency-app \
               -e DATABASE_URL_V3="$DATABASE_URL_V3" \
               -e GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID" \
@@ -104,3 +118,22 @@ jobs:
               -e BACKEND_URL="$BACKEND_URL" \
               -e DEBUG="$DEBUG" \
               -p 3000:3000 -d $ECR_REPOSITORY:latest
+
+            echo "⏳ Waiting for container to start..."
+            sleep 10
+
+            echo "🔍 Verifying container is running..."
+            if ! sudo docker ps | grep -q freequency-app; then
+              echo "❌ Container failed to start!"
+              sudo docker logs freequency-app
+              exit 1
+            fi
+
+            echo "🏥 Checking container health..."
+            if ! curl -f http://localhost:3000/health > /dev/null 2>&1; then
+              echo "❌ Health check failed!"
+              sudo docker logs freequency-app
+              exit 1
+            fi
+
+            echo "✅ Deployment successful! Container is running and healthy."
