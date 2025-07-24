@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import * as Sentry from "@sentry/react";
 import { Loading } from "./components/ui/loading";
 
 interface ErrorBoundaryWrapperProps {
@@ -7,6 +8,9 @@ interface ErrorBoundaryWrapperProps {
 }
 
 function ErrorFallback({ error }: { error: unknown }) {
+  // Report error to Sentry
+  Sentry.captureException(error);
+
   // Check if this is an authentication-related error
   const isAuthError = (err: unknown): boolean => {
     if (err instanceof Error) {
@@ -53,6 +57,10 @@ export default function ErrorBoundaryWrapper({
   children,
 }: ErrorBoundaryWrapperProps) {
   return (
-    <ErrorBoundary FallbackComponent={ErrorFallback}>{children}</ErrorBoundary>
+    <Sentry.ErrorBoundary fallback={ErrorFallback}>
+      <ErrorBoundary FallbackComponent={ErrorFallback}>
+        {children}
+      </ErrorBoundary>
+    </Sentry.ErrorBoundary>
   );
 }

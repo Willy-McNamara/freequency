@@ -33,6 +33,12 @@ FROM node:20
 
 WORKDIR /app
 
+# Install AWS CLI for log uploads to S3
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+    unzip awscliv2.zip && \
+    ./aws/install && \
+    rm -rf awscliv2.zip aws
+
 # Copy backend dependencies and built backend code
 COPY api/package.json api/package-lock.json ./
 RUN npm install --only=production

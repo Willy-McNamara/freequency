@@ -9,12 +9,16 @@ const dotenv_1 = require("dotenv");
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const path_1 = require("path");
 const fs_1 = require("fs");
+const nestjs_pino_1 = require("nestjs-pino");
 async function bootstrap() {
     (0, dotenv_1.config)();
     if ((0, fs_1.existsSync)('.env.local')) {
         (0, dotenv_1.config)({ path: '.env.local' });
     }
-    const app = await core_1.NestFactory.create(app_module_1.AppModule);
+    const app = await core_1.NestFactory.create(app_module_1.AppModule, {
+        bufferLogs: true,
+    });
+    app.useLogger(app.get(nestjs_pino_1.Logger));
     app.enableCors({
         origin: [
             'http://localhost:5173',
@@ -34,6 +38,7 @@ async function bootstrap() {
             req.url.startsWith('/tasks') ||
             req.url.startsWith('/assets') ||
             req.url.startsWith('/logo.svg') ||
+            req.url.startsWith('/health') ||
             req.url.startsWith('/vite.svg')) {
             return next();
         }

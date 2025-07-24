@@ -1,6 +1,10 @@
 // s3.service.ts
 import { Injectable } from '@nestjs/common';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  PutObjectCommand,
+  GetBucketLocationCommand,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { AudioPayload } from 'src/sessions/dto/session.dto';
 
@@ -53,5 +57,27 @@ export class S3Service {
     });
 
     return url;
+  }
+
+  /**
+   * Health check for S3 bucket - tests the actual functionality used by the app
+   */
+  async checkBucketHealth(): Promise<boolean> {
+    try {
+      // Test the same operation the app actually uses: generating a signed URL
+      // This uses PutObjectCommand which you already have permissions for
+      const testCommand = new PutObjectCommand({
+        Bucket: process.env.AWS_S3_BUCKET_NAME!,
+        Key: 'health-check-test-file',
+        ContentType: 'text/plain',
+        ContentLength: 0,
+      });
+
+      // Generate a signed URL (this tests the actual S3 connectivity and permissions)
+      await getSignedUrl(this.s3Client, testCommand, { expiresIn: 1 }); // 1 second expiry
+      return true;
+    } catch (err) {
+      throw new Error(`S3 health check failed: ${err.message}`);
+    }
   }
 }

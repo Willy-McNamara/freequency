@@ -4,12 +4,66 @@ import "./App.css";
 import { Suspense, lazy } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router";
+import * as Sentry from "@sentry/react";
 import Login from "./pages/Login";
+
+// Google Analytics types
+declare global {
+  interface Window {
+    dataLayer: unknown[];
+    gtag: (...args: unknown[]) => void;
+  }
+}
 import NotFound from "./pages/NotFound";
 import ErrorBoundaryWrapper from "./ErrorBoundary.tsx";
 import { AuthProvider } from "./components/auth/AuthProvider";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { Loading } from "./components/ui/loading";
+
+// Initialize Sentry
+Sentry.init({
+  dsn: "https://ffbef4489c0e7f6dc80f75c112874af6@o4509719071358976.ingest.us.sentry.io/4509719073652736",
+  // Performance monitoring
+  integrations: [
+    Sentry.browserTracingIntegration(),
+    Sentry.replayIntegration({
+      // Capture 10% of all sessions
+      maskAllText: false,
+      blockAllMedia: false,
+    }),
+  ],
+  // Performance monitoring
+  tracesSampleRate: 0.1, // Capture 10% of transactions
+  // Session replay
+  replaysSessionSampleRate: 0.1, // Capture 10% of sessions
+  replaysOnErrorSampleRate: 1.0, // Capture 100% of error sessions
+  // Environment
+  environment: import.meta.env.MODE,
+  // Only send errors in production (optional, for development)
+  enabled: import.meta.env.PROD,
+  // Send default PII data
+  sendDefaultPii: true,
+});
+
+// Initialize Google Analytics
+if (import.meta.env.PROD) {
+  // Add Google Analytics script to head
+  const script = document.createElement("script");
+  script.async = true;
+  script.src = `https://www.googletagmanager.com/gtag/js?id=G-ME5N6V63GL`; // Replace with your Measurement ID
+  document.head.appendChild(script);
+
+  // Initialize gtag
+  window.dataLayer = window.dataLayer || [];
+  function gtag(...args: unknown[]) {
+    window.dataLayer.push(args);
+  }
+  gtag("js", new Date());
+  gtag("config", "G-ME5N6V63GL"); // Replace with your Measurement ID
+
+  // Make gtag available globally
+  window.gtag = gtag;
+}
 
 // Lazy load all protected components
 const App = lazy(() => import("./App"));

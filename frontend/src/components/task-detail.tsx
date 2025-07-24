@@ -14,6 +14,7 @@ import { Section } from "./layout/Section";
 import { apiConfig } from "../config/api";
 import { RichTextRenderer } from "./rich-text";
 import { TagList } from "./TagList";
+import { useNavigate } from "react-router-dom";
 
 async function saveTask(taskId: number) {
   return fetch(`${apiConfig.endpoints.tasks}/${taskId}/save`, {
@@ -46,6 +47,7 @@ export function TaskDetail({
   onUseInCurrentSession,
 }: TaskDetailProps) {
   const [isSaved, setIsSaved] = React.useState(task.isSaved ?? false);
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     setIsSaved(task.isSaved ?? false);
@@ -68,6 +70,10 @@ export function TaskDetail({
 
   const handleModifyTask = () => {
     onModifyTask?.(task);
+  };
+
+  const handleMusicianClick = (musicianId: number) => {
+    navigate(`/profile?user=${musicianId}`);
   };
 
   return (
@@ -98,7 +104,12 @@ export function TaskDetail({
           <h1 className="text-2xl font-bold text-foreground">{task.title}</h1>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <User className="w-4 h-4" />
-            <span>by {task.user.displayName}</span>
+            <span
+              className="cursor-pointer hover:text-primary hover:underline transition-all duration-200"
+              onClick={() => handleMusicianClick(task.user.id)}
+            >
+              by {task.user.displayName}
+            </span>
           </div>
         </div>
 

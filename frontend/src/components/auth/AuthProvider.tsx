@@ -6,6 +6,12 @@ import React, {
   ReactNode,
 } from "react";
 import { authService } from "../../services/auth";
+import {
+  setSentryUser,
+  clearSentryUser,
+  addSentryBreadcrumb,
+} from "../../utils/sentry";
+import { trackUserEngagement, setUserId } from "../../utils/analytics";
 
 interface User {
   id: number;
@@ -46,6 +52,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const userData = await authService.checkAuthStatus();
       setUser(userData);
+
+      // Set Sentry user context when authenticated
+      if (userData) {
+        setSentryUser({
+          id: userData.id.toString(),
+          email: userData.email,
+          username: userData.name,
+        });
+        addSentryBreadcrumb("User authenticated", "auth");
+
+        // Set Google Analytics user ID
+        setUserId(userData.id.toString());
+        trackUserEngagement.userLoggedIn("google_oauth");
+      }
     } catch (error) {
       console.error("Auth check failed:", error);
       setUser(null);
@@ -61,10 +81,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = async () => {
     try {
       await authService.logout();
+      addSentryBreadcrumb("User logged out", "auth");
+      trackUserEngagement.userLoggedOut();
     } catch (error) {
       console.error("Logout failed:", error);
     } finally {
       setUser(null);
+      clearSentryUser();
       // Redirect to login page
       window.location.href = "/login";
     }

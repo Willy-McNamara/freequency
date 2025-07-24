@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import { AllExceptionsFilter } from './filters/all-exceptions.filter';
 import { join } from 'path';
 import { existsSync } from 'fs';
+import { Logger } from 'nestjs-pino';
 
 async function bootstrap() {
   config();
@@ -13,7 +14,10 @@ async function bootstrap() {
     config({ path: '.env.local' }); // since git issue with .env, this workaround to use .env.local . Need for local development I think
   }
 
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    bufferLogs: true,
+  });
+  app.useLogger(app.get(Logger));
   app.enableCors({
     origin: [
       'http://localhost:5173',
@@ -38,6 +42,7 @@ async function bootstrap() {
       req.url.startsWith('/tasks') ||
       req.url.startsWith('/assets') ||
       req.url.startsWith('/logo.svg') ||
+      req.url.startsWith('/health') ||
       req.url.startsWith('/vite.svg')
     ) {
       return next();
