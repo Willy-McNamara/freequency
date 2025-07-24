@@ -10,6 +10,7 @@ export type TaskDTO = {
   description: string;
   instrument: string;
   user: {
+    id: number;
     displayName: string;
     avatarUrl: string | null;
   };
