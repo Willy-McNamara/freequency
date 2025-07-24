@@ -52,10 +52,11 @@ COPY --from=frontend-build /app/frontend/dist /app/frontend/dist
 # swithing to RDS, so commenting out this step (for local db hosting)
 # COPY db-backup/db_backup_6_29_24.sql /docker-entrypoint-initdb.d/seed.sql
 
-# Copy Prisma schema and entrypoint script
+# Copy Prisma schema and scripts
 COPY api/prisma /app/api
-COPY api/scripts/entrypoint.sh /app/api/scripts/entrypoint.sh
+COPY api/scripts/ /app/api/scripts/
 RUN chmod +x /app/api/scripts/entrypoint.sh
+RUN chmod +x /app/api/scripts/upload-logs-to-s3.sh
 
 # Serve the frontend with the backend
 EXPOSE 3000
