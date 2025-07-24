@@ -119,7 +119,7 @@ jobs:
               -e DEBUG="$DEBUG" \
               -p 3000:3000 -d $ECR_REPOSITORY:latest
 
-            echo "⏳ Waiting for container to start..."
+                        echo "⏳ Waiting for container to start..."
             sleep 10
 
             echo "🔍 Verifying container is running..."
@@ -129,11 +129,28 @@ jobs:
               exit 1
             fi
 
-            echo "🏥 Checking container health..."
-            if ! curl -f https://demo.freequencyapp.com/health > /dev/null 2>&1; then
-              echo "❌ Health check failed!"
-              sudo docker logs freequency-app
-              exit 1
-            fi
+            echo "🏥 Checking container health (with retries)..."
+            max_attempts=6
+            attempt=1
+
+            while [ $attempt -le $max_attempts ]; do
+              echo "  Attempt $attempt/$max_attempts..."
+
+              if curl -f https://demo.freequencyapp.com/health > /dev/null 2>&1; then
+                echo "✅ Health check passed!"
+                break
+              fi
+
+              if [ $attempt -eq $max_attempts ]; then
+                echo "❌ Health check failed after $max_attempts attempts!"
+                echo "📋 Container logs:"
+                sudo docker logs freequency-app
+                exit 1
+              fi
+
+              echo "  Health check failed, waiting 10 seconds before retry..."
+              sleep 10
+              attempt=$((attempt + 1))
+            done
 
             echo "✅ Deployment successful! Container is running and healthy."
