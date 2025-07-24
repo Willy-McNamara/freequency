@@ -71,6 +71,7 @@ export class TasksService {
         tags: true,
         musician: {
           select: {
+            id: true,
             displayName: true,
             avatarUrl: true,
             instruments: {
@@ -140,6 +141,7 @@ export class TasksService {
         description: task.description,
         instrument: instrument,
         user: {
+          id: task.musician.id,
           displayName: task.musician.displayName,
           avatarUrl: task.musician.avatarUrl,
         },
@@ -172,6 +174,7 @@ export class TasksService {
         tags: true,
         musician: {
           select: {
+            id: true,
             displayName: true,
             avatarUrl: true,
             instruments: {
@@ -226,6 +229,7 @@ export class TasksService {
       description: task.description,
       instrument: instrument,
       user: {
+        id: task.musician.id,
         displayName: task.musician.displayName,
         avatarUrl: task.musician.avatarUrl,
       },
@@ -299,6 +303,7 @@ export class TasksService {
       include: {
         musician: {
           select: {
+            id: true,
             displayName: true,
             avatarUrl: true,
             instruments: {
@@ -331,6 +336,7 @@ export class TasksService {
       description: newTask.description,
       instrument: createTaskDto.instrument,
       user: {
+        id: newTask.musician.id,
         displayName: newTask.musician.displayName,
         avatarUrl: newTask.musician.avatarUrl,
       },

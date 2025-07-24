@@ -13,6 +13,7 @@ export interface Task {
   description: string;
   instrument: string;
   user: {
+    id: number;
     displayName: string;
     avatarUrl?: string;
   };
