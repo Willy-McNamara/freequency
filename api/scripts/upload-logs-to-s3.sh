@@ -2,14 +2,14 @@
 set -e
 
 # Configuration
-LOG_DIR="/app/logs"
+LOG_DIR="/app/api/logs"
 LOG_FILE="app.log"
 BUCKET="freequency-app-logs"
 DATE=$(date +'%Y-%m-%d')
 YEAR=$(date +'%Y')
 MONTH=$(date +'%m')
 DAY=$(date +'%d')
-S3_PATH="s3://${BUCKET}/logs/app/${YEAR}/${MONTH}/${DAY}/"
+S3_PATH="s3://${BUCKET}/app/${YEAR}/${MONTH}/${DAY}/"
 
 # Colors for output
 RED='\033[0;31m'
@@ -86,7 +86,7 @@ if aws s3 cp "${LOG_DIR}/${BACKUP_FILE}" "${S3_PATH}${BACKUP_FILE}"; then
 EOF
 
         # Upload summary to analytics folder
-        aws s3 cp "$summary_file" "s3://${BUCKET}/analytics/daily/${YEAR}/${MONTH}/summary-${DATE}.json"
+        aws s3 cp "$summary_file" "s3://${BUCKET}/app/analytics/${YEAR}/${MONTH}/summary-${DATE}.json"
         log "Uploaded analytics summary to S3"
 
         # Clean up local summary
