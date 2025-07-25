@@ -39,8 +39,9 @@ Sentry.init({
   replaysOnErrorSampleRate: 1.0, // Capture 100% of error sessions
   // Environment
   environment: import.meta.env.MODE,
-  // Only send errors in production (optional, for development)
-  enabled: import.meta.env.PROD,
+  // Enable Sentry based on environment variable or production mode
+  enabled:
+    import.meta.env.VITE_ENABLE_SENTRY === "true" || import.meta.env.PROD,
   // Send default PII data
   sendDefaultPii: true,
 });

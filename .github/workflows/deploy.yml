@@ -91,6 +91,7 @@ jobs:
             export AWS_S3_DEV_SECRET_ACCESS_KEY='${{ secrets.AWS_S3_DEV_SECRET_ACCESS_KEY }}'
             export BACKEND_URL='${{ secrets.BACKEND_URL }}'
             export DEBUG='${{ secrets.DEBUG }}'
+            export SENTRY_AUTH_TOKEN='${{ secrets.SENTRY_AUTH_TOKEN }}'
 
             echo "🔐 Authenticating with ECR..."
             aws ecr get-login-password --region $AWS_REGION | sudo docker login --username AWS --password-stdin $ECR_REPOSITORY
@@ -117,6 +118,7 @@ jobs:
               -e AWS_S3_DEV_SECRET_ACCESS_KEY="$AWS_S3_DEV_SECRET_ACCESS_KEY" \
               -e BACKEND_URL="$BACKEND_URL" \
               -e DEBUG="$DEBUG" \
+              -e SENTRY_AUTH_TOKEN="$SENTRY_AUTH_TOKEN" \
               -p 3000:3000 -d $ECR_REPOSITORY:latest
 
                         echo "⏳ Waiting for container to start..."
