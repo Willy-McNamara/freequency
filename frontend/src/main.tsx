@@ -41,17 +41,17 @@ Sentry.init({
   environment: import.meta.env.MODE,
   // Enable Sentry based on environment variable or production mode
   enabled:
-    import.meta.env.VITE_ENABLE_SENTRY === "true" || import.meta.env.PROD,
+    import.meta.env.VITE_ENABLE_SENTRY !== "false" || import.meta.env.PROD,
   // Send default PII data
   sendDefaultPii: true,
 });
 
 // Initialize Google Analytics
-if (import.meta.env.PROD) {
+if (import.meta.env.VITE_ENABLE_GA !== "false" || import.meta.env.PROD) {
   // Add Google Analytics script to head
   const script = document.createElement("script");
   script.async = true;
-  script.src = `https://www.googletagmanager.com/gtag/js?id=G-ME5N6V63GL`; // Replace with your Measurement ID
+  script.src = `https://www.googletagmanager.com/gtag/js?id=G-ME5N6V63GL`;
   document.head.appendChild(script);
 
   // Initialize gtag
@@ -60,7 +60,7 @@ if (import.meta.env.PROD) {
     window.dataLayer.push(args);
   }
   gtag("js", new Date());
-  gtag("config", "G-ME5N6V63GL"); // Replace with your Measurement ID
+  gtag("config", "G-ME5N6V63GL");
 
   // Make gtag available globally
   window.gtag = gtag;
