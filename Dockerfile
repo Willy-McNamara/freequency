@@ -58,6 +58,9 @@ COPY api/scripts/ /app/api/scripts/
 RUN chmod +x /app/api/scripts/entrypoint.sh
 RUN chmod +x /app/api/scripts/upload-logs-to-s3.sh
 
+# Create logs directory
+RUN mkdir -p /app/logs
+
 # Serve the frontend with the backend
 EXPOSE 3000
 

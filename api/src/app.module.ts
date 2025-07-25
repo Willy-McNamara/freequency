@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, Logger } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
@@ -21,7 +21,7 @@ import { AllExceptionsFilter } from './filters/all-exceptions.filter';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { InstrumentsController } from './instruments/instruments.controller';
 import { TagsController } from './tags/tags.controller';
-import { LoggerModule } from 'nestjs-pino';
+import { LoggingModule } from './logging/logging.module';
 import { TerminusModule } from '@nestjs/terminus';
 import { HealthController } from './health/health.controller';
 
@@ -46,23 +46,7 @@ import { HealthController } from './health/health.controller';
         limit: 60,
       },
     ]),
-    LoggerModule.forRoot({
-      pinoHttp: {
-        transport:
-          process.env.NODE_ENV === 'production'
-            ? undefined
-            : {
-                target: 'pino-pretty',
-                options: { colorize: true },
-              },
-        level: process.env.LOG_LEVEL || 'info',
-        // Log to file in production (not in dev)
-        ...(process.env.NODE_ENV !== 'development' ||
-        process.env.DEBUG !== 'TRUE'
-          ? { destination: './logs/app.log' }
-          : {}),
-      },
-    }),
+    LoggingModule,
     TerminusModule,
   ],
   controllers: [
@@ -78,6 +62,7 @@ import { HealthController } from './health/health.controller';
     JwtStrategy,
     JwtService,
     S3Service,
+    Logger,
     {
       provide: APP_FILTER,
       useClass: AllExceptionsFilter,

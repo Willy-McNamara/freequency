@@ -29,7 +29,7 @@ const all_exceptions_filter_1 = require("./filters/all-exceptions.filter");
 const throttler_1 = require("@nestjs/throttler");
 const instruments_controller_1 = require("./instruments/instruments.controller");
 const tags_controller_1 = require("./tags/tags.controller");
-const nestjs_pino_1 = require("nestjs-pino");
+const logging_module_1 = require("./logging/logging.module");
 const terminus_1 = require("@nestjs/terminus");
 const health_controller_1 = require("./health/health.controller");
 let AppModule = class AppModule {
@@ -60,21 +60,7 @@ exports.AppModule = AppModule = __decorate([
                     limit: 60,
                 },
             ]),
-            nestjs_pino_1.LoggerModule.forRoot({
-                pinoHttp: {
-                    transport: process.env.NODE_ENV === 'production'
-                        ? undefined
-                        : {
-                            target: 'pino-pretty',
-                            options: { colorize: true },
-                        },
-                    level: process.env.LOG_LEVEL || 'info',
-                    ...(process.env.NODE_ENV !== 'development' ||
-                        process.env.DEBUG !== 'TRUE'
-                        ? { destination: './logs/app.log' }
-                        : {}),
-                },
-            }),
+            logging_module_1.LoggingModule,
             terminus_1.TerminusModule,
         ],
         controllers: [
@@ -90,6 +76,7 @@ exports.AppModule = AppModule = __decorate([
             jwt_strategy_1.JwtStrategy,
             jwt_1.JwtService,
             s3_service_1.S3Service,
+            common_1.Logger,
             {
                 provide: core_1.APP_FILTER,
                 useClass: all_exceptions_filter_1.AllExceptionsFilter,

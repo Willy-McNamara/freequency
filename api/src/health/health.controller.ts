@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Logger } from '@nestjs/common';
 import {
   HealthCheck,
   HealthCheckService,
@@ -14,12 +14,14 @@ export class HealthController {
     private health: HealthCheckService,
     private prisma: PrismaService,
     private s3Service: S3Service,
+    private readonly logger: Logger,
   ) {}
 
   // Main health check endpoint
   @Get()
   @HealthCheck()
   async check(): Promise<HealthCheckResult> {
+    this.logger.log('Health check requested', HealthController.name);
     // Prisma DB check
     const dbCheck = async (): Promise<HealthIndicatorResult> => {
       try {
