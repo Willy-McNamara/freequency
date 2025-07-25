@@ -1,0 +1,7 @@
+# Ignore test and spec files
+*.spec.ts
+*.spec.tsx
+*.test.ts
+*.test.tsx
+__tests__/
+coverage/
