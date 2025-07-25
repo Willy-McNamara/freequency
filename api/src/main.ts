@@ -1,6 +1,6 @@
+import { config } from 'dotenv';
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { config } from 'dotenv';
 import cookieParser from 'cookie-parser';
 import { AllExceptionsFilter } from './filters/all-exceptions.filter';
 import { join } from 'path';

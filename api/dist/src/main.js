@@ -3,9 +3,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const dotenv_1 = require("dotenv");
 const core_1 = require("@nestjs/core");
 const app_module_1 = require("./app.module");
-const dotenv_1 = require("dotenv");
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const path_1 = require("path");
 const fs_1 = require("fs");
@@ -13,6 +13,7 @@ const nestjs_pino_1 = require("nestjs-pino");
 async function bootstrap() {
     (0, dotenv_1.config)();
     if ((0, fs_1.existsSync)('.env.local')) {
+        console.log('Loading .env.local');
         (0, dotenv_1.config)({ path: '.env.local' });
     }
     const app = await core_1.NestFactory.create(app_module_1.AppModule, {
