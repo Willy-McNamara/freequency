@@ -112,3 +112,4 @@ frontend/dist/
 frontend/build/
 
 deployment-and-documentation/POST_DEPLOYMENT_CHECKLIST.md
+deployment-and-documentation/testing-strategy-plan.md
