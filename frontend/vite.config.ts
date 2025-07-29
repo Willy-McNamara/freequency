@@ -6,10 +6,14 @@ import svgr from "vite-plugin-svgr";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), svgr(), sentryVitePlugin({
-    org: "freequency-fm",
-    project: "javascript-react"
-  })],
+  plugins: [
+    react(),
+    svgr(),
+    sentryVitePlugin({
+      org: "freequency-fm",
+      project: "javascript-react",
+    }),
+  ],
 
   resolve: {
     alias: {
@@ -18,6 +22,6 @@ export default defineConfig({
   },
 
   build: {
-    sourcemap: true
-  }
+    sourcemap: true,
+  },
 });

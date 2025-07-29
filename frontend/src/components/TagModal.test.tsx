@@ -69,11 +69,11 @@ describe("TagModal", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (fetch as any).mockClear();
+    vi.mocked(fetch).mockClear();
     // Provide a default mock for tests that don't explicitly mock fetch
-    (fetch as any).mockResolvedValue({
+    vi.mocked(fetch).mockResolvedValue({
       json: () => Promise.resolve([]),
-    });
+    } as Response);
   });
 
   it("renders when open", () => {
@@ -137,7 +137,7 @@ describe("TagModal", () => {
   });
 
   it("shows loading state when fetching tags", async () => {
-    (fetch as any).mockImplementation(() => new Promise(() => {})); // Never resolves
+    vi.mocked(fetch).mockImplementation(() => new Promise(() => {})); // Never resolves
 
     render(
       <TagModal
@@ -151,9 +151,9 @@ describe("TagModal", () => {
   });
 
   it('shows "No tags found" when no tags are available', async () => {
-    (fetch as any).mockResolvedValue({
+    vi.mocked(fetch).mockResolvedValue({
       json: () => Promise.resolve([]),
-    });
+    } as Response);
 
     render(
       <TagModal

@@ -90,7 +90,7 @@ let MusiciansService = class MusiciansService {
     }
     async createMusician(createMusicianDto) {
         const prisma = this.prisma;
-        let baseDisplayName = createMusicianDto.displayName;
+        const baseDisplayName = createMusicianDto.displayName;
         let displayName = baseDisplayName;
         let suffix = 1;
         let createdMusician;
@@ -152,7 +152,7 @@ let MusiciansService = class MusiciansService {
         return musicianDto;
     }
     async findOrCreateMusician(loginInfo) {
-        let email = loginInfo.email;
+        const email = loginInfo.email;
         try {
             const musician = await this.prisma.musician.findUnique({
                 where: { email },

@@ -1,4 +1,4 @@
-import { Controller, Get, Logger, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { GoogleAuthGuard } from './google.guard';
 import { JwtAuthGuard } from './jwt.guard';
 import { MusiciansService } from '../musicians/musicians.service';

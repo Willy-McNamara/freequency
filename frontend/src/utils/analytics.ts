@@ -1,11 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Google Analytics utility functions
 
 /**
  * Track a page view
  */
 export const trackPageView = (pageTitle: string, pagePath?: string) => {
-  if (typeof window !== "undefined" && window.gtag) {
-    window.gtag("config", "G-ME5N6V63GL", {
+  if (typeof window !== "undefined" && (window as any).gtag) {
+    (window as any).gtag("config", "G-ME5N6V63GL", {
       page_title: pageTitle,
       page_location: pagePath || window.location.href,
     });
@@ -21,8 +22,8 @@ export const trackEvent = (
   label?: string,
   value?: number
 ) => {
-  if (typeof window !== "undefined" && window.gtag) {
-    window.gtag("event", action, {
+  if (typeof window !== "undefined" && (window as any).gtag) {
+    (window as any).gtag("event", action, {
       event_category: category,
       event_label: label,
       value: value,
@@ -80,8 +81,8 @@ export const trackUserEngagement = {
  * Track user properties (for user segmentation)
  */
 export const setUserProperties = (properties: Record<string, string>) => {
-  if (typeof window !== "undefined" && window.gtag) {
-    window.gtag("config", "G-ME5N6V63GL", {
+  if (typeof window !== "undefined" && (window as any).gtag) {
+    (window as any).gtag("config", "G-ME5N6V63GL", {
       custom_map: properties,
     });
   }
@@ -91,8 +92,8 @@ export const setUserProperties = (properties: Record<string, string>) => {
  * Track user ID (for cross-device tracking)
  */
 export const setUserId = (userId: string) => {
-  if (typeof window !== "undefined" && window.gtag) {
-    window.gtag("config", "G-ME5N6V63GL", {
+  if (typeof window !== "undefined" && (window as any).gtag) {
+    (window as any).gtag("config", "G-ME5N6V63GL", {
       user_id: userId,
     });
   }

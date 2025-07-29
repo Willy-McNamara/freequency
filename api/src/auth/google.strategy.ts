@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { Profile, Strategy } from 'passport-google-oauth20';
-import * as jwt from 'jsonwebtoken';
+import { Strategy } from 'passport-google-oauth20';
 import { JwtService } from '@nestjs/jwt';
 import { MusiciansService } from '../musicians/musicians.service';
 import 'dotenv/config';

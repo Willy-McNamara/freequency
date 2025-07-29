@@ -41,15 +41,8 @@ vi.mock("./ui/button", () => ({
 }));
 
 vi.mock("./ui/dialog", () => ({
-  Dialog: ({
-    children,
-    open,
-    onOpenChange,
-  }: {
-    children: React.ReactNode;
-    open: boolean;
-    onOpenChange?: (open: boolean) => void;
-  }) => (open ? <div data-testid="dialog">{children}</div> : null),
+  Dialog: ({ children, open }: { children: React.ReactNode; open: boolean }) =>
+    open ? <div data-testid="dialog">{children}</div> : null,
   DialogContent: ({
     children,
     className,
@@ -261,7 +254,9 @@ describe("FilterBar", () => {
 
     const checkboxes = screen.getAllByTestId("checkbox");
     // Find an unchecked checkbox to test
-    const uncheckedCheckbox = checkboxes.find((checkbox) => !checkbox.checked);
+    const uncheckedCheckbox = checkboxes.find(
+      (checkbox) => !(checkbox as HTMLInputElement).checked
+    );
     if (uncheckedCheckbox) {
       fireEvent.click(uncheckedCheckbox);
       expect(uncheckedCheckbox).toBeChecked();

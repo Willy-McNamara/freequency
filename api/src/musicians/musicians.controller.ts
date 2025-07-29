@@ -11,10 +11,7 @@ import {
 } from '@nestjs/common';
 import { MusiciansService } from './musicians.service';
 import {
-  CreateMusicianDto,
-  MusicianDto,
   MusicianFrontendDTO,
-  MusicianUpdateDto,
   ProfileUpdateDto,
   GoalDto,
 } from './dto/musician.dto';

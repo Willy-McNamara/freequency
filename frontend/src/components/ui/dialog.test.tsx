@@ -15,15 +15,7 @@ import {
 
 // Mock Radix UI Dialog primitives
 vi.mock("@radix-ui/react-dialog", () => ({
-  Root: ({
-    children,
-    open,
-    onOpenChange,
-  }: {
-    children: React.ReactNode;
-    open?: boolean;
-    onOpenChange?: (open: boolean) => void;
-  }) => (
+  Root: ({ children, open }: { children: React.ReactNode; open?: boolean }) => (
     <div data-testid="dialog-root" data-open={open}>
       {children}
     </div>

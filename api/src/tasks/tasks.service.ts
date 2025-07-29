@@ -351,12 +351,12 @@ export class TasksService {
     };
   }
 
-  async updateTask(id: number, updateTaskDto: any): Promise<TaskDTO> {
+  async updateTask(_id: number, _updateTaskDto: any): Promise<TaskDTO> {
     // This would be implemented when we add task update functionality
     throw new Error('Not implemented yet');
   }
 
-  async deleteTask(id: number): Promise<void> {
+  async deleteTask(_id: number): Promise<void> {
     // This would be implemented when we add task deletion functionality
     throw new Error('Not implemented yet');
   }

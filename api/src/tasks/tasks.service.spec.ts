@@ -289,7 +289,8 @@ describe('TasksService', () => {
         tags: ['Practice', 'Technique'],
       };
 
-      let upsertedTags: any[] = [];
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const upsertedTags: any[] = [];
 
       // Mock the main prisma.musician.findUnique call that happens before the transaction
       (prismaService.musician.findUnique as jest.Mock).mockResolvedValue({

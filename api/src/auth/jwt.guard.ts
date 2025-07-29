@@ -3,7 +3,6 @@ import {
   CanActivate,
   ExecutionContext,
   UnauthorizedException,
-  Logger,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Observable } from 'rxjs';
@@ -24,8 +23,8 @@ export class JwtAuthGuard extends AuthGuard('jwt') implements CanActivate {
   handleRequest(
     err: any,
     user: any,
-    info: any,
-    context: ExecutionContext,
+    _info: any,
+    _context: ExecutionContext,
   ): any {
     // In debug mode, return a mock user object regardless of JWT validation
     if (process.env.DEBUG === 'TRUE') {
