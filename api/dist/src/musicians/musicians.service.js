@@ -272,7 +272,7 @@ let MusiciansService = class MusiciansService {
     }
     async getAllIdNames() {
         const musicians = await this.prisma.musician.findMany({
-            select: { id: true, displayName: true },
+            select: { id: true, displayName: true, avatarUrl: true },
             orderBy: { displayName: 'asc' },
         });
         return musicians;

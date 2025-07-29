@@ -15,6 +15,7 @@ export declare class MusiciansService {
     getAllIdNames(): Promise<{
         id: number;
         displayName: string;
+        avatarUrl: string | null;
     }[]>;
     createGoalForMusician(musicianId: number, goalDto: GoalDto): Promise<GoalDto>;
     deleteGoalForMusician(musicianId: number, goalId: number): Promise<void>;

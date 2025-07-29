@@ -318,9 +318,11 @@ export class MusiciansService {
     return musicians.map((m) => m.displayName);
   }
 
-  async getAllIdNames(): Promise<{ id: number; displayName: string }[]> {
+  async getAllIdNames(): Promise<
+    { id: number; displayName: string; avatarUrl: string | null }[]
+  > {
     const musicians = await this.prisma.musician.findMany({
-      select: { id: true, displayName: true },
+      select: { id: true, displayName: true, avatarUrl: true },
       orderBy: { displayName: 'asc' },
     });
     return musicians;
