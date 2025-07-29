@@ -1,0 +1,22 @@
+# Branch Protection Rules for v3 branch
+# This file documents the recommended branch protection settings
+# You'll need to configure these in GitHub's repository settings
+
+# Branch: v3
+# Protection Rules:
+# - Require status checks to pass before merging
+# - Require branches to be up to date before merging
+# - Require pull request reviews before merging
+# - Require conversation resolution before merging
+# - Include administrators in these restrictions
+
+# Status Checks to Require:
+# - test-backend
+# - test-frontend
+# - test-summary
+
+# Additional Settings:
+# - Restrict pushes that create files larger than 100MB
+# - Require linear history
+# - Allow force pushes: false
+# - Allow deletions: false

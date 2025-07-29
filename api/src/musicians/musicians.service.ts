@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   CreateMusicianDto,
@@ -9,7 +9,6 @@ import {
   GoalDto,
   ProfileUpdateDto,
 } from './dto/musician.dto';
-import { format } from 'path';
 
 @Injectable()
 export class MusiciansService {
@@ -107,7 +106,7 @@ export class MusiciansService {
   ): Promise<MusicianDto> {
     const prisma = this.prisma;
 
-    let baseDisplayName = createMusicianDto.displayName;
+    const baseDisplayName = createMusicianDto.displayName;
     let displayName = baseDisplayName;
     let suffix = 1;
     let createdMusician;
@@ -179,7 +178,7 @@ export class MusiciansService {
   ): Promise<MusicianJwtDto> {
     // Implement a findOrCreate method for musicians
     // try to find musician by email
-    let email = loginInfo.email;
+    const email = loginInfo.email;
     try {
       const musician = await this.prisma.musician.findUnique({
         where: { email },

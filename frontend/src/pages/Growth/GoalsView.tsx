@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { PlusIcon, EditIcon, TrashIcon } from "lucide-react";
 import { Container } from "@/components/layout/Container";
 import { Section } from "@/components/layout/Section";
+import { TaskInUseMock } from "./utils";
 
 interface Goal {
   id: string;
@@ -35,8 +36,8 @@ interface GoalsViewProps {
   onCreateGoal: () => void;
   onEditGoal: () => void;
   formatGoalSummary: (goal: Goal) => string;
-  calculateGoalProgress: (goal: Goal, allTasksInUse: any[]) => number;
-  allTasksInUse: any[];
+  calculateGoalProgress: (goal: Goal, allTasksInUse: TaskInUseMock[]) => number;
+  allTasksInUse: TaskInUseMock[];
 }
 
 export const GoalsView: React.FC<GoalsViewProps> = ({

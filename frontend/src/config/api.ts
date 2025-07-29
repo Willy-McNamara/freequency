@@ -38,7 +38,9 @@ interface ApiConfig {
 const getApiConfig = (): ApiConfig => {
   // In development, use localhost
   // In production, this will be overridden by environment variables
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const baseUrl =
+    (import.meta as any).env.VITE_API_BASE_URL || "http://localhost:3000";
 
   return {
     baseUrl,
@@ -93,13 +95,16 @@ export const buildApiUrl = (endpoint: string): string => {
 };
 
 // Environment detection
-export const isDevelopment = import.meta.env.DEV;
-export const isProduction = import.meta.env.PROD;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const isDevelopment = (import.meta as any).env.DEV;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const isProduction = (import.meta as any).env.PROD;
 
 // Log configuration in development
 if (isDevelopment) {
   console.log("API Configuration:", {
     baseUrl: apiConfig.baseUrl,
-    environment: import.meta.env.MODE,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    environment: (import.meta as any).env.MODE,
   });
 }
