@@ -42,6 +42,7 @@ export type CreateTaskDto = {
   checklist: string[];
   tags: string[];
   musicianId?: number; // Optional for now, will be set from auth context later
+  parentTaskId?: number; // Optional parent task ID for "Make it your own" functionality
 };
 
 export type UpdateTaskDto = {

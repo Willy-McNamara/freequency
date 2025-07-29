@@ -241,6 +241,85 @@ describe('TasksService', () => {
       expect(result).toEqual([]);
       expect(prismaService.taskDefinition.findMany).not.toHaveBeenCalled();
     });
+
+    it('should return tasks with parent task information', async () => {
+      const mockTasks = [
+        {
+          id: 2,
+          title: 'Child Task',
+          description: 'Child Description',
+          checklist: ['Child Step 1'],
+          savedCount: 0,
+          usedCount: 0,
+          musicianId: 2,
+          musician: {
+            id: 2,
+            displayName: 'Child User',
+            avatarUrl: null,
+            instruments: [],
+          },
+          tags: [{ id: 4, label: 'Piano', color: '#0000FF' }],
+          parentTask: {
+            id: 1,
+            title: 'Parent Task',
+            description: 'Parent Description',
+            checklist: ['Parent Step 1'],
+            savedCount: 5,
+            usedCount: 10,
+            musicianId: 1,
+            musician: { id: 1, displayName: 'Parent User', avatarUrl: null },
+            tags: [{ id: 3, label: 'Guitar', color: '#FFD700' }],
+          },
+        },
+      ];
+
+      (prismaService.taskDefinition.findMany as jest.Mock).mockResolvedValue(
+        mockTasks,
+      );
+      (prismaService.savedTask.findMany as jest.Mock).mockResolvedValue([]);
+
+      const result = await service.getAllTasks();
+
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe(2);
+      expect(result[0].parentTask).toBeDefined();
+      expect(result[0].parentTask?.id).toBe(1);
+      expect(result[0].parentTask?.title).toBe('Parent Task');
+      expect(result[0].parentTask?.instrument).toBe('Guitar');
+    });
+
+    it('should return tasks without parent task information when no parent exists', async () => {
+      const mockTasks = [
+        {
+          id: 1,
+          title: 'Root Task',
+          description: 'Root Description',
+          checklist: ['Root Step 1'],
+          savedCount: 0,
+          usedCount: 0,
+          musicianId: 1,
+          musician: {
+            id: 1,
+            displayName: 'Root User',
+            avatarUrl: null,
+            instruments: [],
+          },
+          tags: [{ id: 1, label: 'Guitar', color: '#FF0000' }],
+          parentTask: null,
+        },
+      ];
+
+      (prismaService.taskDefinition.findMany as jest.Mock).mockResolvedValue(
+        mockTasks,
+      );
+      (prismaService.savedTask.findMany as jest.Mock).mockResolvedValue([]);
+
+      const result = await service.getAllTasks();
+
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe(1);
+      expect(result[0].parentTask).toBeNull();
+    });
   });
 
   describe('getTaskById', () => {
@@ -401,6 +480,114 @@ describe('TasksService', () => {
       expect(prismaService.tag.upsert).toHaveBeenCalledTimes(3); // Once for instrument, twice for tags
       expect(prismaService.taskDefinition.create).toHaveBeenCalled();
       expect(prismaService.musician.update).toHaveBeenCalled();
+    });
+
+    it('should create a new task with parent task', async () => {
+      const createTaskDto: CreateTaskDto = {
+        title: 'Child Task',
+        description: 'Child Description',
+        instrument: 'Piano',
+        checklist: ['Child Step 1'],
+        tags: ['Piano', 'Child'],
+        parentTaskId: 1,
+      };
+
+      const mockMusician = {
+        id: 2,
+        displayName: 'Child User',
+        avatarUrl: null,
+      };
+
+      const mockParentTask = {
+        id: 1,
+        title: 'Parent Task',
+        description: 'Parent Description',
+        checklist: ['Parent Step 1'],
+        savedCount: 5,
+        usedCount: 10,
+        musicianId: 1,
+        musician: {
+          id: 1,
+          displayName: 'Parent User',
+          avatarUrl: null,
+        },
+        tags: [{ id: 3, label: 'Guitar', color: '#FFD700' }],
+      };
+
+      const mockTask = {
+        id: 2,
+        title: 'Child Task',
+        description: 'Child Description',
+        checklist: ['Child Step 1'],
+        savedCount: 0,
+        usedCount: 0,
+        musicianId: 2,
+        musician: mockMusician,
+        tags: [
+          { id: 4, label: 'Piano', color: '#0000FF' },
+          { id: 5, label: 'Child', color: '#00FF00' },
+        ],
+      };
+
+      (prismaService.musician.findUnique as jest.Mock).mockResolvedValue(
+        mockMusician,
+      );
+      (prismaService.taskDefinition.findUnique as jest.Mock).mockResolvedValue(
+        mockParentTask,
+      );
+      (prismaService.tag.upsert as jest.Mock)
+        .mockResolvedValueOnce({ id: 4, label: 'Piano', color: '#0000FF' })
+        .mockResolvedValueOnce({ id: 5, label: 'Child', color: '#00FF00' });
+      (prismaService.taskDefinition.create as jest.Mock).mockResolvedValue(
+        mockTask,
+      );
+      (prismaService.musician.update as jest.Mock).mockResolvedValue({});
+
+      const result = await service.createTask(createTaskDto, 2);
+
+      expect(result).toBeDefined();
+      expect(result.title).toBe('Child Task');
+      expect(result.parentTask).toBeDefined();
+      expect(result.parentTask?.id).toBe(1);
+      expect(result.parentTask?.title).toBe('Parent Task');
+      expect(prismaService.taskDefinition.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          title: 'Child Task',
+          description: 'Child Description',
+          checklist: ['Child Step 1'],
+          musicianId: 2,
+          parentTaskId: 1,
+        }),
+        include: expect.any(Object),
+      });
+    });
+
+    it('should throw error when parent task not found', async () => {
+      const createTaskDto: CreateTaskDto = {
+        title: 'Child Task',
+        description: 'Child Description',
+        instrument: 'Piano',
+        checklist: ['Child Step 1'],
+        tags: ['Piano', 'Child'],
+        parentTaskId: 999, // Non-existent parent
+      };
+
+      const mockMusician = {
+        id: 2,
+        displayName: 'Child User',
+        avatarUrl: null,
+      };
+
+      (prismaService.musician.findUnique as jest.Mock).mockResolvedValue(
+        mockMusician,
+      );
+      (prismaService.taskDefinition.findUnique as jest.Mock).mockResolvedValue(
+        null,
+      );
+
+      await expect(service.createTask(createTaskDto, 2)).rejects.toThrow(
+        'Parent task not found',
+      );
     });
   });
 

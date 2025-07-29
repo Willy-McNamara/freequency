@@ -26,7 +26,6 @@ import { FontFormatToolbarPlugin } from "@/components/editor/plugins/toolbar/fon
 import { ToolbarPlugin } from "@/components/editor/plugins/toolbar/toolbar-plugin";
 import { editorTheme } from "@/components/editor/themes/editor-theme";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import "./rich-text.css";
 
 // Rich text renderer for displaying content (used in feed and post view)
 interface RichTextRendererProps {

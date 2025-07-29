@@ -79,7 +79,7 @@ export function TaskDetail({
 
   const handleParentTaskClick = () => {
     if (task.parentTask) {
-      navigate(`/task/${task.parentTask.id}`);
+      navigate(`/task-library?task=${task.parentTask.id}`);
     }
   };
 
@@ -125,17 +125,11 @@ export function TaskDetail({
                     className="cursor-pointer hover:text-primary hover:underline transition-all duration-200 text-sm text-muted-foreground"
                     onClick={handleParentTaskClick}
                   >
-                    parent task
+                    based on
                   </span>
                 </>
               )}
             </div>
-            {/* <span
-              className="cursor-pointer hover:text-primary hover:underline transition-all duration-200 text-sm text-muted-foreground"
-              // onClick={() => handleMusicianClick(task.user.id)}
-            >
-              parent task
-            </span> */}
           </div>
         </div>
 

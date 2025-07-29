@@ -186,7 +186,7 @@ describe("TaskDetail", () => {
 
     expect(screen.getByText("Child Task")).toBeInTheDocument();
     expect(screen.getByText("by Child User")).toBeInTheDocument();
-    expect(screen.getByText("parent task")).toBeInTheDocument();
+    expect(screen.getByText("based on")).toBeInTheDocument();
     expect(screen.getByTestId("separator")).toBeInTheDocument();
   });
 
@@ -235,6 +235,21 @@ describe("TaskDetail", () => {
     expect(mockOnModifyTask).toHaveBeenCalledWith(mockTask);
   });
 
+  it("passes parent task ID when modifying a task with parent", () => {
+    renderWithRouter(
+      <TaskDetail
+        task={mockTaskWithParent}
+        onBack={mockOnBack}
+        onModifyTask={mockOnModifyTask}
+      />
+    );
+
+    const modifyButton = screen.getByText("Make it your own");
+    fireEvent.click(modifyButton);
+
+    expect(mockOnModifyTask).toHaveBeenCalledWith(mockTaskWithParent);
+  });
+
   it("navigates to user profile when user name is clicked", () => {
     renderWithRouter(
       <TaskDetail
@@ -250,7 +265,7 @@ describe("TaskDetail", () => {
     expect(mockNavigate).toHaveBeenCalledWith("/profile?user=2");
   });
 
-  it("navigates to parent task when parent task text is clicked", () => {
+  it("navigates to parent task when 'based on' text is clicked", () => {
     renderWithRouter(
       <TaskDetail
         task={mockTaskWithParent}
@@ -259,10 +274,10 @@ describe("TaskDetail", () => {
       />
     );
 
-    const parentTaskText = screen.getByText("parent task");
+    const parentTaskText = screen.getByText("based on");
     fireEvent.click(parentTaskText);
 
-    expect(mockNavigate).toHaveBeenCalledWith("/task/1");
+    expect(mockNavigate).toHaveBeenCalledWith("/task-library?task=1");
   });
 
   it("shows use in current session button when hasActiveSession is true", () => {
