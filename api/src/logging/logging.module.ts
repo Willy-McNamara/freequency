@@ -23,7 +23,7 @@ config({ path: '.env.local' });
               },
             },
             // File transport for production
-            ...(process.env.DEBUG === 'FALSE'
+            ...(process.env.DEBUG !== 'TRUE'
               ? [
                   {
                     target: 'pino/file',
