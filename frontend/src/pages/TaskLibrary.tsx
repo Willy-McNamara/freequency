@@ -53,6 +53,7 @@ const TaskLibrary: React.FC = () => {
   const [modifyTaskData, setModifyTaskData] = useState<
     CreateTaskData | undefined
   >(undefined);
+
   const [showInstrumentWarningModal, setShowInstrumentWarningModal] =
     useState(false);
   const [taskWithDifferentInstrument, setTaskWithDifferentInstrument] =
@@ -281,10 +282,12 @@ const TaskLibrary: React.FC = () => {
     previousFilterState.current = currentFilterState;
   }, [activeFilters, fetchTasks]);
 
-  // Handle user parameter from URL - set filter only
+  // Handle URL parameters
   useEffect(() => {
     const userParam = searchParams.get("user");
+    const taskParam = searchParams.get("task");
 
+    // Handle user parameter - set filter only
     if (userParam && !hasProcessedUrlParam.current) {
       hasProcessedUrlParam.current = true;
       const userLabel = decodeURIComponent(userParam);
@@ -330,6 +333,17 @@ const TaskLibrary: React.FC = () => {
 
       // Signal that we need to fetch after setting the filter
       shouldFetchAfterUrlParam.current = true;
+    }
+
+    // Handle task parameter - set selected task
+    if (taskParam) {
+      const taskId = parseInt(taskParam, 10);
+      if (!isNaN(taskId)) {
+        setSelectedTaskId(taskId);
+      }
+    } else {
+      // If no task parameter, clear selected task
+      setSelectedTaskId(null);
     }
   }, [searchParams]); // Removed fetchTasks from dependencies
 
@@ -388,16 +402,14 @@ const TaskLibrary: React.FC = () => {
   };
 
   const handleViewDetails = (taskId: number) => {
-    // Update URL with task ID
-    const newUrl = `${window.location.pathname}?task=${taskId}`;
-    window.history.pushState({}, "", newUrl);
+    // Navigate to task library with task ID parameter
+    navigate(`/task-library?task=${taskId}`);
     setSelectedTaskId(taskId);
   };
 
   const handleBackToLibrary = () => {
-    // Remove task ID from URL
-    const newUrl = window.location.pathname;
-    window.history.pushState({}, "", newUrl);
+    // Navigate back to task library without task parameter
+    navigate("/task-library");
     setSelectedTaskId(null);
     // Refetch tasks using current filters
     fetchTasks(activeFilters);
@@ -433,6 +445,8 @@ const TaskLibrary: React.FC = () => {
       });
 
       await apiPromise;
+      // Add a small delay so the user can read the toast
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     } catch (err) {
       console.error("Error creating task:", err);
       // Error toast is handled by toast.promise
@@ -447,6 +461,7 @@ const TaskLibrary: React.FC = () => {
       instrument: task.instrument,
       checklist: task.checklist,
       tags: task.tags.map((tag) => tag.label),
+      parentTaskId: task.id, // Set the current task as the parent
     };
     setModifyTaskData(modifyData);
     setIsModifyModalOpen(true);
@@ -472,10 +487,11 @@ const TaskLibrary: React.FC = () => {
       toast.promise(apiPromise, {
         loading: "Creating modified task...",
         success: (newTask) => {
-          // Add the new task to the beginning of the list
-          setTasks((prev) => [newTask, ...prev]);
           setIsModifyModalOpen(false);
           setModifyTaskData(undefined);
+
+          // Reload the page and navigate to the new task's detail view
+          window.location.href = `/task-library?task=${newTask.id}`;
 
           return `Task "${newTask.title}" created successfully!`;
         },
@@ -483,6 +499,8 @@ const TaskLibrary: React.FC = () => {
       });
 
       await apiPromise;
+      // Add a small delay so the user can read the toast before the view changes
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     } catch (err) {
       console.error("Error creating modified task:", err);
       // Error toast is handled by toast.promise

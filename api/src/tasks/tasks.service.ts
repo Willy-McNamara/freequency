@@ -83,6 +83,18 @@ export class TasksService {
             },
           },
         },
+        parentTask: {
+          include: {
+            tags: true,
+            musician: {
+              select: {
+                id: true,
+                displayName: true,
+                avatarUrl: true,
+              },
+            },
+          },
+        },
       },
       orderBy: {
         id: 'desc',
@@ -154,6 +166,56 @@ export class TasksService {
         savedCount: task.savedCount,
         usedCount: task.usedCount,
         isSaved,
+        parentTask: task.parentTask
+          ? {
+              id: task.parentTask.id,
+              title: task.parentTask.title,
+              description: task.parentTask.description,
+              instrument: (() => {
+                const instrumentLabels = [
+                  'piano',
+                  'guitar',
+                  'drums',
+                  'bass guitar',
+                  'violin',
+                  'saxophone',
+                  'flute',
+                  'clarinet',
+                  'trumpet',
+                  'trombone',
+                  'voice',
+                  'cello',
+                  'ukulele',
+                  'percussion',
+                  'double bass',
+                  'oboe',
+                  'harp',
+                  'accordion',
+                  'banjo',
+                  'djing',
+                  'production',
+                  'listening',
+                ];
+                const instrumentTag = task.parentTask.tags.find((tag) =>
+                  instrumentLabels.includes(tag.label.toLowerCase()),
+                );
+                return instrumentTag?.label || 'Unknown';
+              })(),
+              user: {
+                id: task.parentTask.musician.id,
+                displayName: task.parentTask.musician.displayName,
+                avatarUrl: task.parentTask.musician.avatarUrl,
+              },
+              tags: task.parentTask.tags.map((tag) => ({
+                id: tag.id,
+                label: tag.label,
+                color: tag.color,
+              })),
+              checklist: task.parentTask.checklist,
+              savedCount: task.parentTask.savedCount,
+              usedCount: task.parentTask.usedCount,
+            }
+          : null,
       };
     });
 
@@ -182,6 +244,18 @@ export class TasksService {
                 id: true,
                 label: true,
                 color: true,
+              },
+            },
+          },
+        },
+        parentTask: {
+          include: {
+            tags: true,
+            musician: {
+              select: {
+                id: true,
+                displayName: true,
+                avatarUrl: true,
               },
             },
           },
@@ -223,6 +297,38 @@ export class TasksService {
     );
     const instrument = instrumentTag?.label || 'Unknown';
 
+    // Helper function to determine instrument from tags
+    const getInstrumentFromTags = (tags: any[]) => {
+      const instrumentLabels = [
+        'piano',
+        'guitar',
+        'drums',
+        'bass guitar',
+        'violin',
+        'saxophone',
+        'flute',
+        'clarinet',
+        'trumpet',
+        'trombone',
+        'voice',
+        'cello',
+        'ukulele',
+        'percussion',
+        'double bass',
+        'oboe',
+        'harp',
+        'accordion',
+        'banjo',
+        'djing',
+        'production',
+        'listening',
+      ];
+      const instrumentTag = tags.find((tag) =>
+        instrumentLabels.includes(tag.label.toLowerCase()),
+      );
+      return instrumentTag?.label || 'Unknown';
+    };
+
     return {
       id: task.id,
       title: task.title,
@@ -241,6 +347,27 @@ export class TasksService {
       checklist: task.checklist,
       savedCount: task.savedCount,
       usedCount: task.usedCount,
+      parentTask: task.parentTask
+        ? {
+            id: task.parentTask.id,
+            title: task.parentTask.title,
+            description: task.parentTask.description,
+            instrument: getInstrumentFromTags(task.parentTask.tags),
+            user: {
+              id: task.parentTask.musician.id,
+              displayName: task.parentTask.musician.displayName,
+              avatarUrl: task.parentTask.musician.avatarUrl,
+            },
+            tags: task.parentTask.tags.map((tag) => ({
+              id: tag.id,
+              label: tag.label,
+              color: tag.color,
+            })),
+            checklist: task.parentTask.checklist,
+            savedCount: task.parentTask.savedCount,
+            usedCount: task.parentTask.usedCount,
+          }
+        : null,
     };
   }
 
@@ -254,6 +381,27 @@ export class TasksService {
     });
     if (!musician) {
       throw new Error('Musician not found');
+    }
+
+    // Validate parent task if provided
+    let parentTask = null;
+    if (createTaskDto.parentTaskId) {
+      parentTask = await this.prisma.taskDefinition.findUnique({
+        where: { id: createTaskDto.parentTaskId },
+        include: {
+          tags: true,
+          musician: {
+            select: {
+              id: true,
+              displayName: true,
+              avatarUrl: true,
+            },
+          },
+        },
+      });
+      if (!parentTask) {
+        throw new Error('Parent task not found');
+      }
     }
 
     // Find or create tags for the instrument and other tags
@@ -295,6 +443,7 @@ export class TasksService {
         savedCount: 0,
         usedCount: 0,
         musicianId: musicianId,
+        parentTaskId: createTaskDto.parentTaskId || null,
         // Connect tags to the task definition
         tags: {
           connect: tagsToConnect.map((tag) => ({ id: tag.id })),
@@ -348,6 +497,56 @@ export class TasksService {
       checklist: newTask.checklist,
       savedCount: newTask.savedCount,
       usedCount: newTask.usedCount,
+      parentTask: parentTask
+        ? {
+            id: parentTask.id,
+            title: parentTask.title,
+            description: parentTask.description,
+            instrument: (() => {
+              const instrumentLabels = [
+                'piano',
+                'guitar',
+                'drums',
+                'bass guitar',
+                'violin',
+                'saxophone',
+                'flute',
+                'clarinet',
+                'trumpet',
+                'trombone',
+                'voice',
+                'cello',
+                'ukulele',
+                'percussion',
+                'double bass',
+                'oboe',
+                'harp',
+                'accordion',
+                'banjo',
+                'djing',
+                'production',
+                'listening',
+              ];
+              const instrumentTag = parentTask.tags.find((tag) =>
+                instrumentLabels.includes(tag.label.toLowerCase()),
+              );
+              return instrumentTag?.label || 'Unknown';
+            })(),
+            user: {
+              id: parentTask.musician.id,
+              displayName: parentTask.musician.displayName,
+              avatarUrl: parentTask.musician.avatarUrl,
+            },
+            tags: parentTask.tags.map((tag) => ({
+              id: tag.id,
+              label: tag.label,
+              color: tag.color,
+            })),
+            checklist: parentTask.checklist,
+            savedCount: parentTask.savedCount,
+            usedCount: parentTask.usedCount,
+          }
+        : null,
     };
   }
 
