@@ -100,7 +100,7 @@ export function TaskDetail({
       {/* Single Task Section */}
       <div className="bg-card border border-border rounded-lg p-4 md:p-6">
         {/* Task Title and Creator */}
-        <div className="flex items-start justify-between mb-4">
+        <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-bold text-foreground">{task.title}</h1>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <User className="w-4 h-4" />
