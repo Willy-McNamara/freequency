@@ -18,6 +18,21 @@ export type TaskDTO = {
   checklist: string[];
   savedCount: number;
   usedCount: number;
+  parentTask?: {
+    id: number;
+    title: string;
+    description: string;
+    instrument: string;
+    user: {
+      id: number;
+      displayName: string;
+      avatarUrl: string | null;
+    };
+    tags: TagDTO[];
+    checklist: string[];
+    savedCount: number;
+    usedCount: number;
+  } | null;
 };
 
 export type CreateTaskDto = {

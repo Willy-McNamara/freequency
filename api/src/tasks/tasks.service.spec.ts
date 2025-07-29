@@ -277,6 +277,65 @@ describe('TasksService', () => {
 
       expect(result).toBeNull();
     });
+
+    it('should return task with parent task information when parent exists', async () => {
+      const mockTask = {
+        id: 2,
+        title: 'Child Task',
+        description: 'Child Description',
+        checklist: [],
+        savedCount: 0,
+        usedCount: 0,
+        parentTaskId: 1,
+        parentTask: {
+          id: 1,
+          title: 'Parent Task',
+          description: 'Parent Description',
+          checklist: [],
+          savedCount: 5,
+          usedCount: 10,
+          musician: { id: 1, displayName: 'Parent User', avatarUrl: null },
+          tags: [],
+        },
+        musician: { id: 2, displayName: 'Child User', avatarUrl: null },
+        tags: [],
+      };
+
+      (prismaService.taskDefinition.findUnique as jest.Mock).mockResolvedValue(
+        mockTask,
+      );
+
+      const result = await service.getTaskById(2);
+
+      expect(result).toBeDefined();
+      expect(result?.parentTask).toBeDefined();
+      expect(result?.parentTask?.id).toBe(1);
+      expect(result?.parentTask?.title).toBe('Parent Task');
+    });
+
+    it('should return task without parent task information when no parent exists', async () => {
+      const mockTask = {
+        id: 1,
+        title: 'Root Task',
+        description: 'Root Description',
+        checklist: [],
+        savedCount: 0,
+        usedCount: 0,
+        parentTaskId: null,
+        parentTask: null,
+        musician: { id: 1, displayName: 'Root User', avatarUrl: null },
+        tags: [],
+      };
+
+      (prismaService.taskDefinition.findUnique as jest.Mock).mockResolvedValue(
+        mockTask,
+      );
+
+      const result = await service.getTaskById(1);
+
+      expect(result).toBeDefined();
+      expect(result?.parentTask).toBeNull();
+    });
   });
 
   describe('createTask', () => {

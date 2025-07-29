@@ -15,6 +15,7 @@ import { apiConfig } from "../config/api";
 import { RichTextRenderer } from "./rich-text";
 import { TagList } from "./TagList";
 import { useNavigate } from "react-router-dom";
+import { Separator } from "./ui/separator";
 
 async function saveTask(taskId: number) {
   return fetch(`${apiConfig.endpoints.tasks}/${taskId}/save`, {
@@ -76,6 +77,12 @@ export function TaskDetail({
     navigate(`/profile?user=${musicianId}`);
   };
 
+  const handleParentTaskClick = () => {
+    if (task.parentTask) {
+      navigate(`/task/${task.parentTask.id}`);
+    }
+  };
+
   return (
     <div
       className={cn(
@@ -98,18 +105,37 @@ export function TaskDetail({
       </Section>
 
       {/* Single Task Section */}
-      <div className="bg-card border border-border rounded-lg p-4 md:p-6">
+      <Section className="bg-card border border-border rounded-lg p-4 md:p-6">
         {/* Task Title and Creator */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2 sm:gap-0">
           <h1 className="text-2xl font-bold text-foreground">{task.title}</h1>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <User className="w-4 h-4" />
-            <span
-              className="cursor-pointer hover:text-primary hover:underline transition-all duration-200"
-              onClick={() => handleMusicianClick(task.user.id)}
+          <div className="flex flex-col items-start sm:items-end gap-1">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <User className="w-4 h-4" />
+              <span
+                className="cursor-pointer hover:text-primary hover:underline transition-all duration-200"
+                onClick={() => handleMusicianClick(task.user.id)}
+              >
+                by {task.user.displayName}
+              </span>
+              {task.parentTask && (
+                <>
+                  <Separator orientation="vertical" className="h-4 mx-2" />
+                  <span
+                    className="cursor-pointer hover:text-primary hover:underline transition-all duration-200 text-sm text-muted-foreground"
+                    onClick={handleParentTaskClick}
+                  >
+                    parent task
+                  </span>
+                </>
+              )}
+            </div>
+            {/* <span
+              className="cursor-pointer hover:text-primary hover:underline transition-all duration-200 text-sm text-muted-foreground"
+              // onClick={() => handleMusicianClick(task.user.id)}
             >
-              by {task.user.displayName}
-            </span>
+              parent task
+            </span> */}
           </div>
         </div>
 
@@ -196,7 +222,7 @@ export function TaskDetail({
             </Button>
           </div>
         </div>
-      </div>
+      </Section>
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-3">
