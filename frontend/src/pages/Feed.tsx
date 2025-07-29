@@ -14,6 +14,7 @@ import { Container } from "../components/layout/Container";
 import { Section } from "../components/layout/Section";
 import { Separator } from "@/components/ui/separator";
 import { Loading } from "../components/ui/loading";
+import { usePageTracking } from "../hooks/useAnalytics";
 
 interface SessionsResponse {
   sessions?: Post[];
@@ -81,6 +82,9 @@ interface Post {
 const Feed = () => {
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
+
+  // Track page view for analytics
+  usePageTracking("Feed");
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

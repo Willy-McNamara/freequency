@@ -37,9 +37,14 @@ import {
 import { Loading } from "@/components/ui/loading";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
+import { usePageTracking } from "../hooks/useAnalytics";
 
 const TaskLibrary: React.FC = () => {
   const [searchParams] = useSearchParams();
+
+  // Track page view for analytics
+  usePageTracking("Task Library");
+
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

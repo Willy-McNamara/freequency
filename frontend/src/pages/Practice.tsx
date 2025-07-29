@@ -29,6 +29,7 @@ import { ALL_INSTRUMENTS } from "../types/instruments.types";
 import { Badge } from "../components/badge";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
+import { usePageTracking } from "../hooks/useAnalytics";
 
 const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   session,
@@ -879,6 +880,10 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
 
 const Practice: React.FC = () => {
   const session = useContext(SessionContext);
+
+  // Track page view for analytics
+  usePageTracking("Practice");
+
   if (!session) return null;
   return <PracticeInner session={session} />;
 };

@@ -6,6 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../components/ui/card";
+import { usePageTracking } from "../hooks/useAnalytics";
 
 const aboutSections = [
   {
@@ -62,6 +63,9 @@ const aboutSections = [
 ];
 
 export default function About() {
+  // Track page view for analytics
+  usePageTracking("About");
+
   return (
     <Container size="md" className="py-8">
       <h1 className="text-3xl font-bold mb-8 text-center">Welcome!</h1>
