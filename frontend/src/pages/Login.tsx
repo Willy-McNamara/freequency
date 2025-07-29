@@ -11,10 +11,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../components/ui/dialog";
+import { usePageTracking } from "../hooks/useAnalytics";
 
 const Login: React.FC = () => {
   const { login } = useAuth();
   const [modal, setModal] = useState<null | "terms" | "privacy">(null);
+
+  // Track page view for analytics
+  usePageTracking("Login");
 
   const handleGoogleLogin = () => {
     // In development, use debug parameter
