@@ -34,7 +34,8 @@ export class TagsController {
   async createTag(
     @Body() body: { label: string; color?: string },
   ): Promise<{ id: number; label: string; color?: string }> {
-    let { label, color } = body;
+    const { color } = body;
+    let { label } = body;
     if (!label || label.trim() === '') {
       throw new BadRequestException('Tag label is required');
     }

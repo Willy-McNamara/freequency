@@ -9,6 +9,7 @@ export class AuthService {
     private musiciansService: MusiciansService,
   ) {}
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   validateUser(username: string, password: string): any {
     // look up user in db
   }
@@ -16,9 +17,6 @@ export class AuthService {
   async login(profile: any) {
     // grab the userID by using the email address from google...
 
-    const dummyUser = {
-      userId: '1',
-    };
     const payload = { username: profile.username, sub: profile.userId };
     return {
       access_token: this.jwtService.sign(payload),

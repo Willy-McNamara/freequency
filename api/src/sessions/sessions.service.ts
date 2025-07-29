@@ -1,16 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
-  CommentDto,
   CreateSessionDto,
-  FrontendSessionDto,
-  GasUpDto,
   NewCommentDto,
   NewFrontendSessionDTO,
   NewGasUpDto,
-  SessionDto,
 } from './dto/session.dto';
-import { v4 as uuidv4 } from 'uuid';
 import {
   CreatedCommentDto,
   CreatedGasUpDto,

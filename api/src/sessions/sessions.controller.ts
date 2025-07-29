@@ -9,16 +9,10 @@ import {
 } from '@nestjs/common';
 import { SessionsService } from './sessions.service';
 import {
-  SessionDto,
   CreateSessionDto,
-  NewCommentDto,
-  CommentDto,
-  NewGasUpDto,
-  GasUpDto,
-  FrontendSessionDto,
-  AudioPayload,
-  CreateSessionResponse,
   NewFrontendSessionDTO,
+  NewCommentDto,
+  NewGasUpDto,
 } from './dto/session.dto';
 import { JwtAuthGuard } from '../auth/jwt.guard';
 import {
@@ -26,9 +20,7 @@ import {
   CreatedGasUpDto,
 } from 'src/musicians/dto/musician.dto';
 import { S3Service } from 'src/s3/s3.service';
-import crypto from 'crypto';
 import { MediaService } from 'src/media/media.service';
-import { FrontendMedia } from 'src/media/media.dto';
 
 @Controller('sessions')
 export class SessionsController {

@@ -1,8 +1,7 @@
 import { config } from 'dotenv';
-import { HttpAdapterHost, NestFactory } from '@nestjs/core';
+import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import cookieParser from 'cookie-parser';
-import { AllExceptionsFilter } from './filters/all-exceptions.filter';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import { Logger } from 'nestjs-pino';
