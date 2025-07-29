@@ -15,6 +15,7 @@ export interface CreateTaskData {
   instrument: string;
   tags: string[];
   checklist: string[];
+  parentTaskId?: number; // Optional parent task ID for "Make it your own" functionality
 }
 
 export interface CreateTaskModalProps {

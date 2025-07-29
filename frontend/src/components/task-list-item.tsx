@@ -26,6 +26,25 @@ export interface Task {
   savedCount: number;
   usedCount: number;
   isSaved?: boolean;
+  parentTask?: {
+    id: number;
+    title: string;
+    description: string;
+    instrument: string;
+    user: {
+      id: number;
+      displayName: string;
+      avatarUrl?: string;
+    };
+    tags: {
+      id: number;
+      label: string;
+      color?: string;
+    }[];
+    checklist: string[];
+    savedCount: number;
+    usedCount: number;
+  } | null;
 }
 
 export interface TaskListItemProps {
