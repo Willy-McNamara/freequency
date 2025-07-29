@@ -19,6 +19,7 @@ import { Music, Clock, Fuel, Pencil, X } from "lucide-react";
 import { InstrumentModal } from "../components/InstrumentModal";
 import { AlertTriangle } from "lucide-react";
 import { Loading } from "../components/ui/loading";
+import { usePageTracking } from "../hooks/useAnalytics";
 
 interface Instrument {
   id: number;
@@ -55,6 +56,9 @@ export default function Profile() {
   const { user } = useAuth();
   const params = useParams();
   const [searchParams] = useSearchParams();
+
+  // Track page view for analytics
+  usePageTracking("Profile");
   const userParam = searchParams.get("user");
 
   // Get user ID from either URL params or query params

@@ -28,6 +28,7 @@ import {
 } from "./Growth/index";
 import { createGoal, deleteGoal, updateGoal } from "../services/musicians";
 import { Container } from "@/components/layout/Container";
+import { usePageTracking } from "../hooks/useAnalytics";
 
 // Define the possible views as a union type
 type ViewType = "MENU" | "TOTAL" | "CHRONOLOGICAL" | "GOALS";
@@ -89,6 +90,10 @@ type TaskInUseApiResponse = {
 
 const Growth: React.FC = () => {
   const { user } = useAuth();
+
+  // Track page view for analytics
+  usePageTracking("Growth");
+
   const [view, setView] = useState<ViewType>("MENU");
   const [selectedTimeRange, setSelectedTimeRange] = useState<TimeRange>("week");
   const [selectedMetric, setSelectedMetric] = useState<Metric>("occurrence");
