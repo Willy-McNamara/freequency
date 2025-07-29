@@ -5,9 +5,9 @@ WORKDIR /app/frontend
 
 # Copy package files
 COPY frontend/package.json frontend/package-lock.json ./
-RUN npm install
+RUN npm ci --only=production
 
-# Copy source code
+# Copy source code (excluding test files via .dockerignore)
 COPY frontend ./
 
 # Build with environment variables (can be overridden at build time)
@@ -21,39 +21,34 @@ FROM node:20 AS backend-build
 
 WORKDIR /app/api
 
+# Copy package files
 COPY api/package.json api/package-lock.json ./
-RUN npm install
+RUN npm ci
 
+# Copy source code (excluding test files via .dockerignore)
 COPY api ./
 
 RUN npm run build
 
-# Stage 3: Combine the built frontend and backend, and run the application
-FROM node:20
+# Stage 3: Production runtime
+FROM node:20-alpine
 
 WORKDIR /app
 
-# Install AWS CLI for log uploads to S3
-RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
-    unzip awscliv2.zip && \
-    ./aws/install && \
-    rm -rf awscliv2.zip aws
+# Install AWS CLI for log uploads to S3 (using alpine package manager)
+RUN apk add --no-cache aws-cli
 
 # Copy backend dependencies and built backend code
 COPY api/package.json api/package-lock.json ./
-RUN npm install --only=production
+RUN npm ci --only=production && npm cache clean --force
 
 COPY --from=backend-build /app/api/dist /app/api/dist
 
 # Copy built frontend code to the expected location
 COPY --from=frontend-build /app/frontend/dist /app/frontend/dist
 
-# Copy database seed file to a known location
-# swithing to RDS, so commenting out this step (for local db hosting)
-# COPY db-backup/db_backup_6_29_24.sql /docker-entrypoint-initdb.d/seed.sql
-
-# Copy Prisma schema and scripts
-COPY api/prisma /app/api
+# Copy only necessary Prisma files
+COPY api/prisma/schema.prisma /app/api/prisma/
 COPY api/scripts/ /app/api/scripts/
 RUN chmod +x /app/api/scripts/entrypoint.sh
 RUN chmod +x /app/api/scripts/upload-logs-to-s3.sh

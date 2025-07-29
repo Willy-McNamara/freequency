@@ -2,7 +2,12 @@ name: CI
 
 on:
   pull_request:
-    branches: [main, develop, v3-add-testing]
+    branches: [v3]
+  push:
+    branches: [v3]
+
+env:
+  NODE_VERSION: "20"
 
 jobs:
   test-backend:
@@ -11,12 +16,25 @@ jobs:
       run:
         working-directory: ./api
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm ci
-      - run: npm run test --if-present
+          cache: "npm"
+      - name: Install dependencies
+        run: npm ci
+      - name: Run tests
+        run: npm test
+      - name: Run test coverage
+        run: npm run test:cov
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage/lcov.info
+          flags: backend
+          name: backend-coverage
+      - name: Lint code
+        run: npm run lint
 
   test-frontend:
     runs-on: ubuntu-latest
@@ -24,9 +42,22 @@ jobs:
       run:
         working-directory: ./frontend
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm ci
-      - run: npm run test --if-present
+          cache: "npm"
+      - name: Install dependencies
+        run: npm ci
+      - name: Run tests
+        run: npm test
+      - name: Run test coverage
+        run: npm run test:coverage
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage/lcov.info
+          flags: frontend
+          name: frontend-coverage
+      - name: Lint code
+        run: npm run lint

@@ -5,3 +5,66 @@
 *.test.tsx
 __tests__/
 coverage/
+
+# Ignore build artifacts and development files
+node_modules/
+dist/
+build/
+.next/
+.nuxt/
+.vuepress/dist/
+
+# Ignore development and test configuration
+jest.config.js
+jest.config.ts
+vitest.config.ts
+vitest.config.js
+cypress.config.js
+cypress.config.ts
+playwright.config.js
+playwright.config.ts
+
+# Ignore test setup files
+setupTests.ts
+setupTests.js
+test-setup.ts
+test-setup.js
+
+# Ignore development tools
+.eslintrc*
+.prettierrc*
+.editorconfig
+.gitignore
+.git/
+.github/
+
+# Ignore documentation
+README.md
+*.md
+docs/
+
+# Ignore development scripts
+scripts/deploy-*.js
+scripts/test-*.js
+
+# Ignore environment files (will be passed as build args)
+.env*
+!.env.example
+
+# Ignore IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore logs
+logs/
+*.log
+
+# Ignore temporary files
+tmp/
+temp/
