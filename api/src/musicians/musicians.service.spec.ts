@@ -367,8 +367,12 @@ describe('MusiciansService', () => {
   describe('getAllIdNames', () => {
     it('should return all musician IDs and names', async () => {
       const mockMusicians = [
-        { id: 1, displayName: 'User 1' },
-        { id: 2, displayName: 'User 2' },
+        { id: 1, displayName: 'User 1', avatarUrl: null },
+        {
+          id: 2,
+          displayName: 'User 2',
+          avatarUrl: 'https://example.com/avatar.jpg',
+        },
       ];
 
       (prismaService.musician.findMany as jest.Mock).mockResolvedValue(
@@ -378,11 +382,15 @@ describe('MusiciansService', () => {
       const result = await service.getAllIdNames();
 
       expect(result).toEqual([
-        { id: 1, displayName: 'User 1' },
-        { id: 2, displayName: 'User 2' },
+        { id: 1, displayName: 'User 1', avatarUrl: null },
+        {
+          id: 2,
+          displayName: 'User 2',
+          avatarUrl: 'https://example.com/avatar.jpg',
+        },
       ]);
       expect(prismaService.musician.findMany).toHaveBeenCalledWith({
-        select: { id: true, displayName: true },
+        select: { id: true, displayName: true, avatarUrl: true },
         orderBy: { displayName: 'asc' },
       });
     });

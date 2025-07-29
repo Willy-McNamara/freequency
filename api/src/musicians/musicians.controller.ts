@@ -27,7 +27,9 @@ export class MusiciansController {
   }
 
   @Get('all-id-names')
-  async getAllIdNames(): Promise<{ id: number; displayName: string }[]> {
+  async getAllIdNames(): Promise<
+    { id: number; displayName: string; avatarUrl: string | null }[]
+  > {
     return this.musiciansService.getAllIdNames();
   }
 

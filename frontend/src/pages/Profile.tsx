@@ -20,6 +20,7 @@ import { InstrumentModal } from "../components/InstrumentModal";
 import { AlertTriangle } from "lucide-react";
 import { Loading } from "../components/ui/loading";
 import { usePageTracking } from "../hooks/useAnalytics";
+import { UserSearch } from "../components/UserSearch";
 
 interface Instrument {
   id: number;
@@ -275,9 +276,16 @@ export default function Profile() {
         </Button>
       )}
       <Container size="lg">
+        {/* Search Section */}
+        <Section>
+          <div className="w-64 sm:w-80 md:w-96 lg:w-[28rem] xl:w-[32rem] mx-auto mb-6">
+            <UserSearch />
+          </div>
+        </Section>
+
         {/* Header Section */}
         <Section>
-          <div className="flex justify-center relative mt-12">
+          <div className="flex justify-center relative">
             <Avatar>
               <AvatarImage
                 src={data.profilePictureUrl}

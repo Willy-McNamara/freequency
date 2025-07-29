@@ -7,6 +7,7 @@ export declare class MusiciansController {
     getAllIdNames(): Promise<{
         id: number;
         displayName: string;
+        avatarUrl: string | null;
     }[]>;
     getMusicianById(id: string, req: any): Promise<MusicianFrontendDTO | null>;
     getGoalsForMusician(id: string): Promise<GoalDto[]>;
