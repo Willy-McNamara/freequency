@@ -269,10 +269,11 @@ export default function Profile() {
       {viewingOwnProfile && (
         <Button
           variant="outline"
-          className="fixed top-20 right-4 z-40 flex items-center gap-2"
+          className="fixed top-20 right-4 z-40 flex items-center gap-2 sm:gap-2 md:gap-2 px-2.5 sm:px-3"
           onClick={openEdit}
         >
-          <Pencil className="w-4 h-4 mr-1" /> Edit Profile
+          <Pencil className="w-4 h-4 sm:mr-1" />
+          <span className="hidden sm:inline">Edit Profile</span>
         </Button>
       )}
       <Container size="lg">

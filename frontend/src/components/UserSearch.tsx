@@ -107,7 +107,7 @@ export function UserSearch({ className = "" }: UserSearchProps) {
         {searchTerm && (
           <button
             onClick={handleClearSearch}
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1 bg-white rounded"
           >
             <X className="w-3 h-3" />
           </button>
@@ -118,11 +118,11 @@ export function UserSearch({ className = "" }: UserSearchProps) {
       {showDropdown && isFocused && (
         <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-b-md shadow-lg z-50 max-h-60 overflow-y-auto">
           {isLoading ? (
-            <div className="p-4 text-center text-muted-foreground">
+            <div className="p-4 text-center text-gray-500 bg-white">
               Loading users...
             </div>
           ) : filteredUsers.length === 0 ? (
-            <div className="p-4 text-center text-muted-foreground">
+            <div className="p-4 text-center text-gray-500 bg-white">
               No users found
             </div>
           ) : (
@@ -130,7 +130,7 @@ export function UserSearch({ className = "" }: UserSearchProps) {
               <button
                 key={user.id}
                 onClick={() => handleUserSelect(user)}
-                className="w-full p-3 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left"
+                className="w-full p-3 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left bg-white text-gray-900"
               >
                 <Avatar className="w-8 h-8">
                   <AvatarImage
@@ -139,7 +139,9 @@ export function UserSearch({ className = "" }: UserSearchProps) {
                   />
                   <AvatarFallback>{user.displayName[0]}</AvatarFallback>
                 </Avatar>
-                <span className="font-medium">{user.displayName}</span>
+                <span className="font-medium text-gray-900">
+                  {user.displayName}
+                </span>
               </button>
             ))
           )}
