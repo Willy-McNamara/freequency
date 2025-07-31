@@ -1,4 +1,4 @@
-import { JSX, useState, useCallback } from "react";
+import { JSX, useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { MessageSquareIcon, Heart, Clock } from "lucide-react";
@@ -73,12 +73,18 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
 
   // State for gas up functionality
   const [gasUpCount, setGasUpCount] = useState(postData.gasUps.length);
-  const [hasUserGasUp, setHasUserGasUp] = useState(
-    user
-      ? postData.gasUps.some((gasUp) => gasUp.musician.id === user.id)
-      : false
-  );
+  const [hasUserGasUp, setHasUserGasUp] = useState(false);
   const [isGasUpLoading, setIsGasUpLoading] = useState(false);
+
+  // Update hasUserGasUp when user becomes available
+  useEffect(() => {
+    if (user) {
+      const userHasGasUp = postData.gasUps.some(
+        (gasUp) => gasUp.musician.id === user.id
+      );
+      setHasUserGasUp(userHasGasUp);
+    }
+  }, [user, postData.gasUps]);
 
   const sessionData = {
     date: new Intl.DateTimeFormat("en-US", {
@@ -183,7 +189,7 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
         setIsGasUpLoading(false);
       }
     },
-    [user, hasUserGasUp, isGasUpLoading, postData.id]
+    [user, hasUserGasUp, isGasUpLoading, postData.id, postData.musician.id]
   );
 
   // Data for engagement metrics
@@ -277,7 +283,7 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
           }
         >
           <div
-            className={`inline-flex items-center justify-center p-1 rounded-full transition-all duration-200 ${
+            className={`inline-flex items-center justify-center p-1 rounded-full transition-colors duration-150 ease-in-out ${
               user?.id === postData.musician.id
                 ? "text-gray-300"
                 : hasUserGasUp
@@ -286,7 +292,7 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
             }`}
           >
             <Heart
-              className={`h-4 w-4 transition-transform duration-200 ${
+              className={`h-4 w-4 transition-all duration-150 ease-in-out ${
                 hasUserGasUp ? "fill-current" : ""
               } ${isGasUpLoading ? "animate-pulse" : ""}`}
             />

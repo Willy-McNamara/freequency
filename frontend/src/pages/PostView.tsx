@@ -468,12 +468,14 @@ export const PostView: React.FC = () => {
                 variant={hasUserGasUp ? "secondary" : "outline"}
                 onClick={handleAddGasUp}
                 disabled={isGasUpLoading}
-                className={`flex-1 ${isGasUpLoading ? "opacity-50" : ""}`}
+                className={`group flex-1 ${isGasUpLoading ? "opacity-50" : ""}`}
                 size="sm"
               >
                 <Heart
-                  className={`w-4 h-4 mr-2 ${
-                    hasUserGasUp ? "fill-current text-red-500" : ""
+                  className={`w-4 h-4 mr-2 transition-colors duration-150 ease-in-out ${
+                    hasUserGasUp
+                      ? "fill-current text-red-500"
+                      : "group-hover:text-red-500"
                   } ${isGasUpLoading ? "animate-pulse" : ""}`}
                 />
                 "Gas Up" ({post.gasUps.length})
