@@ -72,6 +72,13 @@ let SessionsController = class SessionsController {
         };
         return this.sessionsService.addGasUp(newGasUp);
     }
+    async removeGasUp(sessionId, req) {
+        const removeGasUpData = {
+            gasserId: req.user.id,
+            sessionId: parseInt(sessionId),
+        };
+        return this.sessionsService.removeGasUp(removeGasUpData);
+    }
 };
 exports.SessionsController = SessionsController;
 __decorate([
@@ -115,6 +122,15 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], SessionsController.prototype, "addGasUp", null);
+__decorate([
+    (0, common_1.Delete)('removeGasUp'),
+    (0, common_1.UseGuards)(jwt_guard_1.JwtAuthGuard),
+    __param(0, (0, common_1.Query)('sessionId')),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], SessionsController.prototype, "removeGasUp", null);
 exports.SessionsController = SessionsController = __decorate([
     (0, common_1.Controller)('sessions'),
     __metadata("design:paramtypes", [sessions_service_1.SessionsService,

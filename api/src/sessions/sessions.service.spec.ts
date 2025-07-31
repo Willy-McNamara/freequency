@@ -443,4 +443,95 @@ describe('SessionsService', () => {
       expect(prismaService.$transaction).toHaveBeenCalled();
     });
   });
+
+  describe('removeGasUp', () => {
+    it('should remove a gas up from a session', async () => {
+      const removeGasUpData = {
+        gasserId: 2,
+        sessionId: 1,
+      };
+
+      const mockExistingGasUp = {
+        id: 1,
+        sessionId: 1,
+        musicianId: 2,
+      };
+
+      const mockSession = {
+        id: 1,
+        musicianId: 1,
+      };
+
+      // Mock finding existing gas up
+      (prismaService.gasUp.findFirst as jest.Mock).mockResolvedValue(
+        mockExistingGasUp,
+      );
+
+      // Mock finding session
+      (prismaService.session.findUnique as jest.Mock).mockResolvedValue(
+        mockSession,
+      );
+
+      // Mock transaction
+      (prismaService.$transaction as jest.Mock).mockImplementation(
+        async (callback) => {
+          return callback(mockPrismaService);
+        },
+      );
+
+      // Mock gas up deletion
+      (prismaService.gasUp.delete as jest.Mock).mockResolvedValue({});
+
+      // Mock musician updates
+      (prismaService.musician.update as jest.Mock).mockResolvedValue({});
+
+      const result = await service.removeGasUp(removeGasUpData);
+
+      expect(result).toEqual({ success: true });
+      expect(prismaService.$transaction).toHaveBeenCalled();
+      expect(prismaService.gasUp.delete).toHaveBeenCalledWith({
+        where: { id: mockExistingGasUp.id },
+      });
+    });
+
+    it('should return success when gas up does not exist', async () => {
+      const removeGasUpData = {
+        gasserId: 2,
+        sessionId: 1,
+      };
+
+      // Mock finding no existing gas up
+      (prismaService.gasUp.findFirst as jest.Mock).mockResolvedValue(null);
+
+      const result = await service.removeGasUp(removeGasUpData);
+
+      expect(result).toEqual({ success: true });
+      expect(prismaService.$transaction).not.toHaveBeenCalled();
+    });
+
+    it('should throw error when session not found', async () => {
+      const removeGasUpData = {
+        gasserId: 2,
+        sessionId: 1,
+      };
+
+      const mockExistingGasUp = {
+        id: 1,
+        sessionId: 1,
+        musicianId: 2,
+      };
+
+      // Mock finding existing gas up
+      (prismaService.gasUp.findFirst as jest.Mock).mockResolvedValue(
+        mockExistingGasUp,
+      );
+
+      // Mock finding no session
+      (prismaService.session.findUnique as jest.Mock).mockResolvedValue(null);
+
+      await expect(service.removeGasUp(removeGasUpData)).rejects.toThrow(
+        'Session not found',
+      );
+    });
+  });
 });
