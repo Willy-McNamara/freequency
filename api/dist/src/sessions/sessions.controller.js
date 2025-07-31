@@ -14,6 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SessionsController = void 0;
 const common_1 = require("@nestjs/common");
+const platform_express_1 = require("@nestjs/platform-express");
 const sessions_service_1 = require("./sessions.service");
 const jwt_guard_1 = require("../auth/jwt.guard");
 const s3_service_1 = require("../s3/s3.service");
@@ -23,6 +24,9 @@ let SessionsController = class SessionsController {
         this.sessionsService = sessionsService;
         this.s3service = s3service;
         this.mediaService = mediaService;
+    }
+    async getSession(req, id) {
+        return this.sessionsService.getSession(parseInt(id));
     }
     async getSessions(req, cursor, users, instruments, tags, saved, following) {
         let userIdList = users
@@ -72,15 +76,67 @@ let SessionsController = class SessionsController {
         };
         return this.sessionsService.addGasUp(newGasUp);
     }
-    async removeGasUp(sessionId, req) {
-        const removeGasUpData = {
-            gasserId: req.user.id,
-            sessionId: parseInt(sessionId),
+    async getSignedUrl(body, req) {
+        const { size, type, fileName } = body;
+        const filePayload = {
+            size,
+            type,
+            musicianId: req.user.id,
         };
-        return this.sessionsService.removeGasUp(removeGasUpData);
+        const signedUrl = await this.s3service.getSignedURL(filePayload, fileName);
+        if (signedUrl.startsWith('File size') ||
+            signedUrl.startsWith('File type')) {
+            throw new Error(signedUrl);
+        }
+        return { signedUrl };
+    }
+    async connectMedia(body, req) {
+        const { fileName, sessionId } = body;
+        const fileExtension = fileName.split('.').pop()?.toLowerCase();
+        let mediaType;
+        if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExtension || '')) {
+            mediaType = 'image';
+        }
+        else if (['mp3', 'wav', 'm4a', 'ogg', 'webm'].includes(fileExtension || '')) {
+            mediaType = 'audio';
+        }
+        else if (['mp4', 'webm', 'ogg', 'mov'].includes(fileExtension || '')) {
+            mediaType = 'video';
+        }
+        else {
+            throw new Error('Unsupported file type');
+        }
+        const newMedia = await this.mediaService.addMediaItem(fileName, req.user.id, mediaType, sessionId);
+        return newMedia;
+    }
+    async uploadMedia(file, body, req) {
+        const { sessionId } = body;
+        const timestamp = Date.now();
+        const fileExtension = file.originalname.split('.').pop();
+        const fileName = `media/${req.user.id}/${timestamp}.${fileExtension}`;
+        const url = await this.s3service.uploadFile(file.buffer, fileName, file.mimetype, req.user.id);
+        if (sessionId) {
+            await this.connectMedia({
+                fileName,
+                sessionId: parseInt(sessionId),
+            }, req);
+        }
+        return {
+            url,
+            fileName: file.originalname,
+        };
     }
 };
 exports.SessionsController = SessionsController;
+__decorate([
+    (0, common_1.Get)(':id'),
+    (0, common_1.UseGuards)(jwt_guard_1.JwtAuthGuard),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], SessionsController.prototype, "getSession", null);
 __decorate([
     (0, common_1.Get)(),
     (0, common_1.UseGuards)(jwt_guard_1.JwtAuthGuard),
@@ -123,14 +179,34 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], SessionsController.prototype, "addGasUp", null);
 __decorate([
-    (0, common_1.Delete)('removeGasUp'),
+    (0, common_1.Post)('signed-url'),
     (0, common_1.UseGuards)(jwt_guard_1.JwtAuthGuard),
-    __param(0, (0, common_1.Query)('sessionId')),
+    __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
-], SessionsController.prototype, "removeGasUp", null);
+], SessionsController.prototype, "getSignedUrl", null);
+__decorate([
+    (0, common_1.Post)('connect-media'),
+    (0, common_1.UseGuards)(jwt_guard_1.JwtAuthGuard),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], SessionsController.prototype, "connectMedia", null);
+__decorate([
+    (0, common_1.Post)('upload-media'),
+    (0, common_1.UseGuards)(jwt_guard_1.JwtAuthGuard),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file')),
+    __param(0, (0, common_1.UploadedFile)()),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object, Object]),
+    __metadata("design:returntype", Promise)
+], SessionsController.prototype, "uploadMedia", null);
 exports.SessionsController = SessionsController = __decorate([
     (0, common_1.Controller)('sessions'),
     __metadata("design:paramtypes", [sessions_service_1.SessionsService,

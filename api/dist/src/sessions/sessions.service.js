@@ -204,6 +204,155 @@ let SessionsService = class SessionsService {
             nextCursor,
         };
     }
+    async getSession(sessionId) {
+        const session = await this.prisma.session.findUnique({
+            where: { id: sessionId },
+            include: {
+                gasUps: {
+                    include: {
+                        musician: {
+                            select: {
+                                id: true,
+                                displayName: true,
+                                avatarUrl: true,
+                            },
+                        },
+                    },
+                },
+                comments: {
+                    include: {
+                        musician: {
+                            select: {
+                                id: true,
+                                displayName: true,
+                                avatarUrl: true,
+                            },
+                        },
+                    },
+                },
+                musician: {
+                    select: {
+                        id: true,
+                        displayName: true,
+                        avatarUrl: true,
+                    },
+                },
+                media: {
+                    select: {
+                        url: true,
+                        type: true,
+                    },
+                },
+                tags: {
+                    select: {
+                        id: true,
+                        label: true,
+                        color: true,
+                    },
+                },
+                instruments: {
+                    select: {
+                        id: true,
+                        label: true,
+                        color: true,
+                    },
+                },
+                tasksInUse: {
+                    include: {
+                        taskDefinition: {
+                            include: {
+                                musician: {
+                                    select: {
+                                        id: true,
+                                        displayName: true,
+                                        avatarUrl: true,
+                                    },
+                                },
+                            },
+                        },
+                        tags: {
+                            select: {
+                                id: true,
+                                label: true,
+                                color: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+        if (!session) {
+            throw new Error('Session not found');
+        }
+        return {
+            id: session.id,
+            title: session.title,
+            notes: session.notes,
+            instruments: session.instruments.map((tag) => ({
+                id: tag.id,
+                label: tag.label,
+                color: tag.color,
+            })),
+            duration: session.duration,
+            isPublic: session.isPublic,
+            createdAt: session.createdAt.toISOString(),
+            musician: {
+                id: session.musician.id,
+                displayName: session.musician.displayName,
+                avatarUrl: session.musician.avatarUrl,
+            },
+            tags: session.tags.map((tag) => ({
+                id: tag.id,
+                label: tag.label,
+                color: tag.color,
+            })),
+            gasUps: session.gasUps.map((gasUp) => ({
+                musician: {
+                    id: gasUp.musician.id,
+                    displayName: gasUp.musician.displayName,
+                    avatarUrl: gasUp.musician.avatarUrl,
+                },
+            })),
+            comments: session.comments.map((comment) => ({
+                id: comment.id,
+                text: comment.text,
+                createdAt: comment.createdAt.toISOString(),
+                musician: {
+                    id: comment.musician.id,
+                    displayName: comment.musician.displayName,
+                    avatarUrl: comment.musician.avatarUrl,
+                },
+            })),
+            media: session.media ?? [],
+            tasks: session.tasksInUse
+                .filter((taskInUse) => !taskInUse.isSessionTask && taskInUse.taskDefinition)
+                .map((taskInUse) => ({
+                id: taskInUse.id,
+                title: taskInUse.taskDefinition.title,
+                notes: taskInUse.notes,
+                timeSpent: taskInUse.duration,
+                taskDefinition: {
+                    id: taskInUse.taskDefinition.id,
+                    title: taskInUse.taskDefinition.title,
+                    description: taskInUse.taskDefinition.description,
+                    instrument: taskInUse.taskDefinition.musician.displayName,
+                    user: {
+                        id: taskInUse.taskDefinition.musician.id,
+                        displayName: taskInUse.taskDefinition.musician.displayName,
+                        avatarUrl: taskInUse.taskDefinition.musician.avatarUrl,
+                    },
+                    tags: taskInUse.tags.map((tag) => ({
+                        id: tag.id,
+                        label: tag.label,
+                        color: tag.color,
+                    })),
+                    checklist: taskInUse.checklistCompletions,
+                    savedCount: 0,
+                    usedCount: 0,
+                },
+            })),
+        };
+    }
     async getFiveSessions() {
         const sessions = await this.prisma.session.findMany({
             take: 5,
@@ -494,14 +643,10 @@ let SessionsService = class SessionsService {
                     avatarUrl: comment.musician.avatarUrl,
                 },
             })),
-            media: session.media.length > 0
-                ? [
-                    {
-                        url: session.media[0].url,
-                        type: session.media[0].type,
-                    },
-                ]
-                : [],
+            media: session.media.map((mediaItem) => ({
+                url: mediaItem.url,
+                type: mediaItem.type,
+            })),
             tasks: session.tasksInUse.map((taskInUse) => ({
                 id: taskInUse.id,
                 title: taskInUse.taskDefinition?.title || 'Session Task',

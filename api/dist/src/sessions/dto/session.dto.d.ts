@@ -138,6 +138,12 @@ export type AudioPayload = {
     checksum: string;
     musicianId: number;
 };
+export type FileUploadPayload = {
+    size: number;
+    type: string;
+    musicianId: number;
+    checksum?: string;
+};
 export type CreateSessionResponse = {
     newSession: FrontendSessionDto;
     newMedia: MediaItem;

@@ -30,6 +30,9 @@ import { Badge } from "../components/badge";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { usePageTracking } from "../hooks/useAnalytics";
+import { MediaUploadButton } from "@/components/MediaUploadButton";
+import { MediaGallery } from "@/components/MediaGallery";
+import { MediaService } from "../services/media";
 
 const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   session,
@@ -286,21 +289,31 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
         })),
       };
 
-      const apiPromise = sessionService.saveSession(sessionData);
-      // makes api call a promise var so it can be used in the toast logic
-      toast.promise(apiPromise, {
-        loading: "Saving session...",
-        success: () => {
-          return `Successful save! Routing to your posts...`;
-        },
-        error: "Error",
-      });
-      await apiPromise;
+      const savedSession = await sessionService.saveSession(sessionData);
+
+      // Connect media to the saved session
+      if (session.media && session.media.length > 0) {
+        for (const mediaItem of session.media) {
+          if (mediaItem.fileName) {
+            try {
+              await sessionService.connectMediaToSession(
+                mediaItem.fileName,
+                savedSession.id
+              );
+            } catch (error) {
+              console.error("Error connecting media to session:", error);
+            }
+          }
+        }
+      }
+
+      toast.success(`Successful save! Routing to your posts...`);
       await new Promise((resolve) => setTimeout(resolve, 2500)); // Pause so the user can read the toast before redirect
       // Clear all session state after successful save
       session.setSessionTitle("Untitled Session");
       session.setTags([]);
       session.setTasks([]);
+      session.setMedia([]);
       session.setIsActive(false);
       session.setSessionTimerAccumulated(0);
       session.setSessionTimerStartTime(null);
@@ -809,6 +822,46 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
             />
           </Section>
           <Section spacing={{ base: "sm", sm: "md", md: "lg" }}>
+            <div className="w-full">
+              <h3 className="font-bold text-base mb-1">Media</h3>
+              <div className="flex flex-wrap gap-2 mb-3 items-center">
+                <MediaUploadButton
+                  onFileSelect={async (file) => {
+                    try {
+                      if (!user?.id) {
+                        toast.error("Please log in to upload media");
+                        return;
+                      }
+
+                      const uploadResult = await MediaService.uploadFile(
+                        file,
+                        user.id
+                      );
+                      const mediaType = MediaService.getMediaType(file);
+
+                      session.addMedia({
+                        url: uploadResult.url,
+                        type: mediaType,
+                        fileName: uploadResult.fileName,
+                      });
+
+                      toast.success("Media uploaded successfully!");
+                    } catch (error) {
+                      console.error("Upload error:", error);
+                      toast.error("Failed to upload media");
+                    }
+                  }}
+                  acceptedTypes="all"
+                  className="flex items-center gap-2"
+                />
+              </div>
+              <MediaGallery
+                media={session.media}
+                onRemove={(index) => session.removeMedia(index)}
+              />
+            </div>
+          </Section>
+          <Section spacing={{ base: "sm", sm: "md", md: "lg" }}>
             <div className="flex flex-col sm:flex-row justify-center items-center gap-4 w-full">
               <button
                 type="button"
@@ -845,6 +898,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                         session.setSessionTitle(getDefaultSessionTitle());
                         session.setTags([]);
                         session.setTasks([]);
+                        session.setMedia([]);
                         session.setIsActive(false);
                         session.setSessionTimerAccumulated(0);
                         session.setSessionTimerStartTime(null);

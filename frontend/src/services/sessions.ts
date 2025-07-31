@@ -51,7 +51,7 @@ export const sessionService = {
     if (!response.data) {
       throw new Error("No data received from server");
     }
-    return response.data;
+    return response.data as { id: number; [key: string]: unknown };
   },
 
   async addComment(
@@ -99,5 +99,30 @@ export const sessionService = {
       throw new Error("No data received from server");
     }
     return response.data as { success: boolean };
+  },
+
+  async getSession(sessionId: number) {
+    const response = await apiClient.get(`/sessions/${sessionId}`);
+    if (response.error) {
+      throw new Error(response.error);
+    }
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
+    return response.data;
+  },
+
+  async connectMediaToSession(fileName: string, sessionId: number) {
+    const response = await apiClient.post("/sessions/connect-media", {
+      fileName,
+      sessionId,
+    });
+    if (response.error) {
+      throw new Error(response.error);
+    }
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
+    return response.data;
   },
 };

@@ -5,7 +5,7 @@ export type MediaItem = {
   type: MediaType;
 };
 
-export type MediaType = 'audio' | 'video';
+export type MediaType = 'audio' | 'video' | 'image';
 
 export type FrontendMedia = {
   url: string;

@@ -147,6 +147,14 @@ export type AudioPayload = {
   musicianId: number;
 };
 
+// Generic file upload payload for all media types
+export type FileUploadPayload = {
+  size: number;
+  type: string;
+  musicianId: number;
+  checksum?: string;
+};
+
 export type CreateSessionResponse = {
   newSession: FrontendSessionDto;
   newMedia: MediaItem;

@@ -2,7 +2,13 @@
 import { Injectable } from '@nestjs/common';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { AudioPayload } from 'src/sessions/dto/session.dto';
+
+export interface FileUploadPayload {
+  size: number;
+  type: string;
+  musicianId: number;
+  checksum?: string;
+}
 
 @Injectable()
 export class S3Service {
@@ -19,27 +25,63 @@ export class S3Service {
   }
 
   async getSignedURL(
-    audioPayload: AudioPayload,
+    filePayload: FileUploadPayload,
     fileName: string,
   ): Promise<string> {
-    const maxFileSize = 200001; // 10 MB
-    if (audioPayload.size > maxFileSize) {
-      return 'File size not accepted';
+    // File size limits (in bytes)
+    const fileSizeLimits = {
+      image: 10 * 1024 * 1024, // 10MB for images
+      audio: 50 * 1024 * 1024, // 50MB for audio
+      video: 100 * 1024 * 1024, // 100MB for video
+    };
+
+    // Accepted file types
+    const acceptedFileTypes = {
+      image: [
+        'image/jpeg',
+        'image/jpg',
+        'image/png',
+        'image/gif',
+        'image/webp',
+      ],
+      audio: [
+        'audio/webm;codecs=opus',
+        'audio/mp3',
+        'audio/wav',
+        'audio/m4a',
+        'audio/ogg',
+      ],
+      video: ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'],
+    };
+
+    // Determine file category
+    let fileCategory: 'image' | 'audio' | 'video' | null = null;
+    for (const [category, types] of Object.entries(acceptedFileTypes)) {
+      if (types.includes(filePayload.type)) {
+        fileCategory = category as 'image' | 'audio' | 'video';
+        break;
+      }
     }
 
-    const acceptedFileTypes = ['audio/webm;codecs=opus'];
-    if (!acceptedFileTypes.includes(audioPayload.type)) {
+    if (!fileCategory) {
       return 'File type not accepted';
+    }
+
+    // Check file size
+    const maxFileSize = fileSizeLimits[fileCategory];
+    if (filePayload.size > maxFileSize) {
+      return `File size exceeds limit of ${Math.round(maxFileSize / (1024 * 1024))}MB`;
     }
 
     const putObjectCommand = new PutObjectCommand({
       Bucket: process.env.AWS_S3_BUCKET_NAME!,
       Key: fileName,
-      ContentType: audioPayload.type,
-      ContentLength: audioPayload.size,
-      ChecksumSHA256: audioPayload.checksum,
+      ContentType: filePayload.type,
+      ContentLength: filePayload.size,
+      ChecksumSHA256: filePayload.checksum,
       Metadata: {
-        musicianId: audioPayload.musicianId.toString(),
+        musicianId: filePayload.musicianId.toString(),
+        fileCategory: fileCategory,
       },
     });
 
@@ -53,6 +95,42 @@ export class S3Service {
     });
 
     return url;
+  }
+
+  /**
+   * Upload file directly to S3 from server-side
+   */
+  async uploadFile(
+    file: Buffer,
+    fileName: string,
+    contentType: string,
+    musicianId: number,
+  ): Promise<string> {
+    const putObjectCommand = new PutObjectCommand({
+      Bucket: process.env.AWS_S3_BUCKET_NAME!,
+      Key: fileName,
+      Body: file,
+      ContentType: contentType,
+      Metadata: {
+        musicianId: musicianId.toString(),
+        fileCategory: this.getFileCategory(contentType),
+      },
+    });
+
+    try {
+      await this.s3Client.send(putObjectCommand);
+      return `https://${process.env.AWS_S3_BUCKET_NAME}.s3.${process.env.AWS_BUCKET_REGION}.amazonaws.com/${fileName}`;
+    } catch (error) {
+      console.error('S3 upload error:', error);
+      throw new Error('Failed to upload file to S3');
+    }
+  }
+
+  private getFileCategory(contentType: string): 'image' | 'audio' | 'video' {
+    if (contentType.startsWith('image/')) return 'image';
+    if (contentType.startsWith('audio/')) return 'audio';
+    if (contentType.startsWith('video/')) return 'video';
+    throw new Error('Unsupported file type');
   }
 
   /**

@@ -19,7 +19,11 @@ interface ApiConfig {
       followStatus: (id: number) => string;
       followCounts: (id: number) => string;
     };
-    sessions: string;
+    sessions: {
+      base: string;
+      getSignedUrl: string;
+      connectMedia: string;
+    };
     tasks: string;
     tasksInUse: {
       byMusician: (id: number) => string;
@@ -62,7 +66,11 @@ const getApiConfig = (): ApiConfig => {
         followCounts: (id: number) =>
           `${baseUrl}/musicians/${id}/follow-counts`,
       },
-      sessions: `${baseUrl}/sessions`,
+      sessions: {
+        base: `${baseUrl}/sessions`,
+        getSignedUrl: `${baseUrl}/sessions/signed-url`,
+        connectMedia: `${baseUrl}/sessions/connect-media`,
+      },
       tasks: `${baseUrl}/tasks`,
       tasksInUse: {
         byMusician: (id: number) => `${baseUrl}/tasks-in-use/musician/${id}`,

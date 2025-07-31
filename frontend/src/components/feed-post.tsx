@@ -6,6 +6,7 @@ import { RichTextRenderer } from "./rich-text";
 import { TagList } from "./TagList";
 import { sessionService } from "../services/sessions";
 import { useAuth } from "./auth/AuthProvider";
+import { MediaThumbnail } from "./MediaThumbnail";
 
 interface PostData {
   id: number;
@@ -65,6 +66,10 @@ interface PostData {
     };
   }>;
   duration: number;
+  media: Array<{
+    url: string;
+    type: string;
+  }>;
 }
 
 export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
@@ -247,7 +252,6 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
         </div>
       </div>
       {/* splicing in metadata */}
-      {/* media would go here */}
       <div className="flex flex-col items-start text-left gap-2 w-full mb-2">
         <span className="font-subtle text-black text-[14px] leading-[20px] font-normal mb-1">
           {sessionData.date}
@@ -261,6 +265,9 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
           maxLines={6}
           className="font-['Inter',Helvetica] text-black text-sm font-normal leading-6 break-words overflow-hidden"
         />
+        {postData.media && postData.media.length > 0 && (
+          <MediaThumbnail media={postData.media} className="mt-2" />
+        )}
       </div>
       {/* splicing in like/comment section */}
       <div className="flex items-center gap-4">

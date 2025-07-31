@@ -10,6 +10,7 @@ import { Container } from "@/components/layout/Container";
 import { Section } from "@/components/layout/Section";
 import { TagList } from "@/components/TagList";
 import { isRichTextEmpty } from "@/lib/utils";
+import { MediaGalleryModal } from "@/components/MediaGalleryModal";
 
 interface PostViewTask {
   id: number;
@@ -42,6 +43,7 @@ interface PostViewData {
   notes: string;
   createdAt: string;
   duration: number;
+  isPublic: boolean;
   musician: {
     id: number;
     displayName: string;
@@ -75,6 +77,10 @@ interface PostViewData {
     };
   }>;
   tasks: PostViewTask[];
+  media: Array<{
+    url: string;
+    type: string;
+  }>;
 }
 
 const formatDuration = (seconds: number) => {
@@ -113,105 +119,16 @@ export const PostView: React.FC = () => {
           // Use the data passed from the feed
           setPost(passedPostData);
         } else {
-          // Fallback to mock data if no data was passed
-          // This would be replaced with an API call in the future
-          setPost({
-            id: parseInt(postId),
-            title: "Sample Practice Session",
-            notes:
-              "<p>This is a sample practice session with <strong>rich text</strong> content.</p><p>It includes multiple paragraphs and formatting.</p>",
-            createdAt: new Date().toISOString(),
-            duration: 3600, // 1 hour in seconds
-            musician: {
-              id: 1, // Mock ID
-              displayName: "Dev User",
-              avatarUrl: null,
-            },
-            instruments: [
-              { id: 1, label: "Guitar", color: "#3b82f6" },
-              { id: 2, label: "Piano", color: "#10b981" },
-            ],
-            tags: [
-              { id: 1, label: "Technique", color: "#f59e0b" },
-              { id: 2, label: "Repertoire", color: "#ef4444" },
-            ],
-            gasUps: [
-              { musician: { id: 1, displayName: "User 1", avatarUrl: null } },
-              { musician: { id: 2, displayName: "User 2", avatarUrl: null } },
-            ],
-            comments: [
-              {
-                id: 1,
-                text: "Great session! Keep up the good work.",
-                createdAt: new Date().toISOString(),
-                musician: { id: 1, displayName: "User 1", avatarUrl: null },
-              },
-            ],
-            tasks: [
-              {
-                id: 1,
-                title: "Scales Practice",
-                notes:
-                  "<p>Worked on major scales in all keys. Focused on <strong>clean transitions</strong> between positions.</p>",
-                timeSpent: 1800, // 30 minutes
-                taskDefinition: {
-                  id: 1,
-                  title: "Scales Practice",
-                  description: "Practice major scales in all keys",
-                  instrument: "Guitar",
-                  user: { displayName: "Task Creator", avatarUrl: undefined },
-                  tags: [{ id: 1, label: "Technique", color: "#f59e0b" }],
-                  checklist: ["Warm up", "Practice slowly", "Increase tempo"],
-                  savedCount: 15,
-                  usedCount: 8,
-                },
-              },
-              {
-                id: 2,
-                title: "Chord Progressions",
-                notes:
-                  "<p>Practiced common chord progressions in C major. Worked on <em>smooth transitions</em> between chords.</p>",
-                timeSpent: 1200, // 20 minutes
-                taskDefinition: {
-                  id: 2,
-                  title: "Chord Progressions",
-                  description: "Practice common chord progressions",
-                  instrument: "Guitar",
-                  user: { displayName: "Music Teacher", avatarUrl: undefined },
-                  tags: [{ id: 2, label: "Theory", color: "#3b82f6" }],
-                  checklist: [
-                    "Learn progression",
-                    "Practice slowly",
-                    "Add strumming",
-                  ],
-                  savedCount: 8,
-                  usedCount: 3,
-                },
-              },
-              {
-                id: 3,
-                title: "Song Repertoire - Wonderwall",
-                notes:
-                  "<p>Worked on the verse and chorus of Wonderwall. Need to practice the <strong>bridge section</strong> more.</p>",
-                timeSpent: 2400, // 40 minutes
-                taskDefinition: {
-                  id: 3,
-                  title: "Song Repertoire - Wonderwall",
-                  description: "Learn and practice Wonderwall by Oasis",
-                  instrument: "Guitar",
-                  user: { displayName: "Guitar Pro", avatarUrl: undefined },
-                  tags: [{ id: 3, label: "Repertoire", color: "#ef4444" }],
-                  checklist: [
-                    "Learn chords",
-                    "Practice strumming",
-                    "Add vocals",
-                  ],
-                  savedCount: 25,
-                  usedCount: 12,
-                },
-              },
-            ],
-          });
+          // Fetch session data from API
+          try {
+            const sessionData = await sessionService.getSession(
+              parseInt(postId)
+            );
+            setPost(sessionData);
+          } catch (error) {
+            console.error("Error fetching session:", error);
+            setError("Failed to load session");
+          }
         }
       } catch (err) {
         setError("Failed to load post");
@@ -458,6 +375,16 @@ export const PostView: React.FC = () => {
                   />
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Media Section */}
+          {post.media && post.media.length > 0 && (
+            <div className="p-4 sm:p-6 border-b border-border">
+              <h2 className="text-lg sm:text-xl font-semibold mb-4 text-left">
+                Media
+              </h2>
+              <MediaGalleryModal media={post.media} />
             </div>
           )}
 
