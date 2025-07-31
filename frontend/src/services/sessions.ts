@@ -54,17 +54,6 @@ export const sessionService = {
     return response.data;
   },
 
-  async getSessionById(sessionId: number) {
-    const response = await apiClient.get(`/sessions/${sessionId}`);
-    if (response.error) {
-      throw new Error(response.error);
-    }
-    if (!response.data) {
-      throw new Error("No data received from server");
-    }
-    return response.data;
-  },
-
   async addComment(
     sessionId: number,
     commentText: string
@@ -97,5 +86,18 @@ export const sessionService = {
       throw new Error("No data received from server");
     }
     return response.data as CreatedGasUpDto;
+  },
+
+  async removeGasUp(sessionId: number): Promise<{ success: boolean }> {
+    const response = await apiClient.delete(
+      `/sessions/removeGasUp?sessionId=${sessionId}`
+    );
+    if (response.error) {
+      throw new Error(response.error);
+    }
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
+    return response.data as { success: boolean };
   },
 };

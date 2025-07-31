@@ -850,6 +850,56 @@ let SessionsService = class SessionsService {
             throw new Error(`Failed to gas up: ${error.message}`);
         }
     }
+    async removeGasUp(removeGasUpData) {
+        const prisma = this.prisma;
+        try {
+            const existingGasUp = await prisma.gasUp.findFirst({
+                where: {
+                    musicianId: removeGasUpData.gasserId,
+                    sessionId: removeGasUpData.sessionId,
+                },
+            });
+            if (!existingGasUp) {
+                console.log(`Gas up not found for gasserId: ${removeGasUpData.gasserId}, sessionId: ${removeGasUpData.sessionId}`);
+                return { success: true };
+            }
+            const session = await prisma.session.findUnique({
+                where: { id: removeGasUpData.sessionId },
+                select: { musicianId: true },
+            });
+            if (!session) {
+                throw new Error('Session not found');
+            }
+            await prisma.$transaction(async (prisma) => {
+                await prisma.gasUp.delete({
+                    where: {
+                        id: existingGasUp.id,
+                    },
+                });
+                await prisma.musician.update({
+                    where: { id: removeGasUpData.gasserId },
+                    data: {
+                        totalGasUpsGiven: {
+                            decrement: 1,
+                        },
+                    },
+                });
+                await prisma.musician.update({
+                    where: { id: session.musicianId },
+                    data: {
+                        totalGasUpsReceived: {
+                            decrement: 1,
+                        },
+                    },
+                });
+            });
+            return { success: true };
+        }
+        catch (error) {
+            console.error('Error in removeGasUp:', error);
+            throw new Error(`Failed to remove gas up: ${error.message}`);
+        }
+    }
 };
 exports.SessionsService = SessionsService;
 exports.SessionsService = SessionsService = __decorate([

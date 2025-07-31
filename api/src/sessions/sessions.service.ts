@@ -1034,4 +1034,75 @@ export class SessionsService {
       throw new Error(`Failed to gas up: ${error.message}`);
     }
   }
+
+  async removeGasUp(removeGasUpData: {
+    gasserId: number;
+    sessionId: number;
+  }): Promise<{ success: boolean }> {
+    const prisma = this.prisma;
+
+    try {
+      // First check if the gas up exists
+      const existingGasUp = await prisma.gasUp.findFirst({
+        where: {
+          musicianId: removeGasUpData.gasserId,
+          sessionId: removeGasUpData.sessionId,
+        },
+      });
+
+      if (!existingGasUp) {
+        // Gas up doesn't exist, but we'll return success to avoid errors
+        console.log(
+          `Gas up not found for gasserId: ${removeGasUpData.gasserId}, sessionId: ${removeGasUpData.sessionId}`,
+        );
+        return { success: true };
+      }
+
+      // Get the session to find the musician who received the gas up
+      const session = await prisma.session.findUnique({
+        where: { id: removeGasUpData.sessionId },
+        select: { musicianId: true },
+      });
+
+      if (!session) {
+        throw new Error('Session not found');
+      }
+
+      // $transactions enforce atomicity. so if any db operation fails, the entire transaction is rolled back
+      await prisma.$transaction(async (prisma) => {
+        // Delete the gas up
+        await prisma.gasUp.delete({
+          where: {
+            id: existingGasUp.id,
+          },
+        });
+
+        // Update the gasser's stats (decrement gas ups given)
+        await prisma.musician.update({
+          where: { id: removeGasUpData.gasserId },
+          data: {
+            totalGasUpsGiven: {
+              decrement: 1,
+            },
+          },
+        });
+
+        // Update stats for the musician who received the gas up (decrement gas ups received)
+        await prisma.musician.update({
+          where: { id: session.musicianId },
+          data: {
+            totalGasUpsReceived: {
+              decrement: 1,
+            },
+          },
+        });
+      });
+
+      return { success: true };
+    } catch (error) {
+      // Handle any errors during deletion
+      console.error('Error in removeGasUp:', error);
+      throw new Error(`Failed to remove gas up: ${error.message}`);
+    }
+  }
 }

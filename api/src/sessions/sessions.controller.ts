@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Delete,
   Body,
   Req,
   UseGuards,
@@ -166,5 +167,18 @@ export class SessionsController {
       sessionId: body.sessionId,
     };
     return this.sessionsService.addGasUp(newGasUp);
+  }
+
+  @Delete('removeGasUp')
+  @UseGuards(JwtAuthGuard)
+  async removeGasUp(
+    @Query('sessionId') sessionId: string,
+    @Req() req: any,
+  ): Promise<{ success: boolean }> {
+    const removeGasUpData = {
+      gasserId: req.user.id, // the one removing the gas up
+      sessionId: parseInt(sessionId),
+    };
+    return this.sessionsService.removeGasUp(removeGasUpData);
   }
 }
