@@ -15,4 +15,7 @@ export declare class SessionsController {
     createSessionWithoutAudio(body: any, req: any): Promise<NewFrontendSessionDTO>;
     addComment(body: any, req: any): Promise<CreatedCommentDto>;
     addGasUp(body: any, req: any): Promise<CreatedGasUpDto>;
+    removeGasUp(sessionId: string, req: any): Promise<{
+        success: boolean;
+    }>;
 }

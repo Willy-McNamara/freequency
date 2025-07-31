@@ -24,5 +24,11 @@ export declare class SessionsService {
     createSession(newSession: CreateSessionDto): Promise<NewFrontendSessionDTO>;
     addComment(newComment: NewCommentDto): Promise<CreatedCommentDto>;
     addGasUp(newGasUp: NewGasUpDto): Promise<CreatedGasUpDto>;
+    removeGasUp(removeGasUpData: {
+        gasserId: number;
+        sessionId: number;
+    }): Promise<{
+        success: boolean;
+    }>;
 }
 export {};

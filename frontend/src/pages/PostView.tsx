@@ -97,6 +97,7 @@ export const PostView: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [newComment, setNewComment] = useState("");
+  const [isGasUpLoading, setIsGasUpLoading] = useState(false);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -269,38 +270,57 @@ export const PostView: React.FC = () => {
   };
 
   const handleAddGasUp = async () => {
-    if (!post) return;
+    if (!post || !user || isGasUpLoading) return;
 
     try {
-      if (!user) {
-        console.error("User not authenticated");
-        return;
-      }
+      setIsGasUpLoading(true);
 
-      const newGasUpData = await sessionService.addGasUp(
-        post.id,
-        post.musician.id
+      // Check if user has already gassed up this post
+      const hasUserGasUp = post.gasUps.some(
+        (gasUp) => gasUp.musician.id === user.id
       );
 
-      // Add the new gas up to the post state
-      setPost((prevPost) => {
-        if (!prevPost) return prevPost;
-        return {
-          ...prevPost,
-          gasUps: [
-            ...prevPost.gasUps,
-            {
-              musician: {
-                id: newGasUpData.musician.id,
-                displayName: newGasUpData.musician.displayName,
-                avatarUrl: newGasUpData.musician.avatarUrl,
+      // Optimistically update UI
+      if (hasUserGasUp) {
+        // Remove gas up
+        setPost((prevPost) => {
+          if (!prevPost) return prevPost;
+          return {
+            ...prevPost,
+            gasUps: prevPost.gasUps.filter(
+              (gasUp) => gasUp.musician.id !== user.id
+            ),
+          };
+        });
+
+        await sessionService.removeGasUp(post.id);
+      } else {
+        // Add gas up
+        setPost((prevPost) => {
+          if (!prevPost) return prevPost;
+          return {
+            ...prevPost,
+            gasUps: [
+              ...prevPost.gasUps,
+              {
+                musician: {
+                  id: user.id,
+                  displayName: user.displayName || "",
+                  avatarUrl: user.avatarUrl || null,
+                },
               },
-            },
-          ],
-        };
-      });
+            ],
+          };
+        });
+
+        await sessionService.addGasUp(post.id, post.musician.id);
+      }
     } catch (err) {
-      console.error("Error adding gas up:", err);
+      console.error("Error handling gas up:", err);
+      // Revert optimistic update on error
+      // For simplicity, we'll just log the error for now
+    } finally {
+      setIsGasUpLoading(false);
     }
   };
 
@@ -447,16 +467,16 @@ export const PostView: React.FC = () => {
               <Button
                 variant={hasUserGasUp ? "secondary" : "outline"}
                 onClick={handleAddGasUp}
-                disabled={!!hasUserGasUp}
-                className={`flex-1 ${hasUserGasUp ? "opacity-75" : ""}`}
+                disabled={isGasUpLoading}
+                className={`flex-1 ${isGasUpLoading ? "opacity-50" : ""}`}
                 size="sm"
               >
                 <Heart
                   className={`w-4 h-4 mr-2 ${
                     hasUserGasUp ? "fill-current text-red-500" : ""
-                  }`}
+                  } ${isGasUpLoading ? "animate-pulse" : ""}`}
                 />
-                {hasUserGasUp ? "Gassed Up" : "Gas Up"} ({post.gasUps.length})
+                "Gas Up" ({post.gasUps.length})
               </Button>
               <Button
                 variant="outline"

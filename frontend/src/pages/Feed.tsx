@@ -28,6 +28,7 @@ interface Post {
   createdAt: string;
   duration: number;
   musician: {
+    id: number;
     displayName: string;
     avatarUrl: string | null;
   };
@@ -43,6 +44,7 @@ interface Post {
   }>;
   gasUps: Array<{
     musician: {
+      id: number;
       displayName: string;
       avatarUrl: string | null;
     };

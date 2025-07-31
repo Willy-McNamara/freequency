@@ -1,9 +1,11 @@
-import { JSX } from "react";
+import { JSX, useState, useCallback } from "react";
 import { useNavigate } from "react-router";
 import { Avatar, AvatarFallback } from "./ui/avatar";
-import { MessageSquareIcon, ThumbsUpIcon, Clock } from "lucide-react";
+import { MessageSquareIcon, Heart, Clock } from "lucide-react";
 import { RichTextRenderer } from "./rich-text";
 import { TagList } from "./TagList";
+import { sessionService } from "../services/sessions";
+import { useAuth } from "./auth/AuthProvider";
 
 interface PostData {
   id: number;
@@ -11,6 +13,7 @@ interface PostData {
   notes: string;
   createdAt: string;
   musician: {
+    id: number;
     displayName: string;
     avatarUrl: string | null;
   };
@@ -26,6 +29,7 @@ interface PostData {
   }>;
   gasUps: Array<{
     musician: {
+      id: number;
       displayName: string;
       avatarUrl: string | null;
     };
@@ -65,6 +69,16 @@ interface PostData {
 
 export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  // State for gas up functionality
+  const [gasUpCount, setGasUpCount] = useState(postData.gasUps.length);
+  const [hasUserGasUp, setHasUserGasUp] = useState(
+    user
+      ? postData.gasUps.some((gasUp) => gasUp.musician.id === user.id)
+      : false
+  );
+  const [isGasUpLoading, setIsGasUpLoading] = useState(false);
 
   const sessionData = {
     date: new Intl.DateTimeFormat("en-US", {
@@ -101,26 +115,85 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
   //   return Array.from(tagMap.values());
   // }, [postData.tags, postData.tasks]);
 
+  const handlePostClick = () => {
+    // Pass the updated post data to the post view with current gas up state
+    const updatedPostData = {
+      ...postData,
+      gasUps: hasUserGasUp
+        ? [
+            ...postData.gasUps.filter(
+              (gasUp) => gasUp.musician.id !== user?.id
+            ), // Remove any existing gas up from this user
+            {
+              musician: {
+                id: user?.id || 0,
+                displayName: user?.displayName || "",
+                avatarUrl: user?.avatarUrl || null,
+              },
+            },
+          ]
+        : postData.gasUps.filter((gasUp) => gasUp.musician.id !== user?.id),
+    };
+
+    navigate(`/post/${postData.id}`, {
+      state: { postData: updatedPostData },
+    });
+  };
+
+  const handleGasUpClick = useCallback(
+    async (e: React.MouseEvent) => {
+      e.stopPropagation(); // Prevent navigation to post view
+
+      if (!user || isGasUpLoading) return;
+
+      // Prevent users from gassing up their own posts
+      if (user.id === postData.musician.id) return;
+
+      try {
+        setIsGasUpLoading(true);
+
+        // Optimistically update UI
+        if (hasUserGasUp) {
+          setGasUpCount((prev) => prev - 1);
+          setHasUserGasUp(false);
+        } else {
+          setGasUpCount((prev) => prev + 1);
+          setHasUserGasUp(true);
+        }
+
+        // Call API based on current state
+        if (hasUserGasUp) {
+          // Remove gas up
+          await sessionService.removeGasUp(postData.id);
+        } else {
+          // Add gas up - musicianId should be the post creator's ID, not the current user's ID
+          await sessionService.addGasUp(postData.id, postData.musician.id);
+        }
+      } catch (error) {
+        console.error("Error adding gas up:", error);
+        // Revert optimistic update on error
+        if (hasUserGasUp) {
+          setGasUpCount((prev) => prev + 1);
+          setHasUserGasUp(true);
+        } else {
+          setGasUpCount((prev) => prev - 1);
+          setHasUserGasUp(false);
+        }
+      } finally {
+        setIsGasUpLoading(false);
+      }
+    },
+    [user, hasUserGasUp, isGasUpLoading, postData.id]
+  );
+
   // Data for engagement metrics
   const engagementData = [
-    {
-      icon: <ThumbsUpIcon className="h-4 w-4" />,
-      count: postData.gasUps.length,
-      label: "gas ups",
-    },
     {
       icon: <MessageSquareIcon className="h-4 w-4" />,
       count: postData.comments.length,
       label: "comments",
     },
   ];
-
-  const handlePostClick = () => {
-    // Pass the full post data to the post view
-    navigate(`/post/${postData.id}`, {
-      state: { postData },
-    });
-  };
 
   const formatDuration = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -185,6 +258,51 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
       </div>
       {/* splicing in like/comment section */}
       <div className="flex items-center gap-4">
+        {/* Gas Up Area - Entire area is clickable */}
+        <div
+          className={`group flex items-center gap-2 transition-all duration-200 ${
+            user?.id === postData.musician.id
+              ? "cursor-not-allowed"
+              : "cursor-pointer"
+          } ${isGasUpLoading ? "opacity-50 pointer-events-none" : ""}`}
+          onClick={
+            user?.id === postData.musician.id ? undefined : handleGasUpClick
+          }
+          title={
+            user?.id === postData.musician.id
+              ? "You can't gas up your own post"
+              : hasUserGasUp
+              ? "Remove Gas Up"
+              : "Gas Up"
+          }
+        >
+          <div
+            className={`inline-flex items-center justify-center p-1 rounded-full transition-all duration-200 ${
+              user?.id === postData.musician.id
+                ? "text-gray-300"
+                : hasUserGasUp
+                ? "bg-red-50 text-red-500"
+                : "text-muted-foreground group-hover:bg-gray-100 group-hover:text-red-500"
+            }`}
+          >
+            <Heart
+              className={`h-4 w-4 transition-transform duration-200 ${
+                hasUserGasUp ? "fill-current" : ""
+              } ${isGasUpLoading ? "animate-pulse" : ""}`}
+            />
+          </div>
+          <div className="font-bold text-sm text-black leading-[14px] whitespace-nowrap">
+            <span className="font-small text-[length:var(--small-font-size)] tracking-[var(--small-letter-spacing)] leading-[var(--small-line-height)]">
+              {gasUpCount}
+            </span>
+            <span className="font-normal">
+              {" "}
+              {gasUpCount === 1 ? "gas up" : "gas ups"}
+            </span>
+          </div>
+        </div>
+
+        {/* Comments Area */}
         {engagementData.map((item, index) => (
           <div key={index} className="flex items-center gap-2">
             {item.icon}
