@@ -66,7 +66,6 @@ describe("Growth Component Logic Tests", () => {
       ];
 
       // Simulate the filtering logic from calculateTotalStatsData
-      const now = new Date("2024-01-15T12:00:00Z");
       const startOfYear = new Date(2024, 0, 1); // Jan 1, 2024
       const endOfYear = new Date(2024, 11, 31); // Dec 31, 2024
 
