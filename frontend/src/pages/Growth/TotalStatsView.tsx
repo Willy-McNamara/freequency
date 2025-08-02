@@ -107,7 +107,7 @@ export const TotalStatsView: React.FC<TotalStatsViewProps> = ({
           ))
         ) : (
           <div className="text-center text-muted-foreground py-4">
-            <p>No practice data available for the selected time period.</p>
+            <p></p>
           </div>
         )}
       </div>
