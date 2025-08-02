@@ -100,7 +100,7 @@ let SessionsController = class SessionsController {
         else if (['mp3', 'wav', 'm4a', 'ogg', 'webm'].includes(fileExtension || '')) {
             mediaType = 'audio';
         }
-        else if (['mp4', 'webm', 'ogg', 'mov'].includes(fileExtension || '')) {
+        else if (['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'].includes(fileExtension || '')) {
             mediaType = 'video';
         }
         else {

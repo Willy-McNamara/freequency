@@ -10,6 +10,7 @@ import {
   Video,
 } from "lucide-react";
 import { Button } from "./ui/button";
+import { toast } from "sonner";
 
 interface MediaItem {
   url: string;
@@ -31,6 +32,12 @@ export const MediaGalleryModal: React.FC<MediaGalleryModalProps> = ({
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
   const [audioElements, setAudioElements] = useState<{
     [key: string]: HTMLAudioElement;
+  }>({});
+  const [audioProgress, setAudioProgress] = useState<{
+    [key: string]: number;
+  }>({});
+  const [audioDuration, setAudioDuration] = useState<{
+    [key: string]: number;
   }>({});
 
   // Keyboard navigation
@@ -58,6 +65,16 @@ export const MediaGalleryModal: React.FC<MediaGalleryModalProps> = ({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [selectedImageIndex]);
 
+  // Cleanup audio elements on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(audioElements).forEach((audio) => {
+        audio.pause();
+        audio.remove();
+      });
+    };
+  }, [audioElements]);
+
   if (!media || media.length === 0) {
     return null;
   }
@@ -78,6 +95,12 @@ export const MediaGalleryModal: React.FC<MediaGalleryModalProps> = ({
     if (!audioElements[mediaId]) {
       const audio = new Audio(url);
       audio.addEventListener("ended", () => setPlayingAudio(null));
+      audio.addEventListener("loadedmetadata", () => {
+        setAudioDuration((prev) => ({ ...prev, [mediaId]: audio.duration }));
+      });
+      audio.addEventListener("timeupdate", () => {
+        setAudioProgress((prev) => ({ ...prev, [mediaId]: audio.currentTime }));
+      });
       setAudioElements((prev) => ({ ...prev, [mediaId]: audio }));
     }
 
@@ -86,9 +109,28 @@ export const MediaGalleryModal: React.FC<MediaGalleryModalProps> = ({
       audio.pause();
       setPlayingAudio(null);
     } else {
-      audio.play();
+      audio.play().catch((error) => {
+        console.error("Error playing audio:", error);
+        toast.error("Failed to play audio file");
+      });
       setPlayingAudio(mediaId);
     }
+  };
+
+  // Cleanup audio elements on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(audioElements).forEach((audio) => {
+        audio.pause();
+        audio.remove();
+      });
+    };
+  }, [audioElements]);
+
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
   const getFileTypeIcon = (type: string) => {
@@ -155,31 +197,44 @@ export const MediaGalleryModal: React.FC<MediaGalleryModalProps> = ({
               />
             )}
             {item.type === "audio" && (
-              <div className="w-full h-32 md:h-40 flex items-center justify-center">
-                <div className="text-center">
-                  <Music className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleAudioPlay(`audio-${index}`, item.url);
-                    }}
-                  >
-                    {playingAudio === `audio-${index}` ? (
-                      <>
-                        <Pause className="w-3 h-3 mr-1" />
-                        Pause
-                      </>
-                    ) : (
-                      <>
-                        <Play className="w-3 h-3 mr-1" />
-                        Play
-                      </>
-                    )}
-                  </Button>
-                </div>
+              <div className="w-full h-32 md:h-40 flex flex-col items-center justify-center p-3">
+                <Music className="w-8 h-8 text-muted-foreground mb-2" />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAudioPlay(`audio-${index}`, item.url);
+                  }}
+                  className="h-8 w-8 p-0 mb-2"
+                >
+                  {playingAudio === `audio-${index}` ? (
+                    <Pause className="w-3 h-3" />
+                  ) : (
+                    <Play className="w-3 h-3" />
+                  )}
+                </Button>
+                {audioDuration[`audio-${index}`] && (
+                  <div className="w-full space-y-1">
+                    <div className="text-xs text-muted-foreground text-center">
+                      {formatTime(audioProgress[`audio-${index}`] || 0)} /{" "}
+                      {formatTime(audioDuration[`audio-${index}`] || 0)}
+                    </div>
+                    <div className="w-full bg-muted rounded-full h-1">
+                      <div
+                        className="bg-primary h-1 rounded-full transition-all duration-100"
+                        style={{
+                          width: `${
+                            ((audioProgress[`audio-${index}`] || 0) /
+                              (audioDuration[`audio-${index}`] || 1)) *
+                            100
+                          }%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             )}
             {item.type === "video" && (

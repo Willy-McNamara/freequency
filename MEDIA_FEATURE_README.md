@@ -9,6 +9,8 @@ The Media Upload feature allows users to add photos, audio recordings, and video
 ### Features
 
 - **Photo Upload**: Users can upload images (JPEG, PNG, GIF, WebP) up to 10MB
+- **Audio Upload**: Users can upload audio files (MP3, WAV, M4A, OGG, WebM, AAC, FLAC) up to 50MB
+- **Audio Playback**: Built-in audio player with play/pause controls
 - **Media Gallery**: Display uploaded media with preview functionality
 - **Media Management**: Add and remove media from sessions
 - **Session Integration**: Media is saved with sessions and persists across browser sessions
@@ -16,8 +18,8 @@ The Media Upload feature allows users to add photos, audio recordings, and video
 ### File Type Support
 
 - **Images**: JPEG, JPG, PNG, GIF, WebP (10MB max)
-- **Audio**: MP3, WAV, M4A, OGG, WebM (50MB max) - _Coming in Phase 2_
-- **Video**: MP4, WebM, OGG, MOV (100MB max) - _Coming in Phase 3_
+- **Audio**: MP3, WAV, M4A, OGG, WebM (50MB max) - ✅ **Available Now**
+- **Video**: MP4, WebM, OGG, MOV, AVI, MKV (100MB max) - _Coming in Phase 3_
 
 ### Technical Implementation
 
@@ -58,7 +60,7 @@ The Media Upload feature allows users to add photos, audio recordings, and video
 ### Phase 2: Audio Recording (Planned)
 
 - Live audio recording using MediaRecorder API
-- Audio playback in gallery
+- Enhanced audio controls (seek, volume, speed)
 - Audio file processing and optimization
 
 ### Phase 3: Video Support (Planned)

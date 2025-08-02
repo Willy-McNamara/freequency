@@ -24,12 +24,12 @@ export const MediaUploadButton: React.FC<MediaUploadButtonProps> = ({
       case "image":
         return "image/jpeg,image/jpg,image/png,image/gif,image/webp";
       case "audio":
-        return "audio/webm,audio/mp3,audio/wav,audio/m4a,audio/ogg";
+        return "audio/webm,audio/mp3,audio/mpeg,audio/wav,audio/m4a,audio/ogg";
       case "video":
         return "video/mp4,video/webm,video/ogg,video/quicktime";
       case "all":
       default:
-        return "image/jpeg,image/jpg,image/png,image/gif,image/webp,audio/webm,audio/mp3,audio/wav,audio/m4a,audio/ogg,video/mp4,video/webm,video/ogg,video/quicktime";
+        return "image/jpeg,image/jpg,image/png,image/gif,image/webp,audio/webm,audio/mp3,audio/mpeg,audio/wav,audio/m4a,audio/ogg,video/mp4,video/webm,video/ogg,video/quicktime";
     }
   };
 

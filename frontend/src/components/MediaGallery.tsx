@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   X,
   Play,
@@ -10,7 +10,7 @@ import {
   File,
 } from "lucide-react";
 import { Button } from "./ui/button";
-import { Badge } from "./badge";
+import { toast } from "sonner";
 
 interface MediaItem {
   id?: string;
@@ -34,6 +34,12 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
   const [audioElements, setAudioElements] = useState<{
     [key: string]: HTMLAudioElement;
   }>({});
+  const [audioProgress, setAudioProgress] = useState<{
+    [key: string]: number;
+  }>({});
+  const [audioDuration, setAudioDuration] = useState<{
+    [key: string]: number;
+  }>({});
 
   const handleAudioPlay = (mediaId: string, url: string) => {
     // Stop any currently playing audio
@@ -45,6 +51,12 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
     if (!audioElements[mediaId]) {
       const audio = new Audio(url);
       audio.addEventListener("ended", () => setPlayingAudio(null));
+      audio.addEventListener("loadedmetadata", () => {
+        setAudioDuration((prev) => ({ ...prev, [mediaId]: audio.duration }));
+      });
+      audio.addEventListener("timeupdate", () => {
+        setAudioProgress((prev) => ({ ...prev, [mediaId]: audio.currentTime }));
+      });
       setAudioElements((prev) => ({ ...prev, [mediaId]: audio }));
     }
 
@@ -53,22 +65,28 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
       audio.pause();
       setPlayingAudio(null);
     } else {
-      audio.play();
+      audio.play().catch((error) => {
+        console.error("Error playing audio:", error);
+        toast.error("Failed to play audio file");
+      });
       setPlayingAudio(mediaId);
     }
   };
 
-  const getFileTypeLabel = (type: string) => {
-    switch (type) {
-      case "image":
-        return "Photo";
-      case "audio":
-        return "Audio";
-      case "video":
-        return "Video";
-      default:
-        return "File";
-    }
+  // Cleanup audio elements on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(audioElements).forEach((audio) => {
+        audio.pause();
+        audio.remove();
+      });
+    };
+  }, [audioElements]);
+
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
   const getFileTypeIcon = (type: string) => {
@@ -149,27 +167,54 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
 
               {/* Audio controls */}
               {item.type === "audio" && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    handleAudioPlay(item.id || String(index), item.url)
-                  }
-                  className="mt-2"
-                >
-                  {playingAudio === (item.id || String(index)) ? (
-                    <>
-                      <Pause className="w-3 h-3 mr-1" />
-                      Pause
-                    </>
-                  ) : (
-                    <>
-                      <Play className="w-3 h-3 mr-1" />
-                      Play
-                    </>
+                <div className="mt-2 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        handleAudioPlay(item.id || String(index), item.url)
+                      }
+                      className="h-8 w-8 p-0"
+                    >
+                      {playingAudio === (item.id || String(index)) ? (
+                        <Pause className="w-3 h-3" />
+                      ) : (
+                        <Play className="w-3 h-3" />
+                      )}
+                    </Button>
+                    <div className="flex-1 text-xs text-muted-foreground">
+                      {audioDuration[item.id || String(index)] ? (
+                        <span>
+                          {formatTime(
+                            audioProgress[item.id || String(index)] || 0
+                          )}{" "}
+                          /{" "}
+                          {formatTime(
+                            audioDuration[item.id || String(index)] || 0
+                          )}
+                        </span>
+                      ) : (
+                        <span>Loading...</span>
+                      )}
+                    </div>
+                  </div>
+                  {audioDuration[item.id || String(index)] && (
+                    <div className="w-full bg-muted rounded-full h-1">
+                      <div
+                        className="bg-primary h-1 rounded-full transition-all duration-100"
+                        style={{
+                          width: `${
+                            ((audioProgress[item.id || String(index)] || 0) /
+                              (audioDuration[item.id || String(index)] || 1)) *
+                            100
+                          }%`,
+                        }}
+                      />
+                    </div>
                   )}
-                </Button>
+                </div>
               )}
             </div>
           </div>
