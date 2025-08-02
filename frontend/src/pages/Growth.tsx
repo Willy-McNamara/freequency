@@ -107,6 +107,7 @@ const Growth: React.FC = () => {
   const [allTasksInUse, setAllTasksInUse] = useState<TaskInUseMock[]>([]);
   const [tasksInUse, setTasksInUse] = useState<TaskInUseMock[]>([]); // filtered for current window
   const [currentIndex, setCurrentIndex] = useState(0); // 0 = present, 1 = previous, etc.
+  const [totalCurrentIndex, setTotalCurrentIndex] = useState(0); // 0 = present, 1 = previous, etc.
 
   // Goals state
   const [goals, setGoals] = useState<Goal[]>([]);
@@ -245,9 +246,14 @@ const Growth: React.FC = () => {
     );
   }, [selectedTimeRange, currentIndex, allTasksInUse]);
 
+  // Reset totalCurrentIndex when selectedTotalRange changes
+  useEffect(() => {
+    setTotalCurrentIndex(0);
+  }, [selectedTotalRange]);
+
   // Calculate data for Total Stats view
   const calculateTotalStatsData = () => {
-    // Filter tasks by selected total range
+    // Filter tasks by selected total range with navigation
     const now = new Date();
     let filteredTasks: TaskInUseMock[];
 
@@ -255,12 +261,12 @@ const Growth: React.FC = () => {
       const startOfDay = new Date(
         now.getFullYear(),
         now.getMonth(),
-        now.getDate()
+        now.getDate() - totalCurrentIndex
       );
       const endOfDay = new Date(
         now.getFullYear(),
         now.getMonth(),
-        now.getDate(),
+        now.getDate() - totalCurrentIndex,
         23,
         59,
         59
@@ -270,23 +276,27 @@ const Growth: React.FC = () => {
         return isWithinInterval(date, { start: startOfDay, end: endOfDay });
       });
     } else if (selectedTotalRange === "week") {
-      const windowStart = startOfWeek(now, { weekStartsOn: 1 });
-      const windowEnd = endOfWeek(now, { weekStartsOn: 1 });
+      const windowStart = startOfWeek(addWeeks(now, -totalCurrentIndex), {
+        weekStartsOn: 1,
+      });
+      const windowEnd = endOfWeek(addWeeks(now, -totalCurrentIndex), {
+        weekStartsOn: 1,
+      });
       filteredTasks = allTasksInUse.filter((task) => {
         const date = parseISO(task.createdAt);
         return isWithinInterval(date, { start: windowStart, end: windowEnd });
       });
     } else if (selectedTotalRange === "month") {
-      const windowStart = startOfMonth(now);
-      const windowEnd = endOfMonth(now);
+      const windowStart = startOfMonth(addMonths(now, -totalCurrentIndex));
+      const windowEnd = endOfMonth(addMonths(now, -totalCurrentIndex));
       filteredTasks = allTasksInUse.filter((task) => {
         const date = parseISO(task.createdAt);
         return isWithinInterval(date, { start: windowStart, end: windowEnd });
       });
     } else {
       // year
-      const windowStart = startOfYear(now);
-      const windowEnd = endOfYear(now);
+      const windowStart = startOfYear(addYears(now, -totalCurrentIndex));
+      const windowEnd = endOfYear(addYears(now, -totalCurrentIndex));
       filteredTasks = allTasksInUse.filter((task) => {
         const date = parseISO(task.createdAt);
         return isWithinInterval(date, { start: windowStart, end: windowEnd });
@@ -338,7 +348,72 @@ const Growth: React.FC = () => {
       }
     });
 
-    return { tagTotals, pieData, tagColorMap };
+    // Navigation logic for Total Stats
+    // Find the earliest and latest periods with data
+    let minIndex = 0;
+    if (allTasksInUse.length > 0) {
+      const allDates = allTasksInUse.map((t) => parseISO(t.createdAt));
+      if (selectedTotalRange === "day") {
+        const earliest = allDates.reduce((a, b) => (a < b ? a : b));
+        minIndex = Math.floor(
+          (now.getTime() - earliest.getTime()) / (24 * 60 * 60 * 1000)
+        );
+      } else if (selectedTotalRange === "week") {
+        const earliest = allDates.reduce((a, b) => (a < b ? a : b));
+        minIndex = Math.floor(
+          (now.getTime() -
+            startOfWeek(earliest, { weekStartsOn: 1 }).getTime()) /
+            (7 * 24 * 60 * 60 * 1000)
+        );
+      } else if (selectedTotalRange === "month") {
+        const earliest = allDates.reduce((a, b) => (a < b ? a : b));
+        minIndex = Math.floor(
+          (now.getFullYear() - earliest.getFullYear()) * 12 +
+            (now.getMonth() - earliest.getMonth())
+        );
+      } else {
+        const earliest = allDates.reduce((a, b) => (a < b ? a : b));
+        minIndex = now.getFullYear() - earliest.getFullYear();
+      }
+    }
+
+    // UI for navigation
+    const canGoBack = totalCurrentIndex < minIndex;
+    const canGoForward = totalCurrentIndex > 0;
+
+    // Display label for current period
+    let periodLabel = "";
+    if (selectedTotalRange === "day") {
+      const currentDay = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate() - totalCurrentIndex
+      );
+      periodLabel = format(currentDay, "MMM d, yyyy");
+    } else if (selectedTotalRange === "week") {
+      const start = startOfWeek(addWeeks(now, -totalCurrentIndex), {
+        weekStartsOn: 1,
+      });
+      const end = endOfWeek(addWeeks(now, -totalCurrentIndex), {
+        weekStartsOn: 1,
+      });
+      periodLabel = `${format(start, "MMM d")} - ${format(end, "MMM d, yyyy")}`;
+    } else if (selectedTotalRange === "month") {
+      const start = startOfMonth(addMonths(now, -totalCurrentIndex));
+      periodLabel = format(start, "MMMM yyyy");
+    } else {
+      const start = startOfYear(addYears(now, -totalCurrentIndex));
+      periodLabel = format(start, "yyyy");
+    }
+
+    return {
+      tagTotals,
+      pieData,
+      tagColorMap,
+      periodLabel,
+      canGoBack,
+      canGoForward,
+    };
   };
 
   // Calculate data for Chronological Stats view
@@ -533,7 +608,14 @@ const Growth: React.FC = () => {
 
   // Render the appropriate view
   if (view === "TOTAL") {
-    const { tagTotals, pieData, tagColorMap } = calculateTotalStatsData();
+    const {
+      tagTotals,
+      pieData,
+      tagColorMap,
+      periodLabel,
+      canGoBack,
+      canGoForward,
+    } = calculateTotalStatsData();
 
     return (
       <Container size="lg" className="w-full px-4 sm:px-6 lg:px-8">
@@ -546,6 +628,11 @@ const Growth: React.FC = () => {
           tagColorMap={tagColorMap}
           formatMinutes={formatMinutes}
           totalTimeRanges={totalTimeRanges}
+          currentIndex={totalCurrentIndex}
+          onCurrentIndexChange={setTotalCurrentIndex}
+          periodLabel={periodLabel}
+          canGoBack={canGoBack}
+          canGoForward={canGoForward}
         />
       </Container>
     );
