@@ -529,9 +529,17 @@ describe('SessionsService', () => {
       // Mock finding no session
       (prismaService.session.findUnique as jest.Mock).mockResolvedValue(null);
 
+      // Suppress console.error for this test
+      const consoleSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+
       await expect(service.removeGasUp(removeGasUpData)).rejects.toThrow(
-        'Session not found',
+        'Failed to remove gas up: Session not found',
       );
+
+      // Restore console.error
+      consoleSpy.mockRestore();
     });
   });
 });
