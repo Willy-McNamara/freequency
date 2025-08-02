@@ -339,6 +339,13 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
       });
       await apiPromise;
       await new Promise((resolve) => setTimeout(resolve, 2500)); // Pause so the user can read the toast before redirect
+
+      // Extract current instrument before clearing session data
+      const instrumentLabels = ALL_INSTRUMENTS.map((i) => i.label);
+      const currentInstrument = session.tags.find((tag) =>
+        instrumentLabels.includes(tag.label)
+      );
+
       // Clear all session state after successful save
       session.setSessionTitle("Untitled Session");
       session.setTags([]);
@@ -352,6 +359,11 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
       // Clear localStorage
       localStorage.removeItem("practiceSession");
       localStorage.removeItem("practiceSelectedTaskId");
+
+      // Preserve the current instrument for the next session
+      if (currentInstrument) {
+        session.setTags([currentInstrument]);
+      }
 
       setIsSaving(false);
 
@@ -883,6 +895,14 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                     <Button
                       variant="destructive"
                       onClick={() => {
+                        // Extract current instrument before clearing session data
+                        const instrumentLabels = ALL_INSTRUMENTS.map(
+                          (i) => i.label
+                        );
+                        const currentInstrument = session.tags.find((tag) =>
+                          instrumentLabels.includes(tag.label)
+                        );
+
                         // Reset all session data
                         session.setSessionTitle(getDefaultSessionTitle());
                         session.setTags([]);
@@ -895,6 +915,12 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                         localStorage.removeItem("practiceSession");
                         localStorage.removeItem("practiceSelectedTaskId");
                         sessionTimerRef.current?.reset();
+
+                        // Preserve the current instrument for the next session
+                        if (currentInstrument) {
+                          session.setTags([currentInstrument]);
+                        }
+
                         setShowDeleteSessionModal(false);
                       }}
                     >
