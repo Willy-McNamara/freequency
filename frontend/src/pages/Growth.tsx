@@ -48,6 +48,7 @@ const monthData = [
   { label: "W2", occurrence: 15, duration: 100 },
   { label: "W3", occurrence: 10, duration: 60 },
   { label: "W4", occurrence: 18, duration: 120 },
+  { label: "W5", occurrence: 8, duration: 45 },
 ];
 const yearData = [
   { label: "Jan", occurrence: 40, duration: 200 },
@@ -246,11 +247,57 @@ const Growth: React.FC = () => {
 
   // Calculate data for Total Stats view
   const calculateTotalStatsData = () => {
-    // Aggregate tag totals from allTasksInUse for the selected period
+    // Filter tasks by selected total range
+    const now = new Date();
+    let filteredTasks: TaskInUseMock[];
+
+    if (selectedTotalRange === "day") {
+      const startOfDay = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+      );
+      const endOfDay = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        23,
+        59,
+        59
+      );
+      filteredTasks = allTasksInUse.filter((task) => {
+        const date = parseISO(task.createdAt);
+        return isWithinInterval(date, { start: startOfDay, end: endOfDay });
+      });
+    } else if (selectedTotalRange === "week") {
+      const windowStart = startOfWeek(now, { weekStartsOn: 1 });
+      const windowEnd = endOfWeek(now, { weekStartsOn: 1 });
+      filteredTasks = allTasksInUse.filter((task) => {
+        const date = parseISO(task.createdAt);
+        return isWithinInterval(date, { start: windowStart, end: windowEnd });
+      });
+    } else if (selectedTotalRange === "month") {
+      const windowStart = startOfMonth(now);
+      const windowEnd = endOfMonth(now);
+      filteredTasks = allTasksInUse.filter((task) => {
+        const date = parseISO(task.createdAt);
+        return isWithinInterval(date, { start: windowStart, end: windowEnd });
+      });
+    } else {
+      // year
+      const windowStart = startOfYear(now);
+      const windowEnd = endOfYear(now);
+      filteredTasks = allTasksInUse.filter((task) => {
+        const date = parseISO(task.createdAt);
+        return isWithinInterval(date, { start: windowStart, end: windowEnd });
+      });
+    }
+
+    // Aggregate tag totals from filtered tasks for the selected period
     // 1. Group by tag, sum durations (in seconds)
     const tagTotalsMap: Record<string, number> = {};
     let totalSeconds = 0;
-    allTasksInUse.forEach((task) => {
+    filteredTasks.forEach((task) => {
       (task.tags || ["Untagged"]).forEach((tag) => {
         tagTotalsMap[tag] = (tagTotalsMap[tag] || 0) + (task.duration || 0);
         totalSeconds += task.duration || 0;
@@ -307,7 +354,7 @@ const Growth: React.FC = () => {
         "Saturday",
         "Sunday",
       ],
-      month: ["W1", "W2", "W3", "W4"],
+      month: ["W1", "W2", "W3", "W4", "W5"],
       year: [
         "Jan",
         "Feb",
@@ -364,7 +411,25 @@ const Growth: React.FC = () => {
       }
     });
 
-    const chartData = currentLabels.map((label) => {
+    // For monthly view, determine how many weeks to show based on the current month
+    let labelsToShow = currentLabels;
+    if (selectedTimeRange === "month") {
+      const now = new Date();
+      const currentMonthStart = startOfMonth(addMonths(now, -currentIndex));
+      const daysInMonth = new Date(
+        currentMonthStart.getFullYear(),
+        currentMonthStart.getMonth() + 1,
+        0
+      ).getDate();
+
+      // If month has 28 days or less, only show W1-W4
+      if (daysInMonth <= 28) {
+        labelsToShow = ["W1", "W2", "W3", "W4"];
+      }
+      // If month has 29+ days, show W1-W5
+    }
+
+    const chartData = labelsToShow.map((label) => {
       if (selectedMetric === "occurrence") {
         return {
           label,
