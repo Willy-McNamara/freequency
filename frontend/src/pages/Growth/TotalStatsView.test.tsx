@@ -15,19 +15,6 @@ vi.mock("@/components/pie-chart", () => ({
   ),
 }));
 
-// Mock the TagList component
-vi.mock("@/components/TagList", () => ({
-  TagList: ({ tags }: { tags: string[] }) => (
-    <div data-testid="tag-list">
-      {tags.map((tag, index) => (
-        <span key={index} data-testid={`tag-${tag}`}>
-          {tag}
-        </span>
-      ))}
-    </div>
-  ),
-}));
-
 const mockProps = {
   onBack: vi.fn(),
   selectedTotalRange: "week" as const,
@@ -69,6 +56,12 @@ const mockProps = {
     { key: "month", label: "Month" },
     { key: "year", label: "Year" },
   ] as const,
+  // Navigation props
+  currentIndex: 0,
+  onCurrentIndexChange: vi.fn(),
+  periodLabel: "Jan 15 - Jan 21, 2024",
+  canGoBack: true,
+  canGoForward: false,
 };
 
 describe("TotalStatsView", () => {
@@ -117,9 +110,12 @@ describe("TotalStatsView", () => {
     expect(screen.getByTestId("pie-item-Piano")).toBeInTheDocument();
   });
 
-  it("renders tags list when tags are present", () => {
+  it("renders tag breakdown cards when tags are present", () => {
     render(<TotalStatsView {...mockProps} />);
-    expect(screen.getByTestId("tag-list")).toBeInTheDocument();
+    expect(screen.getByText("Guitar")).toBeInTheDocument();
+    expect(screen.getByText("Piano")).toBeInTheDocument();
+    expect(screen.getByText("60%")).toBeInTheDocument();
+    expect(screen.getByText("40%")).toBeInTheDocument();
   });
 
   it("calls onBack when back button is clicked", () => {
@@ -129,11 +125,10 @@ describe("TotalStatsView", () => {
     expect(mockProps.onBack).toHaveBeenCalled();
   });
 
-  it("calls onViewDetails when view details button is clicked", () => {
+  it("renders tag totals with correct formatting", () => {
     render(<TotalStatsView {...mockProps} />);
-    const viewDetailsButton = screen.getByText("View Details");
-    fireEvent.click(viewDetailsButton);
-    // Note: onViewDetails is not in mockProps, so this would need to be added if needed
+    expect(screen.getByText("Total: 120 min")).toBeInTheDocument();
+    expect(screen.getByText("Total: 80 min")).toBeInTheDocument();
   });
 
   it('shows "No practice data" message when no data is available', () => {
@@ -145,9 +140,44 @@ describe("TotalStatsView", () => {
     ).toBeInTheDocument();
   });
 
-  it("displays correct stats information", () => {
+  it("displays correct tag percentages", () => {
     render(<TotalStatsView {...mockProps} />);
-    expect(screen.getByText("Saved 0 times")).toBeInTheDocument();
-    expect(screen.getByText("Used 0 times")).toBeInTheDocument();
+    expect(screen.getByText("60%")).toBeInTheDocument();
+    expect(screen.getByText("40%")).toBeInTheDocument();
+  });
+
+  it("renders time navigation with period label", () => {
+    render(<TotalStatsView {...mockProps} />);
+    expect(screen.getByText("Jan 15 - Jan 21, 2024")).toBeInTheDocument();
+  });
+
+  it("renders navigation buttons", () => {
+    render(<TotalStatsView {...mockProps} />);
+    expect(screen.getByLabelText("Previous")).toBeInTheDocument();
+    expect(screen.getByLabelText("Next")).toBeInTheDocument();
+  });
+
+  it("disables navigation buttons when appropriate", () => {
+    render(
+      <TotalStatsView {...mockProps} canGoBack={false} canGoForward={false} />
+    );
+    const prevButton = screen.getByLabelText("Previous");
+    const nextButton = screen.getByLabelText("Next");
+    expect(prevButton).toBeDisabled();
+    expect(nextButton).toBeDisabled();
+  });
+
+  it("calls onCurrentIndexChange when navigation buttons are clicked", () => {
+    render(
+      <TotalStatsView {...mockProps} canGoBack={true} canGoForward={true} />
+    );
+    const prevButton = screen.getByLabelText("Previous");
+    const nextButton = screen.getByLabelText("Next");
+
+    fireEvent.click(prevButton);
+    expect(mockProps.onCurrentIndexChange).toHaveBeenCalledWith(1);
+
+    fireEvent.click(nextButton);
+    expect(mockProps.onCurrentIndexChange).toHaveBeenCalledWith(0);
   });
 });
