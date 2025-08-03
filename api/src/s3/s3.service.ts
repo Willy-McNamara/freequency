@@ -46,6 +46,7 @@ export class S3Service {
       ],
       audio: [
         'audio/webm;codecs=opus',
+        'audio/webm',
         'audio/mp3',
         'audio/mpeg',
         'audio/wav',

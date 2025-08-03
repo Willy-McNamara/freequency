@@ -110,6 +110,7 @@ export class SessionsService {
           select: {
             url: true,
             type: true,
+            displayName: true,
           },
         },
         tags: {
@@ -199,7 +200,12 @@ export class SessionsService {
             avatarUrl: comment.musician.avatarUrl,
           },
         })),
-        media: session.media ?? [],
+        media:
+          session.media?.map((mediaItem) => ({
+            url: mediaItem.url,
+            type: mediaItem.type,
+            displayName: mediaItem.displayName,
+          })) ?? [],
         tasks: session.tasksInUse
           .filter(
             (taskInUse) => !taskInUse.isSessionTask && taskInUse.taskDefinition,
@@ -275,6 +281,7 @@ export class SessionsService {
           select: {
             url: true,
             type: true,
+            displayName: true,
           },
         },
         tags: {
@@ -359,7 +366,12 @@ export class SessionsService {
           avatarUrl: comment.musician.avatarUrl,
         },
       })),
-      media: session.media ?? [],
+      media:
+        session.media?.map((mediaItem) => ({
+          url: mediaItem.url,
+          type: mediaItem.type,
+          displayName: mediaItem.displayName,
+        })) ?? [],
       tasks: session.tasksInUse
         .filter(
           (taskInUse) => !taskInUse.isSessionTask && taskInUse.taskDefinition,
@@ -430,6 +442,7 @@ export class SessionsService {
           select: {
             url: true,
             type: true,
+            displayName: true,
           },
         },
         tags: {
@@ -516,6 +529,7 @@ export class SessionsService {
               {
                 url: session.media[0].url,
                 type: session.media[0].type,
+                displayName: session.media[0].displayName,
               },
             ]
           : [],
@@ -612,6 +626,7 @@ export class SessionsService {
           select: {
             url: true,
             type: true,
+            displayName: true,
           },
         },
         tags: {
@@ -704,6 +719,7 @@ export class SessionsService {
         media: session.media.map((mediaItem) => ({
           url: mediaItem.url,
           type: mediaItem.type,
+          displayName: mediaItem.displayName,
         })),
         tasks: session.tasksInUse.map((taskInUse) => ({
           id: taskInUse.id,

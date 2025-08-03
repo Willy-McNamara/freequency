@@ -23,7 +23,8 @@ export interface SessionMedia {
   id?: string;
   url: string;
   type: "image" | "audio" | "video";
-  fileName?: string;
+  fileName?: string; // S3 key for storage
+  displayName?: string; // User-facing display name
 }
 
 export interface SessionState {

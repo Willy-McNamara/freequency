@@ -57,7 +57,7 @@ export const MediaUploadButton: React.FC<MediaUploadButtonProps> = ({
         return "Add Video";
       case "all":
       default:
-        return "Add Media";
+        return "Upload Media";
     }
   };
 

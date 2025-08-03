@@ -86,6 +86,7 @@ let SessionsService = class SessionsService {
                     select: {
                         url: true,
                         type: true,
+                        displayName: true,
                     },
                 },
                 tags: {
@@ -170,7 +171,11 @@ let SessionsService = class SessionsService {
                     avatarUrl: comment.musician.avatarUrl,
                 },
             })),
-            media: session.media ?? [],
+            media: session.media?.map((mediaItem) => ({
+                url: mediaItem.url,
+                type: mediaItem.type,
+                displayName: mediaItem.displayName,
+            })) ?? [],
             tasks: session.tasksInUse
                 .filter((taskInUse) => !taskInUse.isSessionTask && taskInUse.taskDefinition)
                 .map((taskInUse) => ({
@@ -241,6 +246,7 @@ let SessionsService = class SessionsService {
                     select: {
                         url: true,
                         type: true,
+                        displayName: true,
                     },
                 },
                 tags: {
@@ -323,7 +329,11 @@ let SessionsService = class SessionsService {
                     avatarUrl: comment.musician.avatarUrl,
                 },
             })),
-            media: session.media ?? [],
+            media: session.media?.map((mediaItem) => ({
+                url: mediaItem.url,
+                type: mediaItem.type,
+                displayName: mediaItem.displayName,
+            })) ?? [],
             tasks: session.tasksInUse
                 .filter((taskInUse) => !taskInUse.isSessionTask && taskInUse.taskDefinition)
                 .map((taskInUse) => ({
@@ -391,6 +401,7 @@ let SessionsService = class SessionsService {
                     select: {
                         url: true,
                         type: true,
+                        displayName: true,
                     },
                 },
                 tags: {
@@ -475,6 +486,7 @@ let SessionsService = class SessionsService {
                     {
                         url: session.media[0].url,
                         type: session.media[0].type,
+                        displayName: session.media[0].displayName,
                     },
                 ]
                 : [],
@@ -559,6 +571,7 @@ let SessionsService = class SessionsService {
                     select: {
                         url: true,
                         type: true,
+                        displayName: true,
                     },
                 },
                 tags: {
@@ -646,6 +659,7 @@ let SessionsService = class SessionsService {
             media: session.media.map((mediaItem) => ({
                 url: mediaItem.url,
                 type: mediaItem.type,
+                displayName: mediaItem.displayName,
             })),
             tasks: session.tasksInUse.map((taskInUse) => ({
                 id: taskInUse.id,

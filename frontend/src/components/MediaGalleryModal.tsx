@@ -14,6 +14,7 @@ import { AudioPlayer } from "./AudioPlayer";
 interface MediaItem {
   url: string;
   type: string;
+  displayName?: string;
 }
 
 interface MediaGalleryModalProps {
@@ -118,6 +119,7 @@ export const MediaGalleryModal: React.FC<MediaGalleryModalProps> = ({
               audioId={`modal-audio-${Date.now()}-${index}`}
               url={item.url}
               size="md"
+              title={item.displayName || "Audio Recording"}
             />
           ))}
         </div>

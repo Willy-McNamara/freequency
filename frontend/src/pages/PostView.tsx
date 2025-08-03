@@ -81,6 +81,7 @@ interface PostViewData {
   media: Array<{
     url: string;
     type: string;
+    displayName?: string;
   }>;
 }
 

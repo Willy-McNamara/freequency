@@ -8,6 +8,7 @@ interface MediaItem {
   url: string;
   type: "image" | "audio" | "video";
   fileName?: string;
+  displayName?: string;
 }
 
 interface MediaGalleryProps {
@@ -48,6 +49,38 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
 
   return (
     <div className={`space-y-4 ${className}`}>
+      {/* Audio Files */}
+      {audioFiles.length > 0 && (
+        <div className="space-y-3">
+          {audioFiles.map((item, index) => {
+            const originalIndex = media.findIndex((m) => m === item);
+            const audioId = item.id || String(originalIndex);
+            return (
+              <div key={item.id || index} className="relative">
+                <AudioPlayer
+                  audioId={audioId}
+                  url={item.url}
+                  size="md"
+                  title={item.displayName || "Audio Recording"}
+                />
+                {/* Remove Button */}
+                {onRemove && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onRemove(originalIndex)}
+                    className="absolute top-0 right-0 h-6 w-6 p-0 bg-black/50 text-white hover:bg-black/70"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {/* Photos Gallery */}
       {photos.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -63,33 +96,6 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                   alt={item.fileName || "Uploaded image"}
                   className="w-full h-32 md:h-40 object-cover"
                 />
-                {onRemove && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onRemove(originalIndex)}
-                    className="absolute top-2 right-2 h-6 w-6 p-0 bg-black/50 text-white hover:bg-black/70"
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Audio Files */}
-      {audioFiles.length > 0 && (
-        <div className="space-y-3">
-          {audioFiles.map((item, index) => {
-            const originalIndex = media.findIndex((m) => m === item);
-            const audioId = item.id || String(originalIndex);
-            return (
-              <div key={item.id || index} className="relative">
-                <AudioPlayer audioId={audioId} url={item.url} size="md" />
-                {/* Remove Button */}
                 {onRemove && (
                   <Button
                     type="button"

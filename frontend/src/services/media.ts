@@ -87,7 +87,8 @@ export class MediaService {
   static async connectMediaToSession(
     fileName: string,
     musicianId: number,
-    sessionId: number
+    sessionId: number,
+    displayName?: string
   ): Promise<void> {
     try {
       const response = await fetch(
@@ -102,6 +103,7 @@ export class MediaService {
             fileName,
             musicianId,
             sessionId,
+            displayName,
           }),
         }
       );

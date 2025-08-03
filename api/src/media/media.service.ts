@@ -10,6 +10,7 @@ export class MediaService {
     musicianId,
     type: MediaType,
     sessionId: number,
+    displayName?: string,
   ): Promise<MediaItem> {
     const newMedia = await this.prisma.media.create({
       data: {
@@ -19,6 +20,7 @@ export class MediaService {
           fileName,
         type: type,
         sessionId: sessionId,
+        displayName: displayName,
       },
     });
 
@@ -27,6 +29,7 @@ export class MediaService {
       musicianId: newMedia.musicianId,
       url: newMedia.url,
       type: newMedia.type as MediaType,
+      displayName: newMedia.displayName,
     };
 
     return formattedMediaItem;
@@ -65,6 +68,7 @@ export class MediaService {
     return {
       url: media.url,
       type: media.type as MediaType,
+      displayName: media.displayName,
     };
   }
 }

@@ -211,7 +211,7 @@ export class SessionsController {
   @Post('connect-media')
   @UseGuards(JwtAuthGuard)
   async connectMedia(@Body() body: any, @Req() req: any): Promise<any> {
-    const { fileName, sessionId } = body;
+    const { fileName, sessionId, displayName } = body;
 
     // Determine media type from file extension
     const fileExtension = fileName.split('.').pop()?.toLowerCase();
@@ -231,11 +231,25 @@ export class SessionsController {
       throw new Error('Unsupported file type');
     }
 
+    // Check media limits
+    const session = await this.sessionsService.getSession(sessionId);
+    const photoCount = session.media.filter((m) => m.type === 'image').length;
+    const audioCount = session.media.filter((m) => m.type === 'audio').length;
+
+    if (mediaType === 'image' && photoCount >= 4) {
+      throw new Error('Maximum 4 photos allowed per session');
+    }
+
+    if (mediaType === 'audio' && audioCount >= 3) {
+      throw new Error('Maximum 3 audio recordings allowed per session');
+    }
+
     const newMedia = await this.mediaService.addMediaItem(
       fileName,
       req.user.id,
       mediaType,
       sessionId,
+      displayName,
     );
 
     return newMedia;

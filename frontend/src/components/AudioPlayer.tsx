@@ -10,6 +10,7 @@ interface AudioPlayerProps {
   className?: string;
   size?: "sm" | "md" | "lg";
   onClick?: (e: React.MouseEvent) => void;
+  title?: string;
 }
 
 export const AudioPlayer: React.FC<AudioPlayerProps> = ({
@@ -18,6 +19,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   className = "",
   size = "md",
   onClick,
+  title = "Audio Recording",
 }) => {
   const { playAudio, registerAudio, unregisterAudio, subscribeToAudioChanges } =
     useAudioContext();
@@ -41,7 +43,33 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
       const audio = new Audio(url);
       audio.addEventListener("ended", () => setPlayingAudio(null));
       audio.addEventListener("loadedmetadata", () => {
-        setAudioDuration((prev) => ({ ...prev, [audioId]: audio.duration }));
+        if (audio.duration && isFinite(audio.duration)) {
+          setAudioDuration((prev) => ({ ...prev, [audioId]: audio.duration }));
+        } else {
+          // If duration is not available, try to load it by seeking
+          audio.currentTime = 24 * 60 * 60; // Seek to a large number
+          audio.addEventListener(
+            "seeked",
+            () => {
+              if (audio.duration && isFinite(audio.duration)) {
+                setAudioDuration((prev) => ({
+                  ...prev,
+                  [audioId]: audio.duration,
+                }));
+              } else {
+                // Fallback: estimate duration from file size (rough estimate)
+                // This is a very rough estimate for WebM files
+                const estimatedDuration = 30; // Default to 30 seconds if we can't determine
+                setAudioDuration((prev) => ({
+                  ...prev,
+                  [audioId]: estimatedDuration,
+                }));
+              }
+              audio.currentTime = 0;
+            },
+            { once: true }
+          );
+        }
       });
       audio.addEventListener("timeupdate", () => {
         setAudioProgress((prev) => ({ ...prev, [audioId]: audio.currentTime }));
@@ -51,6 +79,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
       });
       setAudioElements((prev) => ({ ...prev, [audioId]: audio }));
       registerAudio(audioId, audio);
+      audio.load(); // Try to load metadata immediately
     }
 
     // Cleanup audio elements on unmount
@@ -146,14 +175,14 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
       <div className="flex items-center gap-4">
         {/* Audio Info */}
         <div className="flex-1 min-w-0">
-          <div className={`${config.textSize} font-medium`}>
-            Audio Recording
+          <div className={`${config.textSize} font-medium truncate`}>
+            {title}
           </div>
         </div>
 
         {/* Time Display */}
         <div
-          className={`${config.textSize} text-muted-foreground flex-shrink-0`}
+          className={`${config.textSize} text-muted-foreground flex-shrink-0 pr-8`}
         >
           {audioDuration[audioId] ? (
             <span>

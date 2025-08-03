@@ -70,6 +70,7 @@ interface PostData {
   media: Array<{
     url: string;
     type: string;
+    displayName?: string;
   }>;
 }
 
@@ -276,6 +277,7 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
               url={item.url}
               size="sm"
               className="mt-2"
+              title={item.displayName || "Audio Recording"}
             />
           ))}
 

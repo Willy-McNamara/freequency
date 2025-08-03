@@ -91,7 +91,7 @@ let SessionsController = class SessionsController {
         return { signedUrl };
     }
     async connectMedia(body, req) {
-        const { fileName, sessionId } = body;
+        const { fileName, sessionId, displayName } = body;
         const fileExtension = fileName.split('.').pop()?.toLowerCase();
         let mediaType;
         if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExtension || '')) {
@@ -106,7 +106,16 @@ let SessionsController = class SessionsController {
         else {
             throw new Error('Unsupported file type');
         }
-        const newMedia = await this.mediaService.addMediaItem(fileName, req.user.id, mediaType, sessionId);
+        const session = await this.sessionsService.getSession(sessionId);
+        const photoCount = session.media.filter((m) => m.type === 'image').length;
+        const audioCount = session.media.filter((m) => m.type === 'audio').length;
+        if (mediaType === 'image' && photoCount >= 4) {
+            throw new Error('Maximum 4 photos allowed per session');
+        }
+        if (mediaType === 'audio' && audioCount >= 3) {
+            throw new Error('Maximum 3 audio recordings allowed per session');
+        }
+        const newMedia = await this.mediaService.addMediaItem(fileName, req.user.id, mediaType, sessionId, displayName);
         return newMedia;
     }
     async uploadMedia(file, body, req) {
