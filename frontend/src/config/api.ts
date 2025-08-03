@@ -23,6 +23,7 @@ interface ApiConfig {
       base: string;
       getSignedUrl: string;
       connectMedia: string;
+      uploadMedia: string;
     };
     tasks: string;
     tasksInUse: {
@@ -70,6 +71,7 @@ const getApiConfig = (): ApiConfig => {
         base: `${baseUrl}/sessions`,
         getSignedUrl: `${baseUrl}/sessions/signed-url`,
         connectMedia: `${baseUrl}/sessions/connect-media`,
+        uploadMedia: `${baseUrl}/sessions/upload-media`,
       },
       tasks: `${baseUrl}/tasks`,
       tasksInUse: {

@@ -111,6 +111,7 @@ export class SessionsService {
             url: true,
             type: true,
             displayName: true,
+            thumbnailUrl: true,
           },
         },
         tags: {
@@ -205,6 +206,7 @@ export class SessionsService {
             url: mediaItem.url,
             type: mediaItem.type,
             displayName: mediaItem.displayName,
+            thumbnailUrl: mediaItem.thumbnailUrl,
           })) ?? [],
         tasks: session.tasksInUse
           .filter(
@@ -282,6 +284,7 @@ export class SessionsService {
             url: true,
             type: true,
             displayName: true,
+            thumbnailUrl: true,
           },
         },
         tags: {
@@ -371,6 +374,7 @@ export class SessionsService {
           url: mediaItem.url,
           type: mediaItem.type,
           displayName: mediaItem.displayName,
+          thumbnailUrl: mediaItem.thumbnailUrl,
         })) ?? [],
       tasks: session.tasksInUse
         .filter(
@@ -443,6 +447,7 @@ export class SessionsService {
             url: true,
             type: true,
             displayName: true,
+            thumbnailUrl: true,
           },
         },
         tags: {
@@ -530,6 +535,7 @@ export class SessionsService {
                 url: session.media[0].url,
                 type: session.media[0].type,
                 displayName: session.media[0].displayName,
+                thumbnailUrl: session.media[0].thumbnailUrl,
               },
             ]
           : [],
@@ -627,6 +633,7 @@ export class SessionsService {
             url: true,
             type: true,
             displayName: true,
+            thumbnailUrl: true,
           },
         },
         tags: {
@@ -720,6 +727,7 @@ export class SessionsService {
           url: mediaItem.url,
           type: mediaItem.type,
           displayName: mediaItem.displayName,
+          thumbnailUrl: mediaItem.thumbnailUrl,
         })),
         tasks: session.tasksInUse.map((taskInUse) => ({
           id: taskInUse.id,
@@ -911,7 +919,12 @@ export class SessionsService {
               },
             },
             media: {
-              select: { url: true, type: true },
+              select: {
+                url: true,
+                type: true,
+                displayName: true,
+                thumbnailUrl: true,
+              },
             },
             tags: true,
             instruments: true,

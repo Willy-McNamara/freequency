@@ -15,6 +15,7 @@ interface MediaItem {
   url: string;
   type: string;
   displayName?: string;
+  thumbnailUrl?: string;
 }
 
 interface MediaGalleryModalProps {
@@ -80,29 +81,34 @@ export const MediaGalleryModal: React.FC<MediaGalleryModalProps> = ({
     if (selectedImageIndex !== null) {
       setSelectedImageIndex(
         (selectedImageIndex + 1) %
-          media.filter((m) => m.type === "image").length
+          media.filter((m) => m.type === "image" || m.type === "video").length
       );
     }
   };
 
   const prevImage = () => {
     if (selectedImageIndex !== null) {
-      const imageMedia = media.filter((m) => m.type === "image");
+      const imageAndVideoMedia = media.filter(
+        (m) => m.type === "image" || m.type === "video"
+      );
       setSelectedImageIndex(
         selectedImageIndex === 0
-          ? imageMedia.length - 1
+          ? imageAndVideoMedia.length - 1
           : selectedImageIndex - 1
       );
     }
   };
 
-  const imageMedia = media.filter((m) => m.type === "image");
-  const selectedImage =
-    selectedImageIndex !== null ? imageMedia[selectedImageIndex] : null;
+  const imageAndVideoMedia = media.filter(
+    (m) => m.type === "image" || m.type === "video"
+  );
+  const selectedMedia =
+    selectedImageIndex !== null ? imageAndVideoMedia[selectedImageIndex] : null;
 
-  // Separate photos and audio for display
+  // Separate media types for display
   const photos = media.filter((item) => item.type === "image");
   const audioFiles = media.filter((item) => item.type === "audio");
+  const videos = media.filter((item) => item.type === "video");
 
   if (!media || media.length === 0) {
     return null;
@@ -125,11 +131,12 @@ export const MediaGalleryModal: React.FC<MediaGalleryModalProps> = ({
         </div>
       )}
 
-      {/* Photos Gallery */}
-      {photos.length > 0 && (
+      {/* Photos and Videos Gallery */}
+      {(photos.length > 0 || videos.length > 0) && (
         <div
           className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 ${className}`}
         >
+          {/* Photos */}
           {photos.map((item, index) => (
             <div
               key={index}
@@ -148,45 +155,93 @@ export const MediaGalleryModal: React.FC<MediaGalleryModalProps> = ({
               </div>
             </div>
           ))}
+
+          {/* Videos */}
+          {videos.map((item, index) => {
+            const videoIndex = photos.length + index;
+            return (
+              <div
+                key={index}
+                className="relative rounded-lg overflow-hidden bg-muted cursor-pointer hover:opacity-90 transition-opacity"
+                onClick={() => handleImageClick(videoIndex)}
+              >
+                {item.thumbnailUrl ? (
+                  <img
+                    src={item.thumbnailUrl}
+                    alt={item.displayName || "Video thumbnail"}
+                    className="w-full h-32 md:h-40 object-cover"
+                  />
+                ) : (
+                  <video
+                    src={item.url}
+                    className="w-full h-32 md:h-40 object-cover"
+                    muted
+                    preload="metadata"
+                    poster={item.url}
+                    onError={(e) => {
+                      // Fallback to video icon if video fails to load
+                      const target = e.target as HTMLVideoElement;
+                      target.style.display = "none";
+                      const fallback = target.parentElement?.querySelector(
+                        ".video-fallback"
+                      ) as HTMLElement;
+                      if (fallback) fallback.style.display = "flex";
+                    }}
+                  />
+                )}
+                {/* Fallback video icon */}
+                <div className="video-fallback hidden absolute inset-0 bg-muted flex items-center justify-center">
+                  <Video className="w-8 h-8 text-muted-foreground" />
+                </div>
+                <div className="absolute top-2 left-2">
+                  <div className="bg-black/50 text-white p-1 rounded">
+                    {getFileTypeIcon(item.type)}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 
-      {/* Video Files */}
-      {media
-        .filter((item) => item.type === "video")
-        .map((item, index) => (
-          <div
-            key={index}
-            className="w-full h-32 md:h-40 flex items-center justify-center bg-muted rounded-lg"
-          >
-            <video
-              src={item.url}
-              className="w-full h-full object-cover rounded-lg"
-              controls
-              onClick={(e) => e.stopPropagation()}
-            />
-          </div>
-        ))}
-
-      {/* Full-size Image Modal */}
-      {selectedImageIndex !== null && selectedImage && (
+      {/* Full-size Media Modal */}
+      {selectedImageIndex !== null && selectedMedia && (
         <div
           className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
           onClick={closeModal}
         >
           <div className="relative w-full h-full flex items-center justify-center">
-            <img
-              src={selectedImage.url}
-              alt="Full size"
-              className="max-w-full max-h-full object-contain"
-              style={{
-                maxWidth: "100vw",
-                maxHeight: "100vh",
-                width: "auto",
-                height: "auto",
-              }}
-              onClick={(e) => e.stopPropagation()}
-            />
+            {selectedMedia.type === "image" ? (
+              <img
+                src={selectedMedia.url}
+                alt="Full size"
+                className="max-w-full max-h-full object-contain"
+                style={{
+                  maxWidth: "100vw",
+                  maxHeight: "100vh",
+                  width: "auto",
+                  height: "auto",
+                }}
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+              <video
+                src={selectedMedia.url}
+                className="max-w-full max-h-full object-contain"
+                style={{
+                  maxWidth: "100vw",
+                  maxHeight: "100vh",
+                  width: "auto",
+                  height: "auto",
+                }}
+                controls
+                autoPlay
+                onClick={(e) => e.stopPropagation()}
+                onError={(e) => {
+                  console.error("Video playback error:", e);
+                }}
+              />
+            )}
 
             {/* Close button */}
             <Button
@@ -203,7 +258,7 @@ export const MediaGalleryModal: React.FC<MediaGalleryModalProps> = ({
             </Button>
 
             {/* Navigation buttons */}
-            {imageMedia.length > 1 && (
+            {imageAndVideoMedia.length > 1 && (
               <>
                 <Button
                   type="button"
@@ -232,12 +287,12 @@ export const MediaGalleryModal: React.FC<MediaGalleryModalProps> = ({
               </>
             )}
 
-            {/* Image counter */}
+            {/* Media counter */}
             <div
               className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-full text-sm"
               onClick={(e) => e.stopPropagation()}
             >
-              {selectedImageIndex + 1} / {imageMedia.length}
+              {selectedImageIndex + 1} / {imageAndVideoMedia.length}
             </div>
           </div>
         </div>

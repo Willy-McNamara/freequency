@@ -26,10 +26,10 @@ export const MediaUploadButton: React.FC<MediaUploadButtonProps> = ({
       case "audio":
         return "audio/webm,audio/mp3,audio/mpeg,audio/wav,audio/m4a,audio/ogg";
       case "video":
-        return "video/mp4,video/webm,video/ogg,video/quicktime";
+        return "video/mp4,video/webm,video/quicktime";
       case "all":
       default:
-        return "image/jpeg,image/jpg,image/png,image/gif,image/webp,audio/webm,audio/mp3,audio/mpeg,audio/wav,audio/m4a,audio/ogg,video/mp4,video/webm,video/ogg,video/quicktime";
+        return "image/jpeg,image/jpg,image/png,image/gif,image/webp,audio/webm,audio/mp3,audio/mpeg,audio/wav,audio/m4a,audio/ogg,video/mp4,video/webm,video/quicktime";
     }
   };
 
@@ -66,7 +66,7 @@ export const MediaUploadButton: React.FC<MediaUploadButtonProps> = ({
     const fileSizeLimits = {
       image: 10 * 1024 * 1024, // 10MB
       audio: 50 * 1024 * 1024, // 50MB
-      video: 100 * 1024 * 1024, // 100MB
+      video: 50 * 1024 * 1024, // 50MB (1 minute max)
     };
 
     // Determine file category

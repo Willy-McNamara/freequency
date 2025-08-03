@@ -10,6 +10,7 @@ export interface MediaItem {
 export interface UploadResponse {
   url: string;
   fileName: string;
+  thumbnailUrl?: string;
 }
 
 export class MediaService {
@@ -19,7 +20,13 @@ export class MediaService {
     sessionId?: number
   ): Promise<UploadResponse> {
     try {
-      // Generate a unique filename
+      // For videos, use server-side upload to get thumbnail
+      const mediaType = this.getMediaType(file);
+      if (mediaType === "video") {
+        return await this.uploadVideoServerSide(file, musicianId, sessionId);
+      }
+
+      // For other media types, use client-side upload
       const timestamp = Date.now();
       const fileExtension = file.name.split(".").pop();
       const fileName = `media/${musicianId}/${timestamp}.${fileExtension}`;
@@ -89,7 +96,12 @@ export class MediaService {
     musicianId: number,
     sessionId: number,
     displayName?: string
-  ): Promise<void> {
+  ): Promise<{
+    url: string;
+    type: string;
+    displayName?: string;
+    thumbnailUrl?: string;
+  }> {
     try {
       const response = await fetch(
         buildApiUrl(apiConfig.endpoints.sessions.connectMedia),
@@ -121,9 +133,62 @@ export class MediaService {
           `Failed to connect media to session: ${response.status}`
         );
       }
+
+      const mediaData = await response.json();
+      return {
+        url: mediaData.url,
+        type: mediaData.type,
+        displayName: mediaData.displayName,
+        thumbnailUrl: mediaData.thumbnailUrl,
+      };
     } catch (error) {
       console.error("Connect media error:", error);
       throw new Error("Failed to connect media to session");
+    }
+  }
+
+  static async uploadVideoServerSide(
+    file: File,
+    musicianId: number,
+    sessionId?: number
+  ): Promise<UploadResponse> {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      if (sessionId) {
+        formData.append("sessionId", sessionId.toString());
+      }
+
+      const response = await fetch(
+        buildApiUrl(apiConfig.endpoints.sessions.uploadMedia),
+        {
+          method: "POST",
+          credentials: "include",
+          body: formData,
+        }
+      );
+
+      if (response.status === 401) {
+        if (window.location.pathname !== "/login") {
+          window.location.href = "/login";
+        }
+        throw new Error("Authentication required");
+      }
+
+      if (!response.ok) {
+        throw new Error(`Failed to upload video: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("MediaService uploadVideoServerSide result:", result);
+      return {
+        url: result.url,
+        fileName: result.fileName,
+        thumbnailUrl: result.thumbnailUrl,
+      };
+    } catch (error) {
+      console.error("Video upload error:", error);
+      throw new Error("Failed to upload video file");
     }
   }
 

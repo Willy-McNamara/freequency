@@ -82,6 +82,7 @@ interface PostViewData {
     url: string;
     type: string;
     displayName?: string;
+    thumbnailUrl?: string;
   }>;
 }
 
@@ -390,14 +391,17 @@ export const PostView: React.FC = () => {
           )}
 
           {/* Media Section */}
-          {post.media && post.media.length > 0 && (
-            <div className="p-4 sm:p-6 border-b border-border">
-              <h2 className="text-lg sm:text-xl font-semibold mb-4 text-left">
-                Media
-              </h2>
-              <MediaGalleryModal media={post.media} />
-            </div>
-          )}
+          {(() => {
+            console.log("PostView post.media:", post.media);
+            return post.media && post.media.length > 0 ? (
+              <div className="p-4 sm:p-6 border-b border-border">
+                <h2 className="text-lg sm:text-xl font-semibold mb-4 text-left">
+                  Media
+                </h2>
+                <MediaGalleryModal media={post.media} />
+              </div>
+            ) : null;
+          })()}
 
           {/* Engagement Actions Footer */}
           <div className="p-4 sm:p-6 bg-muted/20">

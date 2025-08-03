@@ -91,7 +91,7 @@ let SessionsController = class SessionsController {
         return { signedUrl };
     }
     async connectMedia(body, req) {
-        const { fileName, sessionId, displayName } = body;
+        const { fileName, sessionId, displayName, thumbnailUrl } = body;
         const fileExtension = fileName.split('.').pop()?.toLowerCase();
         let mediaType;
         if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExtension || '')) {
@@ -109,13 +109,17 @@ let SessionsController = class SessionsController {
         const session = await this.sessionsService.getSession(sessionId);
         const photoCount = session.media.filter((m) => m.type === 'image').length;
         const audioCount = session.media.filter((m) => m.type === 'audio').length;
+        const videoCount = session.media.filter((m) => m.type === 'video').length;
         if (mediaType === 'image' && photoCount >= 4) {
             throw new Error('Maximum 4 photos allowed per session');
         }
         if (mediaType === 'audio' && audioCount >= 3) {
             throw new Error('Maximum 3 audio recordings allowed per session');
         }
-        const newMedia = await this.mediaService.addMediaItem(fileName, req.user.id, mediaType, sessionId, displayName);
+        if (mediaType === 'video' && videoCount >= 1) {
+            throw new Error('Maximum 1 video allowed per session');
+        }
+        const newMedia = await this.mediaService.addMediaItem(fileName, req.user.id, mediaType, sessionId, displayName, thumbnailUrl);
         return newMedia;
     }
     async uploadMedia(file, body, req) {
@@ -123,7 +127,7 @@ let SessionsController = class SessionsController {
         const timestamp = Date.now();
         const fileExtension = file.originalname.split('.').pop();
         const fileName = `media/${req.user.id}/${timestamp}.${fileExtension}`;
-        const url = await this.s3service.uploadFile(file.buffer, fileName, file.mimetype, req.user.id);
+        const uploadResult = await this.s3service.uploadFile(file.buffer, fileName, file.mimetype, req.user.id);
         if (sessionId) {
             await this.connectMedia({
                 fileName,
@@ -131,8 +135,9 @@ let SessionsController = class SessionsController {
             }, req);
         }
         return {
-            url,
-            fileName: file.originalname,
+            url: uploadResult.url,
+            fileName: fileName,
+            thumbnailUrl: uploadResult.thumbnailUrl,
         };
     }
 };

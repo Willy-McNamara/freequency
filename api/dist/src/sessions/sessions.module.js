@@ -12,16 +12,17 @@ const sessions_service_1 = require("./sessions.service");
 const sessions_controller_1 = require("./sessions.controller");
 const prisma_module_1 = require("../prisma/prisma.module");
 const jwt_1 = require("@nestjs/jwt");
-const s3_service_1 = require("../s3/s3.service");
-const media_service_1 = require("../media/media.service");
+const media_module_1 = require("../media/media.module");
+const thumbnail_module_1 = require("../thumbnail/thumbnail.module");
+const s3_module_1 = require("../s3/s3.module");
 let SessionsModule = class SessionsModule {
 };
 exports.SessionsModule = SessionsModule;
 exports.SessionsModule = SessionsModule = __decorate([
     (0, common_1.Module)({
         controllers: [sessions_controller_1.SessionsController],
-        providers: [sessions_service_1.SessionsService, jwt_1.JwtService, s3_service_1.S3Service, media_service_1.MediaService],
-        imports: [prisma_module_1.PrismaModule],
+        providers: [sessions_service_1.SessionsService, jwt_1.JwtService],
+        imports: [prisma_module_1.PrismaModule, media_module_1.MediaModule, thumbnail_module_1.ThumbnailModule, s3_module_1.S3Module],
     })
 ], SessionsModule);
 //# sourceMappingURL=sessions.module.js.map

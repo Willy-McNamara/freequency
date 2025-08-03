@@ -71,6 +71,7 @@ interface PostData {
     url: string;
     type: string;
     displayName?: string;
+    thumbnailUrl?: string;
   }>;
 }
 
@@ -282,12 +283,16 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
           ))}
 
         {/* Other Media (Photos, Videos) */}
-        {postData.media.filter((item) => item.type !== "audio").length > 0 && (
-          <MediaThumbnail
-            media={postData.media.filter((item) => item.type !== "audio")}
-            className="mt-2"
-          />
-        )}
+        {(() => {
+          const nonAudioMedia = postData.media.filter(
+            (item) => item.type !== "audio"
+          );
+          console.log("FeedPost postData.media:", postData.media);
+          console.log("FeedPost nonAudioMedia:", nonAudioMedia);
+          return nonAudioMedia.length > 0 ? (
+            <MediaThumbnail media={nonAudioMedia} className="mt-2" />
+          ) : null;
+        })()}
       </div>
       {/* splicing in like/comment section */}
       <div className="flex items-center gap-4">

@@ -87,6 +87,7 @@ let SessionsService = class SessionsService {
                         url: true,
                         type: true,
                         displayName: true,
+                        thumbnailUrl: true,
                     },
                 },
                 tags: {
@@ -175,6 +176,7 @@ let SessionsService = class SessionsService {
                 url: mediaItem.url,
                 type: mediaItem.type,
                 displayName: mediaItem.displayName,
+                thumbnailUrl: mediaItem.thumbnailUrl,
             })) ?? [],
             tasks: session.tasksInUse
                 .filter((taskInUse) => !taskInUse.isSessionTask && taskInUse.taskDefinition)
@@ -247,6 +249,7 @@ let SessionsService = class SessionsService {
                         url: true,
                         type: true,
                         displayName: true,
+                        thumbnailUrl: true,
                     },
                 },
                 tags: {
@@ -333,6 +336,7 @@ let SessionsService = class SessionsService {
                 url: mediaItem.url,
                 type: mediaItem.type,
                 displayName: mediaItem.displayName,
+                thumbnailUrl: mediaItem.thumbnailUrl,
             })) ?? [],
             tasks: session.tasksInUse
                 .filter((taskInUse) => !taskInUse.isSessionTask && taskInUse.taskDefinition)
@@ -402,6 +406,7 @@ let SessionsService = class SessionsService {
                         url: true,
                         type: true,
                         displayName: true,
+                        thumbnailUrl: true,
                     },
                 },
                 tags: {
@@ -487,6 +492,7 @@ let SessionsService = class SessionsService {
                         url: session.media[0].url,
                         type: session.media[0].type,
                         displayName: session.media[0].displayName,
+                        thumbnailUrl: session.media[0].thumbnailUrl,
                     },
                 ]
                 : [],
@@ -572,6 +578,7 @@ let SessionsService = class SessionsService {
                         url: true,
                         type: true,
                         displayName: true,
+                        thumbnailUrl: true,
                     },
                 },
                 tags: {
@@ -660,6 +667,7 @@ let SessionsService = class SessionsService {
                 url: mediaItem.url,
                 type: mediaItem.type,
                 displayName: mediaItem.displayName,
+                thumbnailUrl: mediaItem.thumbnailUrl,
             })),
             tasks: session.tasksInUse.map((taskInUse) => ({
                 id: taskInUse.id,
@@ -763,7 +771,12 @@ let SessionsService = class SessionsService {
                             },
                         },
                         media: {
-                            select: { url: true, type: true },
+                            select: {
+                                url: true,
+                                type: true,
+                                displayName: true,
+                                thumbnailUrl: true,
+                            },
                         },
                         tags: true,
                         instruments: true,

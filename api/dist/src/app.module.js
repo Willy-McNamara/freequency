@@ -14,6 +14,8 @@ const prisma_module_1 = require("./prisma/prisma.module");
 const sessions_module_1 = require("./sessions/sessions.module");
 const musicians_module_1 = require("./musicians/musicians.module");
 const tasks_module_1 = require("./tasks/tasks.module");
+const media_module_1 = require("./media/media.module");
+const thumbnail_module_1 = require("./thumbnail/thumbnail.module");
 const serve_static_1 = require("@nestjs/serve-static");
 const logger_middleware_1 = require("./logger.middleware");
 const path_1 = require("path");
@@ -24,7 +26,7 @@ const core_1 = require("@nestjs/core");
 const unauthorized_exception_filter_1 = require("./filters/unauthorized-exception.filter");
 const jwt_strategy_1 = require("./auth/jwt.strategy");
 const jwt_1 = require("@nestjs/jwt");
-const s3_service_1 = require("./s3/s3.service");
+const s3_module_1 = require("./s3/s3.module");
 const all_exceptions_filter_1 = require("./filters/all-exceptions.filter");
 const throttler_1 = require("@nestjs/throttler");
 const instruments_controller_1 = require("./instruments/instruments.controller");
@@ -45,6 +47,9 @@ exports.AppModule = AppModule = __decorate([
             sessions_module_1.SessionsModule,
             musicians_module_1.MusiciansModule,
             tasks_module_1.TasksModule,
+            media_module_1.MediaModule,
+            thumbnail_module_1.ThumbnailModule,
+            s3_module_1.S3Module,
             serve_static_1.ServeStaticModule.forRoot({
                 rootPath: (0, path_1.join)(process.cwd(), '../frontend/dist'),
                 serveRoot: '/',
@@ -75,7 +80,6 @@ exports.AppModule = AppModule = __decorate([
             sessions_service_1.SessionsService,
             jwt_strategy_1.JwtStrategy,
             jwt_1.JwtService,
-            s3_service_1.S3Service,
             common_1.Logger,
             {
                 provide: core_1.APP_FILTER,

@@ -365,8 +365,11 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
               await sessionService.connectMediaToSession(
                 mediaItem.fileName,
                 savedSession.id,
-                mediaItem.type === "audio" ? mediaItem.displayName : undefined
+                mediaItem.type === "audio" ? mediaItem.displayName : undefined,
+                mediaItem.thumbnailUrl
               );
+              // Note: The thumbnailUrl is now stored in the database
+              // and will be available when the session is fetched
             } catch (error) {
               console.error("Error connecting media to session:", error);
             }
@@ -453,7 +456,8 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   const getMediaCounts = () => {
     const photos = session.media.filter((item) => item.type === "image").length;
     const audio = session.media.filter((item) => item.type === "audio").length;
-    return { photos, audio };
+    const videos = session.media.filter((item) => item.type === "video").length;
+    return { photos, audio, videos };
   };
 
   const canAddPhoto = () => {
@@ -464,6 +468,11 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   const canAddAudio = () => {
     const { audio } = getMediaCounts();
     return audio < 3;
+  };
+
+  const canAddVideo = () => {
+    const { videos } = getMediaCounts();
+    return videos < 1;
   };
 
   const checkAudioDuration = async (audioBlob: Blob): Promise<boolean> => {
@@ -508,6 +517,51 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
 
       audio.load(); // Try to load metadata immediately
       audio.src = url;
+    });
+  };
+
+  const checkVideoDuration = async (videoFile: File): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const video = document.createElement("video");
+      const url = URL.createObjectURL(videoFile);
+
+      video.addEventListener("loadedmetadata", () => {
+        if (video.duration && isFinite(video.duration)) {
+          URL.revokeObjectURL(url);
+          const durationInMinutes = video.duration / 60;
+          resolve(durationInMinutes <= 1);
+        } else {
+          // Try seeking to force duration calculation
+          video.currentTime = 24 * 60 * 60; // Seek to a large number
+          video.addEventListener(
+            "seeked",
+            () => {
+              if (video.duration && isFinite(video.duration)) {
+                URL.revokeObjectURL(url);
+                const durationInMinutes = video.duration / 60;
+                resolve(durationInMinutes <= 1);
+              } else {
+                // Fallback: estimate from file size
+                URL.revokeObjectURL(url);
+                const estimatedDuration = videoFile.size / 5000000; // Rough estimate: 5MB per minute
+                const durationInMinutes = estimatedDuration / 60;
+                resolve(durationInMinutes <= 1);
+              }
+              video.currentTime = 0;
+            },
+            { once: true }
+          );
+        }
+      });
+
+      video.addEventListener("error", () => {
+        URL.revokeObjectURL(url);
+        // On error, assume it's valid (better to allow than reject incorrectly)
+        resolve(true);
+      });
+
+      video.load(); // Try to load metadata immediately
+      video.src = url;
     });
   };
 
@@ -993,14 +1047,17 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                               anything worth saving or sharing.
                             </strong>
                             <br />
-                            Upload option for photos or recordings you've
-                            captured elsewhere.
+                            Upload option for photos, videos, or recordings
+                            you've captured elsewhere.
                           </p>
                           <br />
                           📸 Photos: Up to 4 photos per session (max 10MB each)
                           <br />
                           🎵 Audio: Up to 3 recordings per session (max 3
                           minutes each)
+                          <br />
+                          🎥 Video: Up to 1 video per session (max 1 minute,
+                          50MB)
                           <br />
                           <br />
                           <span className="text-xs text-muted-foreground">
@@ -1009,6 +1066,8 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                             Photos: JPEG, PNG, GIF, WebP
                             <br />
                             Audio: MP3, WAV, M4A, OGG, WebM
+                            <br />
+                            Video: MP4, WebM, MOV
                           </span>
                         </p>
                       </TooltipContent>
@@ -1033,17 +1092,46 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                         return;
                       }
 
+                      // Check video limit
+                      if (mediaType === "video" && !canAddVideo()) {
+                        toast.error("Maximum 1 video allowed per session");
+                        return;
+                      }
+
+                      // Check video duration
+                      if (mediaType === "video") {
+                        const isWithinLimit = await checkVideoDuration(file);
+                        if (!isWithinLimit) {
+                          toast.error("Video must be 1 minute or shorter");
+                          return;
+                        }
+                      }
+
+                      // Show loading toast
+                      const loadingToast = toast.loading("Uploading media...");
+
                       const uploadResult = await MediaService.uploadFile(
                         file,
                         user.id
                       );
 
+                      console.log("Practice upload result:", uploadResult);
+
+                      // Add the media to the session state with thumbnail if available
                       session.addMedia({
                         url: uploadResult.url,
                         type: mediaType,
                         fileName: uploadResult.fileName,
+                        thumbnailUrl: uploadResult.thumbnailUrl,
                       });
 
+                      console.log(
+                        "Practice session media after add:",
+                        session.media
+                      );
+
+                      // Dismiss loading toast and show success
+                      toast.dismiss(loadingToast);
                       toast.success("Media uploaded successfully!");
                     } catch (error) {
                       console.error("Upload error:", error);
@@ -1052,7 +1140,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                   }}
                   acceptedTypes="all"
                   className="flex items-center gap-2"
-                  disabled={!canAddPhoto()}
+                  disabled={!canAddPhoto() && !canAddVideo()}
                 />
                 <AudioRecorder
                   onRecordingComplete={async (
@@ -1088,6 +1176,11 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                         type: "audio/webm",
                       });
 
+                      // Show loading toast
+                      const loadingToast = toast.loading(
+                        "Uploading audio recording..."
+                      );
+
                       const uploadResult = await MediaService.uploadFile(
                         file,
                         user.id
@@ -1100,6 +1193,8 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                         displayName: displayName,
                       });
 
+                      // Dismiss loading toast and show success
+                      toast.dismiss(loadingToast);
                       toast.success("Audio recording uploaded successfully!");
                     } catch (error) {
                       console.error("Recording upload error:", error);

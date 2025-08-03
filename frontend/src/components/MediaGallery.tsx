@@ -9,6 +9,7 @@ interface MediaItem {
   type: "image" | "audio" | "video";
   fileName?: string;
   displayName?: string;
+  thumbnailUrl?: string;
 }
 
 interface MediaGalleryProps {
@@ -22,9 +23,10 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
   onRemove,
   className = "",
 }) => {
-  // Separate photos and audio
+  // Separate media types
   const photos = media.filter((item) => item.type === "image");
   const audioFiles = media.filter((item) => item.type === "audio");
+  const videos = media.filter((item) => item.type === "video");
 
   const getFileTypeIcon = (type: string) => {
     switch (type) {
@@ -81,9 +83,10 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
         </div>
       )}
 
-      {/* Photos Gallery */}
-      {photos.length > 0 && (
+      {/* Photos and Videos Gallery */}
+      {(photos.length > 0 || videos.length > 0) && (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          {/* Photos */}
           {photos.map((item, index) => {
             const originalIndex = media.findIndex((m) => m === item);
             return (
@@ -96,6 +99,65 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                   alt={item.fileName || "Uploaded image"}
                   className="w-full h-32 md:h-40 object-cover"
                 />
+                {/* File type icon */}
+                <div className="absolute top-2 left-2 bg-black/50 text-white p-1 rounded">
+                  {getFileTypeIcon(item.type)}
+                </div>
+                {onRemove && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onRemove(originalIndex)}
+                    className="absolute top-2 right-2 h-6 w-6 p-0 bg-black/50 text-white hover:bg-black/70"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+            );
+          })}
+
+          {/* Videos */}
+          {videos.map((item, index) => {
+            const originalIndex = media.findIndex((m) => m === item);
+            return (
+              <div
+                key={item.id || index}
+                className="relative rounded-lg overflow-hidden bg-muted border"
+              >
+                {item.thumbnailUrl ? (
+                  <img
+                    src={item.thumbnailUrl}
+                    alt={item.fileName || "Video thumbnail"}
+                    className="w-full h-32 md:h-40 object-cover"
+                  />
+                ) : (
+                  <video
+                    src={item.url}
+                    className="w-full h-32 md:h-40 object-cover"
+                    muted
+                    preload="metadata"
+                    poster={item.url}
+                    onError={(e) => {
+                      // Fallback to video icon if video fails to load
+                      const target = e.target as HTMLVideoElement;
+                      target.style.display = "none";
+                      const fallback = target.parentElement?.querySelector(
+                        ".video-fallback"
+                      ) as HTMLElement;
+                      if (fallback) fallback.style.display = "flex";
+                    }}
+                  />
+                )}
+                {/* Fallback video icon */}
+                <div className="video-fallback hidden absolute inset-0 bg-muted flex items-center justify-center">
+                  <Video className="w-8 h-8 text-muted-foreground" />
+                </div>
+                {/* File type icon */}
+                <div className="absolute top-2 left-2 bg-black/50 text-white p-1 rounded">
+                  {getFileTypeIcon(item.type)}
+                </div>
                 {onRemove && (
                   <Button
                     type="button"
@@ -112,52 +174,6 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
           })}
         </div>
       )}
-
-      {/* Video Files (keeping existing design for now) */}
-      {media
-        .filter((item) => item.type === "video")
-        .map((item, index) => {
-          const originalIndex = media.findIndex((m) => m === item);
-          return (
-            <div
-              key={item.id || index}
-              className="relative border rounded-lg p-3 bg-card"
-            >
-              <div className="flex items-start gap-3">
-                <div className="flex-shrink-0">
-                  <video
-                    src={item.url}
-                    className="w-16 h-16 object-cover rounded-md"
-                    controls
-                  />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-lg">
-                      {getFileTypeIcon(item.type)}
-                    </span>
-                  </div>
-                  {item.fileName && (
-                    <p className="text-sm font-medium truncate">
-                      {item.fileName}
-                    </p>
-                  )}
-                </div>
-              </div>
-              {onRemove && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onRemove(originalIndex)}
-                  className="absolute top-2 right-2 h-6 w-6 p-0 hover:bg-destructive hover:text-destructive-foreground"
-                >
-                  <X className="h-3 w-3" />
-                </Button>
-              )}
-            </div>
-          );
-        })}
     </div>
   );
 };

@@ -1,10 +1,12 @@
 import React from "react";
-import { Music, Video } from "lucide-react";
+import { Music, Video, Image } from "lucide-react";
 
 interface MediaThumbnailProps {
   media: Array<{
     url: string;
     type: string;
+    displayName?: string;
+    thumbnailUrl?: string;
   }>;
   className?: string;
 }
@@ -21,32 +23,61 @@ export const MediaThumbnail: React.FC<MediaThumbnailProps> = ({
   const displayMedia = media.slice(0, 3);
   const hasMore = media.length > 3;
 
+  const getFileTypeIcon = (type: string) => {
+    switch (type) {
+      case "image":
+        return <Image className="w-3 h-3" />;
+      case "audio":
+        return <Music className="w-3 h-3" />;
+      case "video":
+        return <Video className="w-3 h-3" />;
+      default:
+        return <Image className="w-3 h-3" />;
+    }
+  };
+
   return (
     <div className={`flex gap-2 ${className}`}>
-      {displayMedia.map((item, index) => (
-        <div
-          key={index}
-          className="relative w-16 h-16 rounded-md overflow-hidden bg-muted flex-shrink-0"
-        >
-          {item.type === "image" && (
-            <img
-              src={item.url}
-              alt="Media"
-              className="w-full h-full object-cover"
-            />
-          )}
-          {item.type === "audio" && (
-            <div className="w-full h-full flex items-center justify-center">
-              <Music className="w-6 h-6 text-muted-foreground" />
+      {displayMedia.map((item, index) => {
+        return (
+          <div
+            key={index}
+            className="relative w-16 h-16 rounded-md overflow-hidden bg-muted flex-shrink-0"
+          >
+            {item.type === "image" && (
+              <img
+                src={item.url}
+                alt="Media"
+                className="w-full h-full object-cover"
+              />
+            )}
+            {item.type === "audio" && (
+              <div className="w-full h-full flex items-center justify-center">
+                <Music className="w-6 h-6 text-muted-foreground" />
+              </div>
+            )}
+            {item.type === "video" &&
+              (item.thumbnailUrl ? (
+                <img
+                  src={item.thumbnailUrl}
+                  alt={item.displayName || "Video thumbnail"}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <Video className="w-6 h-6 text-muted-foreground" />
+                </div>
+              ))}
+
+            {/* File type icon overlay */}
+            <div className="absolute top-1 left-1">
+              <div className="bg-black/50 text-white p-0.5 rounded">
+                {getFileTypeIcon(item.type)}
+              </div>
             </div>
-          )}
-          {item.type === "video" && (
-            <div className="w-full h-full flex items-center justify-center">
-              <Video className="w-6 h-6 text-muted-foreground" />
-            </div>
-          )}
-        </div>
-      ))}
+          </div>
+        );
+      })}
       {hasMore && (
         <div className="w-16 h-16 rounded-md bg-muted flex items-center justify-center text-xs text-muted-foreground">
           +{media.length - 3}

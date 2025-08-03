@@ -73,6 +73,7 @@ export type NewFrontendSessionDTO = {
     url: string;
     type: string;
     displayName?: string;
+    thumbnailUrl?: string;
   }[];
   tags: TagDTO[];
   gasUps: {

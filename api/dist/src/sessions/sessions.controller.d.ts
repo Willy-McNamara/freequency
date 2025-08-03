@@ -24,5 +24,6 @@ export declare class SessionsController {
     uploadMedia(file: Express.Multer.File, body: any, req: any): Promise<{
         url: string;
         fileName: string;
+        thumbnailUrl?: string;
     }>;
 }

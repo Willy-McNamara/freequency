@@ -115,12 +115,14 @@ export const sessionService = {
   async connectMediaToSession(
     fileName: string,
     sessionId: number,
-    displayName?: string
+    displayName?: string,
+    thumbnailUrl?: string
   ) {
     const response = await apiClient.post("/sessions/connect-media", {
       fileName,
       sessionId,
       displayName,
+      thumbnailUrl,
     });
     if (response.error) {
       throw new Error(response.error);

@@ -25,6 +25,7 @@ export interface SessionMedia {
   type: "image" | "audio" | "video";
   fileName?: string; // S3 key for storage
   displayName?: string; // User-facing display name
+  thumbnailUrl?: string; // Video thumbnail URL
 }
 
 export interface SessionState {

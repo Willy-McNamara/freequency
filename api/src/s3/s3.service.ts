@@ -2,6 +2,7 @@
 import { Injectable } from '@nestjs/common';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { ThumbnailService } from '../thumbnail/thumbnail.service';
 
 export interface FileUploadPayload {
   size: number;
@@ -14,7 +15,7 @@ export interface FileUploadPayload {
 export class S3Service {
   private s3Client: S3Client;
 
-  constructor() {
+  constructor(private thumbnailService: ThumbnailService) {
     this.s3Client = new S3Client({
       region: process.env.AWS_BUCKET_REGION!,
       credentials: {
@@ -32,7 +33,7 @@ export class S3Service {
     const fileSizeLimits = {
       image: 10 * 1024 * 1024, // 10MB for images
       audio: 50 * 1024 * 1024, // 50MB for audio
-      video: 100 * 1024 * 1024, // 100MB for video
+      video: 50 * 1024 * 1024, // 50MB for video (1 minute max)
     };
 
     // Accepted file types
@@ -53,7 +54,7 @@ export class S3Service {
         'audio/m4a',
         'audio/ogg',
       ],
-      video: ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'],
+      video: ['video/mp4', 'video/webm', 'video/quicktime'],
     };
 
     // Determine file category
@@ -107,7 +108,7 @@ export class S3Service {
     fileName: string,
     contentType: string,
     musicianId: number,
-  ): Promise<string> {
+  ): Promise<{ url: string; thumbnailUrl?: string }> {
     const putObjectCommand = new PutObjectCommand({
       Bucket: process.env.AWS_S3_BUCKET_NAME!,
       Key: fileName,
@@ -121,7 +122,21 @@ export class S3Service {
 
     try {
       await this.s3Client.send(putObjectCommand);
-      return `https://${process.env.AWS_S3_BUCKET_NAME}.s3.${process.env.AWS_BUCKET_REGION}.amazonaws.com/${fileName}`;
+      const url = `https://${process.env.AWS_S3_BUCKET_NAME}.s3.${process.env.AWS_BUCKET_REGION}.amazonaws.com/${fileName}`;
+
+      // Generate thumbnail for videos
+      let thumbnailUrl: string | undefined;
+      if (this.getFileCategory(contentType) === 'video') {
+        try {
+          thumbnailUrl =
+            await this.thumbnailService.generateVideoThumbnail(url);
+        } catch (error) {
+          console.error('Failed to generate video thumbnail:', error);
+          // Continue without thumbnail
+        }
+      }
+
+      return { url, thumbnailUrl };
     } catch (error) {
       console.error('S3 upload error:', error);
       throw new Error('Failed to upload file to S3');

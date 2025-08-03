@@ -4,6 +4,7 @@ export type MediaItem = {
   url: string;
   type: MediaType;
   displayName?: string;
+  thumbnailUrl?: string;
 };
 
 export type MediaType = 'audio' | 'video' | 'image';
@@ -12,4 +13,5 @@ export type FrontendMedia = {
   url: string;
   type: string;
   displayName?: string;
+  thumbnailUrl?: string;
 };

@@ -211,7 +211,7 @@ export class SessionsController {
   @Post('connect-media')
   @UseGuards(JwtAuthGuard)
   async connectMedia(@Body() body: any, @Req() req: any): Promise<any> {
-    const { fileName, sessionId, displayName } = body;
+    const { fileName, sessionId, displayName, thumbnailUrl } = body;
 
     // Determine media type from file extension
     const fileExtension = fileName.split('.').pop()?.toLowerCase();
@@ -235,6 +235,7 @@ export class SessionsController {
     const session = await this.sessionsService.getSession(sessionId);
     const photoCount = session.media.filter((m) => m.type === 'image').length;
     const audioCount = session.media.filter((m) => m.type === 'audio').length;
+    const videoCount = session.media.filter((m) => m.type === 'video').length;
 
     if (mediaType === 'image' && photoCount >= 4) {
       throw new Error('Maximum 4 photos allowed per session');
@@ -244,12 +245,17 @@ export class SessionsController {
       throw new Error('Maximum 3 audio recordings allowed per session');
     }
 
+    if (mediaType === 'video' && videoCount >= 1) {
+      throw new Error('Maximum 1 video allowed per session');
+    }
+
     const newMedia = await this.mediaService.addMediaItem(
       fileName,
       req.user.id,
       mediaType,
       sessionId,
       displayName,
+      thumbnailUrl,
     );
 
     return newMedia;
@@ -262,7 +268,7 @@ export class SessionsController {
     @UploadedFile() file: Express.Multer.File,
     @Body() body: any,
     @Req() req: any,
-  ): Promise<{ url: string; fileName: string }> {
+  ): Promise<{ url: string; fileName: string; thumbnailUrl?: string }> {
     const { sessionId } = body;
 
     // Generate filename
@@ -271,7 +277,8 @@ export class SessionsController {
     const fileName = `media/${req.user.id}/${timestamp}.${fileExtension}`;
 
     // Upload to S3
-    const url = await this.s3service.uploadFile(
+
+    const uploadResult = await this.s3service.uploadFile(
       file.buffer,
       fileName,
       file.mimetype,
@@ -290,8 +297,9 @@ export class SessionsController {
     }
 
     return {
-      url,
-      fileName: file.originalname,
+      url: uploadResult.url,
+      fileName: fileName, // Use the actual S3 key, not originalname
+      thumbnailUrl: uploadResult.thumbnailUrl,
     };
   }
 }
