@@ -4,13 +4,12 @@ import {
   ChevronLeft,
   ChevronRight,
   Music,
-  Play,
-  Pause,
   Image,
   Video,
 } from "lucide-react";
 import { Button } from "./ui/button";
-import { toast } from "sonner";
+
+import { AudioPlayer } from "./AudioPlayer";
 
 interface MediaItem {
   url: string;
@@ -29,16 +28,6 @@ export const MediaGalleryModal: React.FC<MediaGalleryModalProps> = ({
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(
     null
   );
-  const [playingAudio, setPlayingAudio] = useState<string | null>(null);
-  const [audioElements, setAudioElements] = useState<{
-    [key: string]: HTMLAudioElement;
-  }>({});
-  const [audioProgress, setAudioProgress] = useState<{
-    [key: string]: number;
-  }>({});
-  const [audioDuration, setAudioDuration] = useState<{
-    [key: string]: number;
-  }>({});
 
   // Keyboard navigation
   useEffect(() => {
@@ -65,72 +54,8 @@ export const MediaGalleryModal: React.FC<MediaGalleryModalProps> = ({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [selectedImageIndex]);
 
-  // Cleanup audio elements on unmount
-  useEffect(() => {
-    return () => {
-      Object.values(audioElements).forEach((audio) => {
-        audio.pause();
-        audio.remove();
-      });
-    };
-  }, [audioElements]);
-
-  if (!media || media.length === 0) {
-    return null;
-  }
-
   const handleImageClick = (index: number) => {
-    if (media[index].type === "image") {
-      setSelectedImageIndex(index);
-    }
-  };
-
-  const handleAudioPlay = (mediaId: string, url: string) => {
-    // Stop any currently playing audio
-    if (playingAudio && audioElements[playingAudio]) {
-      audioElements[playingAudio].pause();
-    }
-
-    // Create new audio element if it doesn't exist
-    if (!audioElements[mediaId]) {
-      const audio = new Audio(url);
-      audio.addEventListener("ended", () => setPlayingAudio(null));
-      audio.addEventListener("loadedmetadata", () => {
-        setAudioDuration((prev) => ({ ...prev, [mediaId]: audio.duration }));
-      });
-      audio.addEventListener("timeupdate", () => {
-        setAudioProgress((prev) => ({ ...prev, [mediaId]: audio.currentTime }));
-      });
-      setAudioElements((prev) => ({ ...prev, [mediaId]: audio }));
-    }
-
-    const audio = audioElements[mediaId];
-    if (playingAudio === mediaId) {
-      audio.pause();
-      setPlayingAudio(null);
-    } else {
-      audio.play().catch((error) => {
-        console.error("Error playing audio:", error);
-        toast.error("Failed to play audio file");
-      });
-      setPlayingAudio(mediaId);
-    }
-  };
-
-  // Cleanup audio elements on unmount
-  useEffect(() => {
-    return () => {
-      Object.values(audioElements).forEach((audio) => {
-        audio.pause();
-        audio.remove();
-      });
-    };
-  }, [audioElements]);
-
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
+    setSelectedImageIndex(index);
   };
 
   const getFileTypeIcon = (type: string) => {
@@ -174,87 +99,72 @@ export const MediaGalleryModal: React.FC<MediaGalleryModalProps> = ({
   const selectedImage =
     selectedImageIndex !== null ? imageMedia[selectedImageIndex] : null;
 
+  // Separate photos and audio for display
+  const photos = media.filter((item) => item.type === "image");
+  const audioFiles = media.filter((item) => item.type === "audio");
+
+  if (!media || media.length === 0) {
+    return null;
+  }
+
   return (
     <>
-      <div
-        className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 ${className}`}
-      >
-        {media.map((item, index) => (
-          <div
-            key={index}
-            className={`relative rounded-lg overflow-hidden bg-muted ${
-              item.type === "image"
-                ? "cursor-pointer hover:opacity-90 transition-opacity"
-                : ""
-            }`}
-            onClick={() => handleImageClick(index)}
-          >
-            {item.type === "image" && (
+      {/* Audio Files */}
+      {audioFiles.length > 0 && (
+        <div className="space-y-3 mb-4">
+          {audioFiles.map((item, index) => (
+            <AudioPlayer
+              key={`modal-audio-${index}`}
+              audioId={`modal-audio-${Date.now()}-${index}`}
+              url={item.url}
+              size="md"
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Photos Gallery */}
+      {photos.length > 0 && (
+        <div
+          className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 ${className}`}
+        >
+          {photos.map((item, index) => (
+            <div
+              key={index}
+              className="relative rounded-lg overflow-hidden bg-muted cursor-pointer hover:opacity-90 transition-opacity"
+              onClick={() => handleImageClick(index)}
+            >
               <img
                 src={item.url}
                 alt="Media"
                 className="w-full h-32 md:h-40 object-cover"
               />
-            )}
-            {item.type === "audio" && (
-              <div className="w-full h-32 md:h-40 flex flex-col items-center justify-center p-3">
-                <Music className="w-8 h-8 text-muted-foreground mb-2" />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleAudioPlay(`audio-${index}`, item.url);
-                  }}
-                  className="h-8 w-8 p-0 mb-2"
-                >
-                  {playingAudio === `audio-${index}` ? (
-                    <Pause className="w-3 h-3" />
-                  ) : (
-                    <Play className="w-3 h-3" />
-                  )}
-                </Button>
-                {audioDuration[`audio-${index}`] && (
-                  <div className="w-full space-y-1">
-                    <div className="text-xs text-muted-foreground text-center">
-                      {formatTime(audioProgress[`audio-${index}`] || 0)} /{" "}
-                      {formatTime(audioDuration[`audio-${index}`] || 0)}
-                    </div>
-                    <div className="w-full bg-muted rounded-full h-1">
-                      <div
-                        className="bg-primary h-1 rounded-full transition-all duration-100"
-                        style={{
-                          width: `${
-                            ((audioProgress[`audio-${index}`] || 0) /
-                              (audioDuration[`audio-${index}`] || 1)) *
-                            100
-                          }%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-            {item.type === "video" && (
-              <div className="w-full h-32 md:h-40 flex items-center justify-center">
-                <video
-                  src={item.url}
-                  className="w-full h-full object-cover"
-                  controls
-                  onClick={(e) => e.stopPropagation()}
-                />
-              </div>
-            )}
-            <div className="absolute top-2 left-2">
-              <div className="bg-black/50 text-white p-1 rounded">
-                {getFileTypeIcon(item.type)}
+              <div className="absolute top-2 left-2">
+                <div className="bg-black/50 text-white p-1 rounded">
+                  {getFileTypeIcon(item.type)}
+                </div>
               </div>
             </div>
+          ))}
+        </div>
+      )}
+
+      {/* Video Files */}
+      {media
+        .filter((item) => item.type === "video")
+        .map((item, index) => (
+          <div
+            key={index}
+            className="w-full h-32 md:h-40 flex items-center justify-center bg-muted rounded-lg"
+          >
+            <video
+              src={item.url}
+              className="w-full h-full object-cover rounded-lg"
+              controls
+              onClick={(e) => e.stopPropagation()}
+            />
           </div>
         ))}
-      </div>
 
       {/* Full-size Image Modal */}
       {selectedImageIndex !== null && selectedImage && (

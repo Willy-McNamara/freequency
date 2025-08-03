@@ -11,6 +11,7 @@ import { Section } from "@/components/layout/Section";
 import { TagList } from "@/components/TagList";
 import { isRichTextEmpty } from "@/lib/utils";
 import { MediaGalleryModal } from "@/components/MediaGalleryModal";
+import { useAudioContext } from "@/components/AudioContext";
 
 interface PostViewTask {
   id: number;
@@ -98,6 +99,7 @@ export const PostView: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const { stopAllAudio } = useAudioContext();
   const [post, setPost] = useState<PostViewData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -142,8 +144,16 @@ export const PostView: React.FC = () => {
   }, [postId, location.state]);
 
   const handleBack = () => {
+    stopAllAudio();
     navigate("/feed");
   };
+
+  // Stop audio when component unmounts
+  useEffect(() => {
+    return () => {
+      stopAllAudio();
+    };
+  }, [stopAllAudio]);
 
   const handleAddComment = () => {
     setShowCommentModal(true);

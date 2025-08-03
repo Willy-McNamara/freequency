@@ -7,6 +7,7 @@ import { TagList } from "./TagList";
 import { sessionService } from "../services/sessions";
 import { useAuth } from "./auth/AuthProvider";
 import { MediaThumbnail } from "./MediaThumbnail";
+import { AudioPlayer } from "./AudioPlayer";
 
 interface PostData {
   id: number;
@@ -265,8 +266,25 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
           maxLines={6}
           className="font-['Inter',Helvetica] text-black text-sm font-normal leading-6 break-words overflow-hidden"
         />
-        {postData.media && postData.media.length > 0 && (
-          <MediaThumbnail media={postData.media} className="mt-2" />
+        {/* Audio Files */}
+        {postData.media
+          .filter((item) => item.type === "audio")
+          .map((item, index) => (
+            <AudioPlayer
+              key={`audio-${postData.id}-${index}`}
+              audioId={`audio-${postData.id}-${index}`}
+              url={item.url}
+              size="sm"
+              className="mt-2"
+            />
+          ))}
+
+        {/* Other Media (Photos, Videos) */}
+        {postData.media.filter((item) => item.type !== "audio").length > 0 && (
+          <MediaThumbnail
+            media={postData.media.filter((item) => item.type !== "audio")}
+            className="mt-2"
+          />
         )}
       </div>
       {/* splicing in like/comment section */}

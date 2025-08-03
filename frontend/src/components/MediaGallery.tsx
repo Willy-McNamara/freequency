@@ -1,16 +1,7 @@
-import React, { useState, useEffect } from "react";
-import {
-  X,
-  Play,
-  Pause,
-  Volume2,
-  Image,
-  Music,
-  Video,
-  File,
-} from "lucide-react";
+import React from "react";
+import { X, Image, Music, Video, File } from "lucide-react";
 import { Button } from "./ui/button";
-import { toast } from "sonner";
+import { AudioPlayer } from "./AudioPlayer";
 
 interface MediaItem {
   id?: string;
@@ -30,64 +21,9 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
   onRemove,
   className = "",
 }) => {
-  const [playingAudio, setPlayingAudio] = useState<string | null>(null);
-  const [audioElements, setAudioElements] = useState<{
-    [key: string]: HTMLAudioElement;
-  }>({});
-  const [audioProgress, setAudioProgress] = useState<{
-    [key: string]: number;
-  }>({});
-  const [audioDuration, setAudioDuration] = useState<{
-    [key: string]: number;
-  }>({});
-
-  const handleAudioPlay = (mediaId: string, url: string) => {
-    // Stop any currently playing audio
-    if (playingAudio && audioElements[playingAudio]) {
-      audioElements[playingAudio].pause();
-    }
-
-    // Create new audio element if it doesn't exist
-    if (!audioElements[mediaId]) {
-      const audio = new Audio(url);
-      audio.addEventListener("ended", () => setPlayingAudio(null));
-      audio.addEventListener("loadedmetadata", () => {
-        setAudioDuration((prev) => ({ ...prev, [mediaId]: audio.duration }));
-      });
-      audio.addEventListener("timeupdate", () => {
-        setAudioProgress((prev) => ({ ...prev, [mediaId]: audio.currentTime }));
-      });
-      setAudioElements((prev) => ({ ...prev, [mediaId]: audio }));
-    }
-
-    const audio = audioElements[mediaId];
-    if (playingAudio === mediaId) {
-      audio.pause();
-      setPlayingAudio(null);
-    } else {
-      audio.play().catch((error) => {
-        console.error("Error playing audio:", error);
-        toast.error("Failed to play audio file");
-      });
-      setPlayingAudio(mediaId);
-    }
-  };
-
-  // Cleanup audio elements on unmount
-  useEffect(() => {
-    return () => {
-      Object.values(audioElements).forEach((audio) => {
-        audio.pause();
-        audio.remove();
-      });
-    };
-  }, [audioElements]);
-
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
+  // Separate photos and audio
+  const photos = media.filter((item) => item.type === "image");
+  const audioFiles = media.filter((item) => item.type === "audio");
 
   const getFileTypeIcon = (type: string) => {
     switch (type) {
@@ -111,115 +47,111 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
   }
 
   return (
-    <div className={`space-y-3 ${className}`}>
-      {media.map((item, index) => (
-        <div
-          key={item.id || index}
-          className="relative border rounded-lg p-3 bg-card"
-        >
-          {/* Remove button */}
-          {onRemove && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => onRemove(index)}
-              className="absolute top-2 right-2 h-6 w-6 p-0 hover:bg-destructive hover:text-destructive-foreground"
-            >
-              <X className="h-3 w-3" />
-            </Button>
-          )}
-
-          {/* Media content */}
-          <div className="flex items-start gap-3">
-            {/* Media preview */}
-            <div className="flex-shrink-0">
-              {item.type === "image" && (
+    <div className={`space-y-4 ${className}`}>
+      {/* Photos Gallery */}
+      {photos.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          {photos.map((item, index) => {
+            const originalIndex = media.findIndex((m) => m === item);
+            return (
+              <div
+                key={item.id || index}
+                className="relative rounded-lg overflow-hidden bg-muted border"
+              >
                 <img
                   src={item.url}
                   alt={item.fileName || "Uploaded image"}
-                  className="w-16 h-16 object-cover rounded-md"
+                  className="w-full h-32 md:h-40 object-cover"
                 />
-              )}
-              {item.type === "audio" && (
-                <div className="w-16 h-16 bg-muted rounded-md flex items-center justify-center">
-                  <Volume2 className="w-6 h-6 text-muted-foreground" />
-                </div>
-              )}
-              {item.type === "video" && (
-                <video
-                  src={item.url}
-                  className="w-16 h-16 object-cover rounded-md"
-                  controls
-                />
-              )}
-            </div>
-
-            {/* Media info */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-lg">{getFileTypeIcon(item.type)}</span>
+                {onRemove && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onRemove(originalIndex)}
+                    className="absolute top-2 right-2 h-6 w-6 p-0 bg-black/50 text-white hover:bg-black/70"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                )}
               </div>
+            );
+          })}
+        </div>
+      )}
 
-              {item.fileName && (
-                <p className="text-sm font-medium truncate">{item.fileName}</p>
-              )}
+      {/* Audio Files */}
+      {audioFiles.length > 0 && (
+        <div className="space-y-3">
+          {audioFiles.map((item, index) => {
+            const originalIndex = media.findIndex((m) => m === item);
+            const audioId = item.id || String(originalIndex);
+            return (
+              <div key={item.id || index} className="relative">
+                <AudioPlayer audioId={audioId} url={item.url} size="md" />
+                {/* Remove Button */}
+                {onRemove && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onRemove(originalIndex)}
+                    className="absolute top-2 right-2 h-6 w-6 p-0 bg-black/50 text-white hover:bg-black/70"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
 
-              {/* Audio controls */}
-              {item.type === "audio" && (
-                <div className="mt-2 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        handleAudioPlay(item.id || String(index), item.url)
-                      }
-                      className="h-8 w-8 p-0"
-                    >
-                      {playingAudio === (item.id || String(index)) ? (
-                        <Pause className="w-3 h-3" />
-                      ) : (
-                        <Play className="w-3 h-3" />
-                      )}
-                    </Button>
-                    <div className="flex-1 text-xs text-muted-foreground">
-                      {audioDuration[item.id || String(index)] ? (
-                        <span>
-                          {formatTime(
-                            audioProgress[item.id || String(index)] || 0
-                          )}{" "}
-                          /{" "}
-                          {formatTime(
-                            audioDuration[item.id || String(index)] || 0
-                          )}
-                        </span>
-                      ) : (
-                        <span>Loading...</span>
-                      )}
-                    </div>
+      {/* Video Files (keeping existing design for now) */}
+      {media
+        .filter((item) => item.type === "video")
+        .map((item, index) => {
+          const originalIndex = media.findIndex((m) => m === item);
+          return (
+            <div
+              key={item.id || index}
+              className="relative border rounded-lg p-3 bg-card"
+            >
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0">
+                  <video
+                    src={item.url}
+                    className="w-16 h-16 object-cover rounded-md"
+                    controls
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-lg">
+                      {getFileTypeIcon(item.type)}
+                    </span>
                   </div>
-                  {audioDuration[item.id || String(index)] && (
-                    <div className="w-full bg-muted rounded-full h-1">
-                      <div
-                        className="bg-primary h-1 rounded-full transition-all duration-100"
-                        style={{
-                          width: `${
-                            ((audioProgress[item.id || String(index)] || 0) /
-                              (audioDuration[item.id || String(index)] || 1)) *
-                            100
-                          }%`,
-                        }}
-                      />
-                    </div>
+                  {item.fileName && (
+                    <p className="text-sm font-medium truncate">
+                      {item.fileName}
+                    </p>
                   )}
                 </div>
+              </div>
+              {onRemove && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onRemove(originalIndex)}
+                  className="absolute top-2 right-2 h-6 w-6 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
               )}
             </div>
-          </div>
-        </div>
-      ))}
+          );
+        })}
     </div>
   );
 };
