@@ -19,10 +19,20 @@ export interface SessionTag {
   label: string;
 }
 
+export interface SessionMedia {
+  id?: string;
+  url: string;
+  type: "image" | "audio" | "video";
+  fileName?: string; // S3 key for storage
+  displayName?: string; // User-facing display name
+  thumbnailUrl?: string; // Video thumbnail URL
+}
+
 export interface SessionState {
   sessionTitle: string;
   tags: SessionTag[];
   tasks: SessionTask[];
+  media: SessionMedia[];
   isActive?: boolean;
   sessionTimerAccumulated?: number; // total seconds before last start
   sessionTimerStartTime?: number | null; // timestamp in ms, or null if paused
@@ -34,6 +44,9 @@ export interface SessionContextValue extends SessionState {
   setSessionTitle: (title: string) => void;
   setTags: (tags: SessionTag[]) => void;
   setTasks: (tasks: SessionTask[]) => void;
+  setMedia: (media: SessionMedia[]) => void;
+  addMedia: (media: SessionMedia) => void;
+  removeMedia: (index: number) => void;
   setIsActive: (active: boolean) => void;
   setSessionTimerAccumulated: (seconds: number) => void;
   setSessionTimerStartTime: (timestamp: number | null) => void;
@@ -55,6 +68,7 @@ const defaultSession: SessionState = {
   sessionTitle: "Untitled Session",
   tags: [],
   tasks: [],
+  media: [],
   isActive: false,
   sessionTimerAccumulated: 0,
   sessionTimerStartTime: null,
@@ -88,6 +102,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
   const [sessionNotes, setSessionNotes] = useState<string>(
     defaultSession.sessionNotes || ""
   );
+  const [media, setMedia] = useState<SessionMedia[]>(defaultSession.media);
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -98,6 +113,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
         if (parsed.sessionTitle) setSessionTitle(parsed.sessionTitle);
         if (parsed.tags) setTags(parsed.tags);
         if (parsed.tasks) setTasks(parsed.tasks);
+        if (parsed.media) setMedia(parsed.media);
         if (typeof parsed.isActive === "boolean") setIsActive(parsed.isActive);
         if (typeof parsed.sessionTimerAccumulated === "number")
           setSessionTimerAccumulated(parsed.sessionTimerAccumulated);
@@ -125,6 +141,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
         sessionTitle,
         tags,
         tasks,
+        media,
         isActive,
         sessionTimerAccumulated,
         sessionTimerStartTime,
@@ -136,6 +153,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
     sessionTitle,
     tags,
     tasks,
+    media,
     isActive,
     sessionTimerAccumulated,
     sessionTimerStartTime,
@@ -190,6 +208,14 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
     );
   };
 
+  const addMedia = (newMedia: SessionMedia) => {
+    setMedia((prev) => [...prev, newMedia]);
+  };
+
+  const removeMedia = (index: number) => {
+    setMedia((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const value: SessionContextValue = {
     sessionTitle,
     setSessionTitle,
@@ -197,6 +223,10 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
     setTags,
     tasks,
     setTasks,
+    media,
+    setMedia,
+    addMedia,
+    removeMedia,
     isActive,
     setIsActive,
     sessionTimerAccumulated,

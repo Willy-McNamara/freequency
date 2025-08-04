@@ -6,6 +6,8 @@ import { RichTextRenderer } from "./rich-text";
 import { TagList } from "./TagList";
 import { sessionService } from "../services/sessions";
 import { useAuth } from "./auth/AuthProvider";
+import { MediaThumbnail } from "./MediaThumbnail";
+import { AudioPlayer } from "./AudioPlayer";
 
 interface PostData {
   id: number;
@@ -65,6 +67,12 @@ interface PostData {
     };
   }>;
   duration: number;
+  media: Array<{
+    url: string;
+    type: string;
+    displayName?: string;
+    thumbnailUrl?: string;
+  }>;
 }
 
 export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
@@ -247,7 +255,6 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
         </div>
       </div>
       {/* splicing in metadata */}
-      {/* media would go here */}
       <div className="flex flex-col items-start text-left gap-2 w-full mb-2">
         <span className="font-subtle text-black text-[14px] leading-[20px] font-normal mb-1">
           {sessionData.date}
@@ -261,6 +268,30 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
           maxLines={6}
           className="font-['Inter',Helvetica] text-black text-sm font-normal leading-6 break-words overflow-hidden"
         />
+        {/* Audio Files */}
+        {postData.media
+          ?.filter((item) => item.type === "audio")
+          .map((item, index) => (
+            <AudioPlayer
+              key={`audio-${postData.id}-${index}`}
+              audioId={`audio-${postData.id}-${index}`}
+              url={item.url}
+              size="sm"
+              className="mt-2"
+              title={item.displayName || "Audio Recording"}
+            />
+          ))}
+
+        {/* Other Media (Photos, Videos) */}
+        {(() => {
+          const nonAudioMedia =
+            postData.media?.filter((item) => item.type !== "audio") || [];
+          console.log("FeedPost postData.media:", postData.media);
+          console.log("FeedPost nonAudioMedia:", nonAudioMedia);
+          return nonAudioMedia.length > 0 ? (
+            <MediaThumbnail media={nonAudioMedia} className="mt-2" />
+          ) : null;
+        })()}
       </div>
       {/* splicing in like/comment section */}
       <div className="flex items-center gap-4">

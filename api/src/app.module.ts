@@ -5,6 +5,8 @@ import { PrismaModule } from './prisma/prisma.module';
 import { SessionsModule } from './sessions/sessions.module';
 import { MusiciansModule } from './musicians/musicians.module';
 import { TasksModule } from './tasks/tasks.module';
+import { MediaModule } from './media/media.module';
+import { ThumbnailModule } from './thumbnail/thumbnail.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { LoggerMiddleware } from './logger.middleware';
 import { join } from 'path';
@@ -16,7 +18,7 @@ import { UnauthorizedExceptionFilter } from './filters/unauthorized-exception.fi
 import { JwtStrategy } from './auth/jwt.strategy';
 import { JwtService, JwtModule } from '@nestjs/jwt';
 
-import { S3Service } from './s3/s3.service';
+import { S3Module } from './s3/s3.module';
 import { AllExceptionsFilter } from './filters/all-exceptions.filter';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { InstrumentsController } from './instruments/instruments.controller';
@@ -31,6 +33,9 @@ import { HealthController } from './health/health.controller';
     SessionsModule,
     MusiciansModule,
     TasksModule,
+    MediaModule,
+    ThumbnailModule,
+    S3Module,
     ServeStaticModule.forRoot({
       rootPath: join(process.cwd(), '../frontend/dist'),
       serveRoot: '/',
@@ -61,7 +66,6 @@ import { HealthController } from './health/health.controller';
     SessionsService,
     JwtStrategy,
     JwtService,
-    S3Service,
     Logger,
     {
       provide: APP_FILTER,

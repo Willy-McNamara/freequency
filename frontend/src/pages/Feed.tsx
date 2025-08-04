@@ -15,6 +15,7 @@ import { Section } from "../components/layout/Section";
 import { Separator } from "@/components/ui/separator";
 import { Loading } from "../components/ui/loading";
 import { usePageTracking } from "../hooks/useAnalytics";
+import { useAudioContext } from "../components/AudioContext";
 
 interface SessionsResponse {
   sessions?: Post[];
@@ -79,14 +80,27 @@ interface Post {
       usedCount: number;
     };
   }>;
+  media: Array<{
+    url: string;
+    type: string;
+  }>;
 }
 
 const Feed = () => {
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
+  const { stopAllAudio } = useAudioContext();
 
   // Track page view for analytics
   usePageTracking("Feed");
+
+  // Stop audio when component unmounts
+  useEffect(() => {
+    return () => {
+      stopAllAudio();
+    };
+  }, [stopAllAudio]);
+
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

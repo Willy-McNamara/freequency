@@ -3,12 +3,13 @@ import { SessionsService } from './sessions.service';
 import { SessionsController } from './sessions.controller';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { JwtService } from '@nestjs/jwt';
-import { S3Service } from 'src/s3/s3.service';
-import { MediaService } from 'src/media/media.service';
+import { MediaModule } from 'src/media/media.module';
+import { ThumbnailModule } from 'src/thumbnail/thumbnail.module';
+import { S3Module } from 'src/s3/s3.module';
 
 @Module({
   controllers: [SessionsController],
-  providers: [SessionsService, JwtService, S3Service, MediaService],
-  imports: [PrismaModule],
+  providers: [SessionsService, JwtService],
+  imports: [PrismaModule, MediaModule, ThumbnailModule, S3Module],
 })
 export class SessionsModule {}

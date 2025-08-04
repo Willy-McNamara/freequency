@@ -72,6 +72,8 @@ export type NewFrontendSessionDTO = {
   media: {
     url: string;
     type: string;
+    displayName?: string;
+    thumbnailUrl?: string;
   }[];
   tags: TagDTO[];
   gasUps: {
@@ -145,6 +147,14 @@ export type AudioPayload = {
   type: string; // file.type
   checksum: string;
   musicianId: number;
+};
+
+// Generic file upload payload for all media types
+export type FileUploadPayload = {
+  size: number;
+  type: string;
+  musicianId: number;
+  checksum?: string;
 };
 
 export type CreateSessionResponse = {

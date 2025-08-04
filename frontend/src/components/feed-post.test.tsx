@@ -81,6 +81,12 @@ describe("FeedPost", () => {
         usedCount: number;
       };
     }>,
+    media: [] as Array<{
+      url: string;
+      type: string;
+      displayName?: string;
+      thumbnailUrl?: string;
+    }>,
   };
 
   beforeEach(() => {
