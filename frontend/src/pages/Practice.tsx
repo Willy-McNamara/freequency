@@ -30,6 +30,18 @@ import { Badge } from "../components/badge";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { usePageTracking } from "../hooks/useAnalytics";
+import { MediaUploadButton } from "@/components/MediaUploadButton";
+import { MediaGallery } from "@/components/MediaGallery";
+import { MediaService } from "../services/media";
+
+import { HelpCircle } from "lucide-react";
+import { AudioRecorder } from "@/components/AudioRecorder";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   session,
@@ -55,6 +67,21 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
   const [showStartModal, setShowStartModal] = useState(
     !session.sessionTimerRunning && (session.sessionTimerAccumulated || 0) === 0
   );
+  const [showMediaModal, setShowMediaModal] = useState(false);
+
+  // Mobile detection hook
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768); // md breakpoint
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   useEffect(() => {
     // Show modal if session timer is reset to 0 and not running
@@ -328,16 +355,29 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
         })),
       };
 
-      const apiPromise = sessionService.saveSession(sessionData);
-      // makes api call a promise var so it can be used in the toast logic
-      toast.promise(apiPromise, {
-        loading: "Saving session...",
-        success: () => {
-          return `Successful save! Routing to your posts...`;
-        },
-        error: "Error",
-      });
-      await apiPromise;
+      const savedSession = await sessionService.saveSession(sessionData);
+
+      // Connect media to the saved session
+      if (session.media && session.media.length > 0) {
+        for (const mediaItem of session.media) {
+          if (mediaItem.fileName) {
+            try {
+              await sessionService.connectMediaToSession(
+                mediaItem.fileName,
+                savedSession.id,
+                mediaItem.type === "audio" ? mediaItem.displayName : undefined,
+                mediaItem.thumbnailUrl
+              );
+              // Note: The thumbnailUrl is now stored in the database
+              // and will be available when the session is fetched
+            } catch (error) {
+              console.error("Error connecting media to session:", error);
+            }
+          }
+        }
+      }
+
+      toast.success(`Successful save! Routing to your posts...`);
       await new Promise((resolve) => setTimeout(resolve, 2500)); // Pause so the user can read the toast before redirect
 
       // Extract current instrument before clearing session data
@@ -350,6 +390,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
       session.setSessionTitle("Untitled Session");
       session.setTags([]);
       session.setTasks([]);
+      session.setMedia([]);
       session.setIsActive(false);
       session.setSessionTimerAccumulated(0);
       session.setSessionTimerStartTime(null);
@@ -410,6 +451,119 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
     // Only pick a new phrase when the modal is shown
     // eslint-disable-next-line
   }, [showStartModal]);
+
+  // Media limit validation helpers
+  const getMediaCounts = () => {
+    const photos = session.media.filter((item) => item.type === "image").length;
+    const audio = session.media.filter((item) => item.type === "audio").length;
+    const videos = session.media.filter((item) => item.type === "video").length;
+    return { photos, audio, videos };
+  };
+
+  const canAddPhoto = () => {
+    const { photos } = getMediaCounts();
+    return photos < 4;
+  };
+
+  const canAddAudio = () => {
+    const { audio } = getMediaCounts();
+    return audio < 3;
+  };
+
+  const canAddVideo = () => {
+    const { videos } = getMediaCounts();
+    return videos < 1;
+  };
+
+  const checkAudioDuration = async (audioBlob: Blob): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const audio = new Audio();
+      const url = URL.createObjectURL(audioBlob);
+
+      audio.addEventListener("loadedmetadata", () => {
+        if (audio.duration && isFinite(audio.duration)) {
+          URL.revokeObjectURL(url);
+          const durationInMinutes = audio.duration / 60;
+          resolve(durationInMinutes <= 3);
+        } else {
+          // Try seeking to force duration calculation
+          audio.currentTime = 24 * 60 * 60; // Seek to a large number
+          audio.addEventListener(
+            "seeked",
+            () => {
+              if (audio.duration && isFinite(audio.duration)) {
+                URL.revokeObjectURL(url);
+                const durationInMinutes = audio.duration / 60;
+                resolve(durationInMinutes <= 3);
+              } else {
+                // Fallback: estimate from blob size
+                URL.revokeObjectURL(url);
+                const estimatedDuration = audioBlob.size / (16000 * 2); // Rough estimate: 16kHz, 16-bit
+                const durationInMinutes = estimatedDuration / 60;
+                resolve(durationInMinutes <= 3);
+              }
+              audio.currentTime = 0;
+            },
+            { once: true }
+          );
+        }
+      });
+
+      audio.addEventListener("error", () => {
+        URL.revokeObjectURL(url);
+        // On error, assume it's valid (better to allow than reject incorrectly)
+        resolve(true);
+      });
+
+      audio.load(); // Try to load metadata immediately
+      audio.src = url;
+    });
+  };
+
+  const checkVideoDuration = async (videoFile: File): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const video = document.createElement("video");
+      const url = URL.createObjectURL(videoFile);
+
+      video.addEventListener("loadedmetadata", () => {
+        if (video.duration && isFinite(video.duration)) {
+          URL.revokeObjectURL(url);
+          const durationInMinutes = video.duration / 60;
+          resolve(durationInMinutes <= 1);
+        } else {
+          // Try seeking to force duration calculation
+          video.currentTime = 24 * 60 * 60; // Seek to a large number
+          video.addEventListener(
+            "seeked",
+            () => {
+              if (video.duration && isFinite(video.duration)) {
+                URL.revokeObjectURL(url);
+                const durationInMinutes = video.duration / 60;
+                resolve(durationInMinutes <= 1);
+              } else {
+                // Fallback: estimate from file size
+                URL.revokeObjectURL(url);
+                const estimatedDuration = videoFile.size / 5000000; // Rough estimate: 5MB per minute
+                const durationInMinutes = estimatedDuration / 60;
+                resolve(durationInMinutes <= 1);
+              }
+              video.currentTime = 0;
+            },
+            { once: true }
+          );
+        }
+      });
+
+      video.addEventListener("error", () => {
+        URL.revokeObjectURL(url);
+        // On error, assume it's valid (better to allow than reject incorrectly)
+        resolve(true);
+      });
+
+      video.load(); // Try to load metadata immediately
+      video.src = url;
+    });
+  };
 
   // Helper to get elapsed session time
   function getSessionElapsed() {
@@ -863,6 +1017,203 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
             />
           </Section>
           <Section spacing={{ base: "sm", sm: "md", md: "lg" }}>
+            <div className="w-full">
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="font-bold text-base">Media</h3>
+                {isMobile ? (
+                  <HelpCircle
+                    className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
+                    onClick={() => setShowMediaModal(true)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setShowMediaModal(true);
+                      }
+                    }}
+                  />
+                ) : (
+                  <TooltipProvider delayDuration={100}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs" side="right">
+                        <p className="text-sm">
+                          <p className="text-center">
+                            <strong>
+                              Easy, in-session audio recording to capture
+                              anything worth saving or sharing.
+                            </strong>
+                            <br />
+                            Upload option for photos, videos, or recordings
+                            you've captured elsewhere.
+                          </p>
+                          <br />
+                          🎵 Audio: Up to 3 recordings per session (max 3
+                          minutes each)
+                          <br />
+                          📸 Photos: Up to 4 photos per session (max 10MB each)
+                          <br />
+                          🎥 Video: Up to 1 video per session (max 1 minute,
+                          50MB)
+                          <br />
+                          <br />
+                          <span className="text-xs text-muted-foreground">
+                            <strong>Accepted file types:</strong>
+                            <br />
+                            Audio: MP3, WAV, M4A, OGG, WebM
+                            <br />
+                            Photos: JPEG, PNG, GIF, WebP
+                            <br />
+                            Audio: MP3, WAV, M4A, OGG, WebM
+                            <br />
+                            Video: MP4, WebM, MOV
+                          </span>
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2 mb-3 items-center">
+                <MediaUploadButton
+                  onFileSelect={async (file) => {
+                    try {
+                      if (!user?.id) {
+                        toast.error("Please log in to upload media");
+                        return;
+                      }
+
+                      const mediaType = MediaService.getMediaType(file);
+
+                      // Check photo limit
+                      if (mediaType === "image" && !canAddPhoto()) {
+                        toast.error("Maximum 4 photos allowed per session");
+                        return;
+                      }
+
+                      // Check video limit
+                      if (mediaType === "video" && !canAddVideo()) {
+                        toast.error("Maximum 1 video allowed per session");
+                        return;
+                      }
+
+                      // Check video duration
+                      if (mediaType === "video") {
+                        const isWithinLimit = await checkVideoDuration(file);
+                        if (!isWithinLimit) {
+                          toast.error("Video must be 1 minute or shorter");
+                          return;
+                        }
+                      }
+
+                      // Show loading toast
+                      const loadingToast = toast.loading("Uploading media...");
+
+                      const uploadResult = await MediaService.uploadFile(
+                        file,
+                        user.id
+                      );
+
+                      console.log("Practice upload result:", uploadResult);
+
+                      // Add the media to the session state with thumbnail if available
+                      session.addMedia({
+                        url: uploadResult.url,
+                        type: mediaType,
+                        fileName: uploadResult.fileName,
+                        thumbnailUrl: uploadResult.thumbnailUrl,
+                      });
+
+                      console.log(
+                        "Practice session media after add:",
+                        session.media
+                      );
+
+                      // Dismiss loading toast and show success
+                      toast.dismiss(loadingToast);
+                      toast.success("Media uploaded successfully!");
+                    } catch (error) {
+                      console.error("Upload error:", error);
+                      toast.error("Failed to upload media");
+                    }
+                  }}
+                  acceptedTypes="all"
+                  className="flex items-center gap-2"
+                  disabled={!canAddPhoto() && !canAddVideo()}
+                />
+                <AudioRecorder
+                  onRecordingComplete={async (
+                    audioBlob,
+                    fileName,
+                    displayName
+                  ) => {
+                    try {
+                      if (!user?.id) {
+                        toast.error("Please log in to record audio");
+                        return;
+                      }
+
+                      // Check audio limit
+                      if (!canAddAudio()) {
+                        toast.error(
+                          "Maximum 3 audio recordings allowed per session"
+                        );
+                        return;
+                      }
+
+                      // Check audio duration
+                      const isWithinLimit = await checkAudioDuration(audioBlob);
+                      if (!isWithinLimit) {
+                        toast.error(
+                          "Audio recordings must be 3 minutes or shorter"
+                        );
+                        return;
+                      }
+
+                      // Convert blob to file
+                      const file = new File([audioBlob], fileName, {
+                        type: "audio/webm",
+                      });
+
+                      // Show loading toast
+                      const loadingToast = toast.loading(
+                        "Uploading audio recording..."
+                      );
+
+                      const uploadResult = await MediaService.uploadFile(
+                        file,
+                        user.id
+                      );
+
+                      session.addMedia({
+                        url: uploadResult.url,
+                        type: "audio",
+                        fileName: uploadResult.fileName,
+                        displayName: displayName,
+                      });
+
+                      // Dismiss loading toast and show success
+                      toast.dismiss(loadingToast);
+                      toast.success("Audio recording uploaded successfully!");
+                    } catch (error) {
+                      console.error("Recording upload error:", error);
+                      toast.error("Failed to upload audio recording");
+                    }
+                  }}
+                  className="flex items-center gap-2"
+                  disabled={!canAddAudio()}
+                />
+              </div>
+              <MediaGallery
+                media={session.media}
+                onRemove={(index) => session.removeMedia(index)}
+              />
+            </div>
+          </Section>
+          <Section spacing={{ base: "sm", sm: "md", md: "lg" }}>
             <div className="flex flex-col sm:flex-row justify-center items-center gap-4 w-full">
               <button
                 type="button"
@@ -907,6 +1258,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                         session.setSessionTitle(getDefaultSessionTitle());
                         session.setTags([]);
                         session.setTasks([]);
+                        session.setMedia([]);
                         session.setIsActive(false);
                         session.setSessionTimerAccumulated(0);
                         session.setSessionTimerStartTime(null);
@@ -929,6 +1281,49 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                   </div>
                 </DialogContent>
               </Dialog>
+
+              {/* Media Info Modal for Mobile */}
+              <Dialog open={showMediaModal} onOpenChange={setShowMediaModal}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Add media to your session!</DialogTitle>
+                  </DialogHeader>
+                  <div className="text-sm">
+                    <p className="text-center">
+                      <strong>
+                        Easy, in-session audio recording to capture anything
+                        worth saving or sharing.
+                      </strong>
+                      <br />
+                      Upload option for photos or recordings you've captured
+                      elsewhere.
+                    </p>
+                    <br />
+                    <p>
+                      <br />
+                      🎵 Audio: Up to 3 recordings per session (max 3 minutes
+                      each)
+                      <br />
+                      📸 Photos: Up to 4 photos per session (max 10MB each)
+                      <br />
+                      🎥 Video: Up to 1 video per session (max 1 minute, 50MB)
+                      <br />
+                      <span className="text-xs text-muted-foreground">
+                        <strong>Accepted file types:</strong>
+                        <br />
+                        Audio: MP3, WAV, M4A, OGG, WebM
+                        <br />
+                        Photos: JPEG, PNG, GIF, WebP
+                        <br />
+                        Audio: MP3, WAV, M4A, OGG, WebM
+                        <br />
+                        Video: MP4, WebM, MOV
+                      </span>
+                    </p>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
               <button
                 type="button"
                 className="p-2 rounded-md bg-destructive text-destructive-foreground hover:bg-destructive/80 transition-colors focus:outline-none focus:ring-2 focus:ring-destructive focus:ring-offset-2"

@@ -2,12 +2,16 @@ import {
   Controller,
   Get,
   Post,
-  Delete,
   Body,
   Req,
   UseGuards,
   Query,
+  UseInterceptors,
+  UploadedFile,
+  Param,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Express } from 'express';
 import { SessionsService } from './sessions.service';
 import {
   CreateSessionDto,
@@ -30,6 +34,15 @@ export class SessionsController {
     private readonly s3service: S3Service,
     private readonly mediaService: MediaService,
   ) {}
+
+  @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  async getSession(
+    @Req() req: any,
+    @Param('id') id: string,
+  ): Promise<NewFrontendSessionDTO> {
+    return this.sessionsService.getSession(parseInt(id));
+  }
 
   @Get()
   @UseGuards(JwtAuthGuard)
@@ -169,16 +182,124 @@ export class SessionsController {
     return this.sessionsService.addGasUp(newGasUp);
   }
 
-  @Delete('removeGasUp')
+  @Post('signed-url')
   @UseGuards(JwtAuthGuard)
-  async removeGasUp(
-    @Query('sessionId') sessionId: string,
+  async getSignedUrl(
+    @Body() body: any,
     @Req() req: any,
-  ): Promise<{ success: boolean }> {
-    const removeGasUpData = {
-      gasserId: req.user.id, // the one removing the gas up
-      sessionId: parseInt(sessionId),
+  ): Promise<{ signedUrl: string }> {
+    const { size, type, fileName } = body;
+
+    const filePayload = {
+      size,
+      type,
+      musicianId: req.user.id,
     };
-    return this.sessionsService.removeGasUp(removeGasUpData);
+
+    const signedUrl = await this.s3service.getSignedURL(filePayload, fileName);
+
+    if (
+      signedUrl.startsWith('File size') ||
+      signedUrl.startsWith('File type')
+    ) {
+      throw new Error(signedUrl);
+    }
+
+    return { signedUrl };
+  }
+
+  @Post('connect-media')
+  @UseGuards(JwtAuthGuard)
+  async connectMedia(@Body() body: any, @Req() req: any): Promise<any> {
+    const { fileName, sessionId, displayName, thumbnailUrl } = body;
+
+    // Determine media type from file extension
+    const fileExtension = fileName.split('.').pop()?.toLowerCase();
+    let mediaType: 'image' | 'audio' | 'video';
+
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExtension || '')) {
+      mediaType = 'image';
+    } else if (
+      ['mp3', 'wav', 'm4a', 'ogg', 'webm'].includes(fileExtension || '')
+    ) {
+      mediaType = 'audio';
+    } else if (
+      ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'].includes(fileExtension || '')
+    ) {
+      mediaType = 'video';
+    } else {
+      throw new Error('Unsupported file type');
+    }
+
+    // Check media limits
+    const session = await this.sessionsService.getSession(sessionId);
+    const photoCount = session.media.filter((m) => m.type === 'image').length;
+    const audioCount = session.media.filter((m) => m.type === 'audio').length;
+    const videoCount = session.media.filter((m) => m.type === 'video').length;
+
+    if (mediaType === 'image' && photoCount >= 4) {
+      throw new Error('Maximum 4 photos allowed per session');
+    }
+
+    if (mediaType === 'audio' && audioCount >= 3) {
+      throw new Error('Maximum 3 audio recordings allowed per session');
+    }
+
+    if (mediaType === 'video' && videoCount >= 1) {
+      throw new Error('Maximum 1 video allowed per session');
+    }
+
+    const newMedia = await this.mediaService.addMediaItem(
+      fileName,
+      req.user.id,
+      mediaType,
+      sessionId,
+      displayName,
+      thumbnailUrl,
+    );
+
+    return newMedia;
+  }
+
+  @Post('upload-media')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadMedia(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() body: any,
+    @Req() req: any,
+  ): Promise<{ url: string; fileName: string; thumbnailUrl?: string }> {
+    const { sessionId } = body;
+
+    // Generate filename
+    const timestamp = Date.now();
+    const fileExtension = file.originalname.split('.').pop();
+    const fileName = `media/${req.user.id}/${timestamp}.${fileExtension}`;
+
+    // Upload to S3
+
+    const uploadResult = await this.s3service.uploadFile(
+      file.buffer,
+      fileName,
+      file.mimetype,
+      req.user.id,
+    );
+
+    // Connect to session if provided
+    if (sessionId) {
+      await this.connectMedia(
+        {
+          fileName,
+          sessionId: parseInt(sessionId),
+        },
+        req,
+      );
+    }
+
+    return {
+      url: uploadResult.url,
+      fileName: fileName, // Use the actual S3 key, not originalname
+      thumbnailUrl: uploadResult.thumbnailUrl,
+    };
   }
 }
