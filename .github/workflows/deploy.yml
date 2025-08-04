@@ -96,12 +96,53 @@ jobs:
             echo "🔐 Authenticating with ECR..."
             aws ecr get-login-password --region $AWS_REGION | sudo docker login --username AWS --password-stdin $ECR_REPOSITORY
 
-            echo "🛑 Stopping existing container..."
+            echo "🛑 Stopping and removing existing container..."
             sudo docker stop freequency-app || true
             sudo docker rm freequency-app || true
 
-            echo "🧹 Cleaning up old images..."
-            sudo docker image prune -a -f
+            echo "🧹 Aggressive cleanup of old images and containers..."
+            # Remove all stopped containers
+            sudo docker container prune -f || true
+
+            # Remove all unused images (including the old one)
+            sudo docker image prune -a -f || true
+
+            # Remove any dangling images
+            sudo docker image prune -f || true
+
+            # Clean up build cache
+            sudo docker builder prune -f || true
+
+            echo "📊 Checking available disk space..."
+            df -h /
+
+            echo "📊 Checking Docker disk usage..."
+            sudo docker system df
+
+            echo "🔍 Verifying sufficient disk space for new image..."
+            # Check if we have at least 2GB free space
+            FREE_SPACE=$(df / | awk 'NR==2 {print $4}')
+            FREE_SPACE_MB=$((FREE_SPACE / 1024))
+
+            if [ $FREE_SPACE_MB -lt 2048 ]; then
+              echo "❌ Insufficient disk space! Only ${FREE_SPACE_MB}MB available, need at least 2GB"
+              echo "🧹 Attempting emergency cleanup..."
+              sudo docker system prune -a -f --volumes || true
+              sudo apt-get clean || true
+              sudo apt-get autoremove -y || true
+
+              # Check space again
+              FREE_SPACE=$(df / | awk 'NR==2 {print $4}')
+              FREE_SPACE_MB=$((FREE_SPACE / 1024))
+              echo "📊 Available space after emergency cleanup: ${FREE_SPACE_MB}MB"
+
+              if [ $FREE_SPACE_MB -lt 1024 ]; then
+                echo "❌ Still insufficient space after cleanup. Manual intervention required."
+                exit 1
+              fi
+            else
+              echo "✅ Sufficient disk space available: ${FREE_SPACE_MB}MB"
+            fi
 
             echo "📥 Pulling latest image..."
             sudo docker pull $ECR_REPOSITORY:latest
