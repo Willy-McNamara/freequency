@@ -40,7 +40,6 @@ describe("Growth Component Logic Tests", () => {
       ];
 
       // Simulate the filtering logic from calculateTotalStatsData
-      const now = new Date("2024-01-15T12:00:00Z");
       const startOfWeek = new Date(2024, 0, 15); // Monday of current week
       const endOfWeek = new Date(2024, 0, 21); // Sunday of current week
 
@@ -60,7 +59,6 @@ describe("Growth Component Logic Tests", () => {
       ];
 
       // Simulate the filtering logic from calculateTotalStatsData
-      const now = new Date("2024-01-15T12:00:00Z");
       const startOfMonth = new Date(2024, 0, 1); // Jan 1, 2024
       const endOfMonth = new Date(2024, 0, 31); // Jan 31, 2024
 
@@ -80,7 +78,6 @@ describe("Growth Component Logic Tests", () => {
       ];
 
       // Simulate the filtering logic from calculateTotalStatsData
-      const now = new Date("2024-01-15T12:00:00Z");
       const startOfYear = new Date(2024, 0, 1); // Jan 1, 2024
       const endOfYear = new Date(2024, 11, 31); // Dec 31, 2024
 

@@ -23,7 +23,7 @@ export class MediaService {
       // For videos, use server-side upload to get thumbnail
       const mediaType = this.getMediaType(file);
       if (mediaType === "video") {
-        return await this.uploadVideoServerSide(file, musicianId, sessionId);
+        return await this.uploadVideoServerSide(file, sessionId);
       }
 
       // For other media types, use client-side upload
@@ -78,7 +78,7 @@ export class MediaService {
 
       // If sessionId is provided, connect media to session
       if (sessionId) {
-        await this.connectMediaToSession(fileName, musicianId, sessionId);
+        await this.connectMediaToSession(fileName, sessionId);
       }
 
       return {
@@ -93,7 +93,6 @@ export class MediaService {
 
   static async connectMediaToSession(
     fileName: string,
-    musicianId: number,
     sessionId: number,
     displayName?: string
   ): Promise<{
@@ -113,7 +112,6 @@ export class MediaService {
           },
           body: JSON.stringify({
             fileName,
-            musicianId,
             sessionId,
             displayName,
           }),
@@ -149,7 +147,6 @@ export class MediaService {
 
   static async uploadVideoServerSide(
     file: File,
-    musicianId: number,
     sessionId?: number
   ): Promise<UploadResponse> {
     try {

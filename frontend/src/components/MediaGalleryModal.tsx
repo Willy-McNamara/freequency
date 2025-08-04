@@ -99,6 +99,10 @@ export const MediaGalleryModal: React.FC<MediaGalleryModalProps> = ({
     }
   };
 
+  if (!media || media.length === 0) {
+    return null;
+  }
+
   const imageAndVideoMedia = media.filter(
     (m) => m.type === "image" || m.type === "video"
   );
@@ -109,10 +113,6 @@ export const MediaGalleryModal: React.FC<MediaGalleryModalProps> = ({
   const photos = media.filter((item) => item.type === "image");
   const audioFiles = media.filter((item) => item.type === "audio");
   const videos = media.filter((item) => item.type === "video");
-
-  if (!media || media.length === 0) {
-    return null;
-  }
 
   return (
     <>

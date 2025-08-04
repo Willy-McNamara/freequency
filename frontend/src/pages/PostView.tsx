@@ -128,7 +128,7 @@ export const PostView: React.FC = () => {
             const sessionData = await sessionService.getSession(
               parseInt(postId)
             );
-            setPost(sessionData);
+            setPost(sessionData as PostViewData);
           } catch (error) {
             console.error("Error fetching session:", error);
             setError("Failed to load session");

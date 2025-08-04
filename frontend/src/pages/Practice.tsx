@@ -1051,10 +1051,10 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                             you've captured elsewhere.
                           </p>
                           <br />
-                          📸 Photos: Up to 4 photos per session (max 10MB each)
-                          <br />
                           🎵 Audio: Up to 3 recordings per session (max 3
                           minutes each)
+                          <br />
+                          📸 Photos: Up to 4 photos per session (max 10MB each)
                           <br />
                           🎥 Video: Up to 1 video per session (max 1 minute,
                           50MB)
@@ -1062,6 +1062,8 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                           <br />
                           <span className="text-xs text-muted-foreground">
                             <strong>Accepted file types:</strong>
+                            <br />
+                            Audio: MP3, WAV, M4A, OGG, WebM
                             <br />
                             Photos: JPEG, PNG, GIF, WebP
                             <br />
@@ -1298,18 +1300,24 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                     </p>
                     <br />
                     <p>
-                      📸 Photos: Up to 4 photos per session (max 10MB each)
                       <br />
                       🎵 Audio: Up to 3 recordings per session (max 3 minutes
                       each)
                       <br />
+                      📸 Photos: Up to 4 photos per session (max 10MB each)
+                      <br />
+                      🎥 Video: Up to 1 video per session (max 1 minute, 50MB)
                       <br />
                       <span className="text-xs text-muted-foreground">
                         <strong>Accepted file types:</strong>
                         <br />
+                        Audio: MP3, WAV, M4A, OGG, WebM
+                        <br />
                         Photos: JPEG, PNG, GIF, WebP
                         <br />
                         Audio: MP3, WAV, M4A, OGG, WebM
+                        <br />
+                        Video: MP4, WebM, MOV
                       </span>
                     </p>
                   </div>

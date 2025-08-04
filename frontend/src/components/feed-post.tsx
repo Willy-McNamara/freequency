@@ -270,7 +270,7 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
         />
         {/* Audio Files */}
         {postData.media
-          .filter((item) => item.type === "audio")
+          ?.filter((item) => item.type === "audio")
           .map((item, index) => (
             <AudioPlayer
               key={`audio-${postData.id}-${index}`}
@@ -284,9 +284,8 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
 
         {/* Other Media (Photos, Videos) */}
         {(() => {
-          const nonAudioMedia = postData.media.filter(
-            (item) => item.type !== "audio"
-          );
+          const nonAudioMedia =
+            postData.media?.filter((item) => item.type !== "audio") || [];
           console.log("FeedPost postData.media:", postData.media);
           console.log("FeedPost nonAudioMedia:", nonAudioMedia);
           return nonAudioMedia.length > 0 ? (
