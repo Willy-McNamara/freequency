@@ -9,20 +9,8 @@ describe("Growth Component Logic Tests", () => {
       ];
 
       // Simulate the filtering logic from calculateTotalStatsData
-      const now = new Date("2024-01-15T12:00:00Z");
-      const startOfDay = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate()
-      );
-      const endOfDay = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate(),
-        23,
-        59,
-        59
-      );
+      const startOfDay = new Date(2024, 0, 15); // Jan 15, 2024
+      const endOfDay = new Date(2024, 0, 15, 23, 59, 59); // Jan 15, 2024 23:59:59
 
       const filteredTasks = mockTasks.filter((task) => {
         const date = new Date(task.createdAt);
