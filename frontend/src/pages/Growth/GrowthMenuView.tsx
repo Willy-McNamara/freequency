@@ -30,7 +30,7 @@ export const GrowthMenuView: React.FC<GrowthMenuViewProps> = ({
           Track your practice over time.
         </p>
       </Section>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-4 md:pb-0">
         <Card className="p-6 text-center flex flex-col items-center justify-between">
           <CardTitle className="text-lg font-semibold mb-2">
             Total Practice Time
@@ -64,7 +64,7 @@ export const GrowthMenuView: React.FC<GrowthMenuViewProps> = ({
             View Chronological
           </Button>
         </Card>
-        <Card className="p-6 text-center flex flex-col mb-4 items-center justify-between">
+        <Card className="p-6 text-center flex flex-col items-center justify-between">
           <CardTitle className="text-lg font-semibold mb-2">
             Active Goals
           </CardTitle>
