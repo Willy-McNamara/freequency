@@ -479,7 +479,7 @@ describe('TasksService', () => {
       });
       expect(prismaService.tag.upsert).toHaveBeenCalledTimes(3); // Once for instrument, twice for tags
       expect(prismaService.taskDefinition.create).toHaveBeenCalled();
-      expect(prismaService.musician.update).toHaveBeenCalled();
+      // Task creation is now decoupled from user instruments, so no musician.update call
     });
 
     it('should create a new task with parent task', async () => {
@@ -541,7 +541,7 @@ describe('TasksService', () => {
       (prismaService.taskDefinition.create as jest.Mock).mockResolvedValue(
         mockTask,
       );
-      (prismaService.musician.update as jest.Mock).mockResolvedValue({});
+      // No musician.update call needed since task creation is decoupled from user instruments
 
       const result = await service.createTask(createTaskDto, 2);
 
@@ -588,6 +588,73 @@ describe('TasksService', () => {
       await expect(service.createTask(createTaskDto, 2)).rejects.toThrow(
         'Parent task not found',
       );
+    });
+
+    it('should not connect any tags to musician instruments - task creation is decoupled', async () => {
+      const createTaskDto: CreateTaskDto = {
+        title: 'Test Task',
+        description: 'Task Description',
+        instrument: 'Guitar',
+        checklist: ['Step 1'],
+        tags: ['Guitar', 'Jazz', 'Scales'], // Multiple tags including instrument
+      };
+
+      const mockMusician = {
+        id: 1,
+        displayName: 'Test User',
+        avatarUrl: null,
+      };
+
+      // Mock tag upserts - instrument tag gets ID 1, other tags get IDs 2, 3
+      (prismaService.musician.findUnique as jest.Mock).mockResolvedValue(
+        mockMusician,
+      );
+      (prismaService.tag.upsert as jest.Mock)
+        .mockResolvedValueOnce({ id: 1, label: 'Guitar', color: '#FF0000' }) // Instrument tag
+        .mockResolvedValueOnce({ id: 2, label: 'Jazz', color: '#00FF00' }) // Non-instrument tag
+        .mockResolvedValueOnce({ id: 3, label: 'Scales', color: '#0000FF' }); // Non-instrument tag
+
+      (prismaService.taskDefinition.create as jest.Mock).mockResolvedValue({
+        id: 1,
+        title: createTaskDto.title,
+        description: createTaskDto.description,
+        checklist: createTaskDto.checklist,
+        savedCount: 0,
+        usedCount: 0,
+        musicianId: 1,
+        tags: [
+          { id: 1, label: 'Guitar', color: '#FF0000' },
+          { id: 2, label: 'Jazz', color: '#00FF00' },
+          { id: 3, label: 'Scales', color: '#0000FF' },
+        ],
+        musician: {
+          id: 1,
+          displayName: 'Test User',
+          avatarUrl: null,
+          instruments: [],
+        },
+      });
+
+      const result = await service.createTask(createTaskDto, 1);
+
+      expect(result).toBeDefined();
+
+      // Verify that musician.update was NOT called - task creation is decoupled from user instruments
+      expect(prismaService.musician.update).not.toHaveBeenCalled();
+
+      // Verify that the task was created with all tags connected
+      expect(prismaService.taskDefinition.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          tags: {
+            connect: [
+              { id: 1 }, // Guitar
+              { id: 2 }, // Jazz
+              { id: 3 }, // Scales
+            ],
+          },
+        }),
+        include: expect.any(Object),
+      });
     });
   });
 
