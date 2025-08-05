@@ -213,6 +213,28 @@ describe("AudioPlayer", () => {
       button = screen.getByRole("button");
       expect(button).toHaveClass("lg:h-12"); // lg size
     });
+
+    it("applies padding when showRemoveButton is true", () => {
+      render(
+        <TestWrapper>
+          <AudioPlayer {...defaultProps} showRemoveButton={true} />
+        </TestWrapper>
+      );
+
+      const timeDisplay = screen.getByText("Loading...").closest("div");
+      expect(timeDisplay).toHaveClass("pr-8");
+    });
+
+    it("does not apply padding when showRemoveButton is false", () => {
+      render(
+        <TestWrapper>
+          <AudioPlayer {...defaultProps} showRemoveButton={false} />
+        </TestWrapper>
+      );
+
+      const timeDisplay = screen.getByText("Loading...").closest("div");
+      expect(timeDisplay).not.toHaveClass("pr-8");
+    });
   });
 
   describe("Cleanup", () => {

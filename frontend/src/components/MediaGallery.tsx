@@ -64,6 +64,7 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                   url={item.url}
                   size="md"
                   title={item.displayName || "Audio Recording"}
+                  showRemoveButton={!!onRemove}
                 />
                 {/* Remove Button */}
                 {onRemove && (
