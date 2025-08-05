@@ -8,6 +8,7 @@ import { sessionService } from "../services/sessions";
 import { useAuth } from "./auth/AuthProvider";
 import { MediaThumbnail } from "./MediaThumbnail";
 import { AudioPlayer } from "./AudioPlayer";
+import { Section } from "./layout/Section";
 
 interface PostData {
   id: number;
@@ -219,14 +220,21 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
   };
 
   const getAllTagsFromSession = () => {
-    const allTags = postData.tasks.reduce(
-      (a, c) => a.concat(c.taskDefinition.tags),
-      postData.tags.concat(postData.instruments)
-    );
+    const allTags = postData.tags.concat(postData.instruments);
     const tagNamesAsStrings = allTags.map((tag) => tag.label);
     const dedupedTags = [...new Set(tagNamesAsStrings)];
     return dedupedTags;
   };
+
+  // Check if there's any media to display
+  const hasAudioMedia = postData.media?.some((item) => item.type === "audio");
+  const hasNonAudioMedia = postData.media?.some(
+    (item) => item.type !== "audio"
+  );
+  const hasMedia = hasAudioMedia || hasNonAudioMedia;
+
+  // Check if there are tasks to display
+  const hasTasks = postData.tasks && postData.tasks.length > 0;
 
   return (
     <div
@@ -268,33 +276,84 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
           maxLines={6}
           className="font-['Inter',Helvetica] text-black text-sm font-normal leading-6 break-words overflow-hidden"
         />
-        {/* Audio Files */}
-        {postData.media
-          ?.filter((item) => item.type === "audio")
-          .map((item, index) => (
-            <AudioPlayer
-              key={`audio-${postData.id}-${index}`}
-              audioId={`audio-${postData.id}-${index}`}
-              url={item.url}
-              size="sm"
-              className="mt-2"
-              title={item.displayName || "Audio Recording"}
-            />
-          ))}
-
-        {/* Other Media (Photos, Videos) */}
-        {(() => {
-          const nonAudioMedia =
-            postData.media?.filter((item) => item.type !== "audio") || [];
-          console.log("FeedPost postData.media:", postData.media);
-          console.log("FeedPost nonAudioMedia:", nonAudioMedia);
-          return nonAudioMedia.length > 0 ? (
-            <MediaThumbnail media={nonAudioMedia} className="mt-2" />
-          ) : null;
-        })()}
+        {/* Tasks Section */}
+        {hasTasks && (
+          <Section spacing="sm" className="w-full">
+            <h5 className="font-medium text-sm text-muted-foreground mb-2">
+              Tasks
+            </h5>
+            <div className="space-y-2">
+              {postData.tasks.map((task) => (
+                <div
+                  key={task.id}
+                  className="border border-border rounded-lg p-3 bg-muted/10"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="font-medium text-sm sm:text-sm flex-1 min-w-0">
+                      {task.title}
+                    </h3>
+                    <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground flex-shrink-0">
+                      <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <span>{formatDuration(task.timeSpent)}</span>
+                    </div>
+                  </div>
+                  {/* Task Tags */}
+                  {task.taskDefinition.tags &&
+                    task.taskDefinition.tags.length > 0 && (
+                      <div className="mt-2">
+                        <TagList
+                          tags={task.taskDefinition.tags
+                            .filter(
+                              (tag) =>
+                                !postData.instruments.some(
+                                  (instrument) => instrument.label === tag.label
+                                )
+                            )
+                            .map((t) => t.label)}
+                        />
+                      </div>
+                    )}
+                </div>
+              ))}
+            </div>
+          </Section>
+        )}
       </div>
+
+      {/* Media Section */}
+      {hasMedia && (
+        <Section spacing="sm" className="w-full">
+          <h5 className="font-medium text-sm text-muted-foreground mb-2">
+            Media
+          </h5>
+          {/* Audio Files */}
+          {postData.media
+            ?.filter((item) => item.type === "audio")
+            .map((item, index) => (
+              <AudioPlayer
+                key={`audio-${postData.id}-${index}`}
+                audioId={`audio-${postData.id}-${index}`}
+                url={item.url}
+                size="sm"
+                className="mt-2"
+                title={item.displayName || "Audio Recording"}
+              />
+            ))}
+
+          {/* Other Media (Photos, Videos) */}
+          {(() => {
+            const nonAudioMedia =
+              postData.media?.filter((item) => item.type !== "audio") || [];
+            console.log("FeedPost postData.media:", postData.media);
+            console.log("FeedPost nonAudioMedia:", nonAudioMedia);
+            return nonAudioMedia.length > 0 ? (
+              <MediaThumbnail media={nonAudioMedia} className="mt-2" />
+            ) : null;
+          })()}
+        </Section>
+      )}
       {/* splicing in like/comment section */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 mt-2">
         {/* Gas Up Area - Entire area is clickable */}
         <div
           className={`group flex items-center gap-2 transition-all duration-200 ${
