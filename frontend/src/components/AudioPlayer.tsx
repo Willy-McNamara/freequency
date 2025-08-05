@@ -11,6 +11,7 @@ interface AudioPlayerProps {
   size?: "sm" | "md" | "lg";
   onClick?: (e: React.MouseEvent) => void;
   title?: string;
+  showRemoveButton?: boolean;
 }
 
 export const AudioPlayer: React.FC<AudioPlayerProps> = ({
@@ -20,6 +21,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   size = "md",
   onClick,
   title = "Audio Recording",
+  showRemoveButton = false,
 }) => {
   const { playAudio, registerAudio, unregisterAudio, subscribeToAudioChanges } =
     useAudioContext();
@@ -182,7 +184,9 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
 
         {/* Time Display */}
         <div
-          className={`${config.textSize} text-muted-foreground flex-shrink-0 pr-8`}
+          className={`${config.textSize} text-muted-foreground flex-shrink-0 ${
+            showRemoveButton ? "pr-8" : ""
+          }`}
         >
           {audioDuration[audioId] ? (
             <span>

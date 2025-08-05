@@ -322,21 +322,21 @@ export const PostView: React.FC = () => {
           {/* Post Header Section */}
           <div className="p-4 sm:p-6 border-b border-border">
             {/* User info and metadata row */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4">
-              <div className="flex items-center gap-2 sm:gap-3">
-                <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
+            <div className="flex flex-row items-center justify-between gap-3 mb-4">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0">
                   <AvatarFallback className="text-base sm:text-lg">
                     {post.musician.displayName[0]}
                   </AvatarFallback>
                 </Avatar>
                 <span
-                  className="text-base sm:text-lg font-medium cursor-pointer hover:text-primary hover:underline transition-all duration-200"
+                  className="text-base sm:text-lg font-medium cursor-pointer hover:text-primary hover:underline transition-all duration-200 truncate"
                   onClick={() => handleMusicianClick(post.musician.id)}
                 >
                   {post.musician.displayName}
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-muted-foreground">
+              <div className="flex items-center gap-2 text-muted-foreground flex-shrink-0">
                 <Clock className="w-4 h-4" />
                 <span className="text-sm sm:text-base">
                   {formatDuration(post.duration)}
@@ -544,9 +544,11 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onViewTaskDefinition }) => {
         className="p-3 sm:p-4 cursor-pointer hover:bg-muted/30 transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
-          <h3 className="font-medium text-sm sm:text-base">{task.title}</h3>
-          <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="font-medium text-sm sm:text-base flex-1 min-w-0">
+            {task.title}
+          </h3>
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground flex-shrink-0">
             <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
             <span>{formatDuration(task.timeSpent)}</span>
           </div>
