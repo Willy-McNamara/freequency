@@ -468,15 +468,8 @@ export class TasksService {
       },
     });
 
-    // Connect the tags to the musician's instruments (this was already working)
-    await this.prisma.musician.update({
-      where: { id: musicianId },
-      data: {
-        instruments: {
-          connect: tagsToConnect.map((tag) => ({ id: tag.id })),
-        },
-      },
-    });
+    // Task creation is now completely decoupled from user's instrument list
+    // Users can create tasks for any instrument without it affecting their profile
 
     // Return the created task in the same format as other methods
     return {
