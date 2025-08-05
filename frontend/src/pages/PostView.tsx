@@ -544,9 +544,11 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onViewTaskDefinition }) => {
         className="p-3 sm:p-4 cursor-pointer hover:bg-muted/30 transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
-          <h3 className="font-medium text-sm sm:text-base">{task.title}</h3>
-          <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="font-medium text-sm sm:text-base flex-1 min-w-0">
+            {task.title}
+          </h3>
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground flex-shrink-0">
             <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
             <span>{formatDuration(task.timeSpent)}</span>
           </div>
