@@ -238,7 +238,7 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
 
   return (
     <div
-      className="cursor-pointer hover:bg-accent/50 transition-colors duration-200 rounded-lg p-4 -m-4"
+      className="cursor-pointer bg-muted/40 shadow-sm hover:shadow-md transition-all duration-200 rounded-lg p-4 -m-4"
       onClick={handlePostClick}
     >
       <div className="flex w-full flex-col items-start gap-2.5 mb-2">
@@ -278,7 +278,10 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
         />
         {/* Tasks Section */}
         {hasTasks && (
-          <Section spacing="sm" className="w-full">
+          <Section
+            spacing="sm"
+            className="w-full bg-white rounded-lg border border-border p-2"
+          >
             <h5 className="font-medium text-sm text-muted-foreground mb-2">
               Tasks
             </h5>
@@ -286,7 +289,7 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
               {postData.tasks.map((task) => (
                 <div
                   key={task.id}
-                  className="border border-border rounded-lg p-3 bg-muted/10"
+                  className="border border-muted/60 bg-muted/25 rounded-lg p-3"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <h3 className="font-medium text-sm sm:text-sm flex-1 min-w-0">
@@ -322,7 +325,10 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
 
       {/* Media Section */}
       {hasMedia && (
-        <Section spacing="sm" className="w-full">
+        <Section
+          spacing="sm"
+          className="w-full bg-white rounded-lg border border-border p-2"
+        >
           <h5 className="font-medium text-sm text-muted-foreground mb-2">
             Media
           </h5>

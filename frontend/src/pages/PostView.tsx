@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, MessageSquare, Heart, Clock, User } from "lucide-react";
+import {
+  ArrowLeft,
+  MessageSquare,
+  Heart,
+  Clock,
+  User,
+  ChevronDown,
+  ChevronRight,
+} from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { RichTextRenderer } from "@/components/rich-text";
 import { Button } from "@/components/ui/button";
@@ -384,6 +392,7 @@ export const PostView: React.FC = () => {
                     key={task.id}
                     task={task}
                     onViewTaskDefinition={handleViewTaskDefinition}
+                    sessionInstruments={post.instruments}
                   />
                 ))}
               </div>
@@ -532,9 +541,18 @@ export const PostView: React.FC = () => {
 interface TaskCardProps {
   task: PostViewTask;
   onViewTaskDefinition: (taskDefinitionId: number) => void;
+  sessionInstruments: Array<{
+    id: number;
+    label: string;
+    color: string | null;
+  }>;
 }
 
-const TaskCard: React.FC<TaskCardProps> = ({ task, onViewTaskDefinition }) => {
+const TaskCard: React.FC<TaskCardProps> = ({
+  task,
+  onViewTaskDefinition,
+  sessionInstruments,
+}) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
@@ -545,9 +563,14 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onViewTaskDefinition }) => {
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-start justify-between gap-2">
-          <h3 className="font-medium text-sm sm:text-base flex-1 min-w-0">
-            {task.title}
-          </h3>
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            {isExpanded ? (
+              <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            ) : (
+              <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            )}
+            <h3 className="font-medium text-sm sm:text-base">{task.title}</h3>
+          </div>
           <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground flex-shrink-0">
             <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
             <span>{formatDuration(task.timeSpent)}</span>
@@ -561,7 +584,16 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onViewTaskDefinition }) => {
           {/* Task Tags */}
           {task.taskDefinition.tags && task.taskDefinition.tags.length > 0 && (
             <Section spacing="sm">
-              <TagList tags={task.taskDefinition.tags.map((t) => t.label)} />
+              <TagList
+                tags={task.taskDefinition.tags
+                  .filter(
+                    (tag) =>
+                      !sessionInstruments.some(
+                        (instrument) => instrument.label === tag.label
+                      )
+                  )
+                  .map((t) => t.label)}
+              />
             </Section>
           )}
 
