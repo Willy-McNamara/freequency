@@ -280,7 +280,7 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
         {hasTasks && (
           <Section
             spacing="sm"
-            className="w-full bg-white rounded-lg border border-border p-2"
+            className="w-full bg-white rounded-lg border border-border px-3 py-2.5"
           >
             <h5 className="font-medium text-sm text-muted-foreground mb-2">
               Tasks
@@ -327,7 +327,7 @@ export const FeedPost = ({ postData }: { postData: PostData }): JSX.Element => {
       {hasMedia && (
         <Section
           spacing="sm"
-          className="w-full bg-white rounded-lg border border-border p-2"
+          className="w-full bg-white rounded-lg border border-border px-3 py-2.5"
         >
           <h5 className="font-medium text-sm text-muted-foreground mb-2">
             Media
