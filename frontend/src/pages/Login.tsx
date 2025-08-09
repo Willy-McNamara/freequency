@@ -37,7 +37,7 @@ const Login: React.FC = () => {
         const resp = await fetch(path, { cache: "no-store" });
         const text = await resp.text();
         setDocText(text);
-      } catch (e) {
+      } catch {
         setDocText("Failed to load document. Please try again later.");
       }
     };
