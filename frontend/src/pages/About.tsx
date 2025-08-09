@@ -55,8 +55,8 @@ const aboutSections = [
     content: (
       <>
         Visit the <strong>Profile</strong> page to describe who you are as a
-        musician and edit some basic data. You can visit other user's profiles
-        by clicking their name when you view a post of theirs.
+        musician and edit some basic data. See other user's profiles by
+        searching for them or clicking their name in posts and tasks.
       </>
     ),
   },
