@@ -34,17 +34,17 @@ jobs:
         with:
           node-version: 20
 
-      - name: Run placeholder backend test
+      - name: Run backend tests
         run: |
           cd api
           npm ci
-          npm run deployment-test
+          npm run test -- --ci
 
-      - name: Run placeholder frontend test
+      - name: Run frontend tests
         run: |
           cd frontend
           npm ci
-          npm run deployment-test
+          npm run test
 
       - name: Show latest commit
         run: git log -1
