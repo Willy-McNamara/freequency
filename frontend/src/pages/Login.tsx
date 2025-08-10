@@ -1,10 +1,9 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "../components/auth/AuthProvider";
 import { Button } from "../components/ui/button";
 import { CardContent, CardHeader } from "../components/ui/card";
 import { Container } from "../components/layout/Container";
 import FreequencyLogo from "../assets/freequency-logo-w-name-draft.svg";
-import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +15,7 @@ import { usePageTracking } from "../hooks/useAnalytics";
 const Login: React.FC = () => {
   const { login } = useAuth();
   const [modal, setModal] = useState<null | "terms" | "privacy">(null);
+  const [docText, setDocText] = useState<string>("");
 
   // Track page view for analytics
   usePageTracking("Login");
@@ -27,6 +27,43 @@ const Login: React.FC = () => {
     } else {
       login();
     }
+  };
+
+  useEffect(() => {
+    const loadDoc = async () => {
+      if (!modal) return;
+      const path = modal === "terms" ? "/legal/terms.md" : "/legal/privacy.md";
+      try {
+        const resp = await fetch(path, { cache: "no-store" });
+        const text = await resp.text();
+        setDocText(text);
+      } catch {
+        setDocText("Failed to load document. Please try again later.");
+      }
+    };
+    loadDoc();
+  }, [modal]);
+
+  const renderMarkdown = (md: string) => {
+    // Minimal markdown to HTML conversion for headings/paragraphs/lists.
+    // This keeps bundle small and avoids adding a new dependency.
+    let html = md
+      .replace(/^###\s(.+)$/gim, "<h3>$1</h3>")
+      .replace(/^##\s(.+)$/gim, "<h2>$1</h2>")
+      .replace(/^#\s(.+)$/gim, "<h1>$1</h1>")
+      .replace(/^-\s(.+)$/gim, "<li>$1</li>")
+      .replace(/^\*\*(.+)\*\*/gim, "<strong>$1</strong>")
+      .replace(/\*\*(.+?)\*\*/gim, "<strong>$1</strong>")
+      .replace(/\*(.+?)\*/gim, "<em>$1</em>")
+      .replace(/\n\n/g, "<br/><br/>");
+
+    // Wrap loose list items into <ul>
+    html = html.replace(
+      /(<li>[^<]*<\/li>\s*)+/gim,
+      (match) => `<ul>${match}</ul>`
+    );
+
+    return { __html: html };
   };
 
   return (
@@ -107,55 +144,10 @@ const Login: React.FC = () => {
                 {modal === "terms" ? "Terms of Service" : "Privacy Policy"}
               </DialogTitle>
             </DialogHeader>
-            <div className="prose max-w-none text-left text-sm">
-              {modal === "terms" ? (
-                <>
-                  <h2>Mock Terms of Service</h2>
-                  <p>
-                    Welcome to Freequency! By using our app, you agree to the
-                    following terms:
-                  </p>
-                  <ul>
-                    <li>You will use the app for lawful purposes only.</li>
-                    <li>
-                      You are responsible for the content you upload and share.
-                    </li>
-                    <li>
-                      We may update these terms at any time. Continued use means
-                      you accept the changes.
-                    </li>
-                    <li>
-                      We are not liable for any damages or losses from using the
-                      app.
-                    </li>
-                  </ul>
-                  <p>For questions, contact support@freequency.app</p>
-                </>
-              ) : (
-                <>
-                  <h2>Mock Privacy Policy</h2>
-                  <p>
-                    Your privacy is important to us. Here's how we handle your
-                    data:
-                  </p>
-                  <ul>
-                    <li>
-                      We collect only the information needed to provide our
-                      service.
-                    </li>
-                    <li>Your data is never sold to third parties.</li>
-                    <li>
-                      You can request deletion of your account and data at any
-                      time.
-                    </li>
-                    <li>
-                      We use industry-standard security to protect your
-                      information.
-                    </li>
-                  </ul>
-                  <p>For questions, contact privacy@freequency.app</p>
-                </>
-              )}
+            <div className="mt-2 max-h-[70vh] overflow-y-auto pr-2">
+              <div className="prose max-w-none text-left text-sm">
+                <div dangerouslySetInnerHTML={renderMarkdown(docText)} />
+              </div>
             </div>
           </DialogContent>
         </Dialog>
