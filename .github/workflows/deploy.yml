@@ -96,6 +96,16 @@ jobs:
             echo "🔐 Authenticating with ECR..."
             aws ecr get-login-password --region $AWS_REGION | sudo docker login --username AWS --password-stdin $ECR_REPOSITORY
 
+            echo "📤 Pre-deployment: Uploading current logs to S3..."
+            if sudo docker ps | grep -q freequency-app; then
+              echo "  Container is running, uploading logs before stopping..."
+              sudo docker exec freequency-app /bin/sh -lc '/bin/sh /app/api/scripts/upload-logs-to-s3.sh' || {
+                echo "  Warning: Log upload failed, but continuing with deployment..."
+              }
+            else
+              echo "  No running container found, skipping log upload..."
+            fi
+
             echo "🛑 Stopping and removing existing container..."
             sudo docker stop freequency-app || true
             sudo docker rm freequency-app || true
