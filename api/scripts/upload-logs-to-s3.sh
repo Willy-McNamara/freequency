@@ -9,6 +9,7 @@ DATE=$(date +'%Y-%m-%d')
 YEAR=$(date +'%Y')
 MONTH=$(date +'%m')
 DAY=$(date +'%d')
+TIMESTAMP=$(date +'%H-%M-%S')
 S3_PATH="s3://${BUCKET}/app/${YEAR}/${MONTH}/${DAY}/"
 
 # Colors for output
@@ -42,8 +43,8 @@ if [ ! -s "${LOG_DIR}/${LOG_FILE}" ]; then
     exit 0
 fi
 
-# Create backup with timestamp
-BACKUP_FILE="app-${DATE}.log"
+# Create backup with timestamp to prevent collisions
+BACKUP_FILE="app-${DATE}-${TIMESTAMP}.log"
 log "Creating backup: ${BACKUP_FILE}"
 
 # Copy current log to backup
@@ -57,7 +58,7 @@ if aws s3 cp "${LOG_DIR}/${BACKUP_FILE}" "${S3_PATH}${BACKUP_FILE}"; then
     # Create a JSON summary for analytics
     create_analytics_summary() {
         local log_file="$1"
-        local summary_file="${LOG_DIR}/summary-${DATE}.json"
+        local summary_file="${LOG_DIR}/summary-${DATE}-${TIMESTAMP}.json"
 
         # Debug: Show first few lines of log file to understand format
         log "Debug: First 3 lines of log file:"
@@ -194,7 +195,7 @@ if aws s3 cp "${LOG_DIR}/${BACKUP_FILE}" "${S3_PATH}${BACKUP_FILE}"; then
 EOF
 
         # Upload summary to analytics folder
-        aws s3 cp "$summary_file" "s3://${BUCKET}/app/analytics/${YEAR}/${MONTH}/summary-${DATE}.json"
+        aws s3 cp "$summary_file" "s3://${BUCKET}/app/analytics/${YEAR}/${MONTH}/summary-${DATE}-${TIMESTAMP}.json"
         log "Uploaded enhanced analytics summary to S3"
 
         # Clean up local summary
