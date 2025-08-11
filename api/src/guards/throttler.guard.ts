@@ -1,32 +1,38 @@
 import { Injectable, ExecutionContext } from '@nestjs/common';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import { SecurityConfig } from '../config/security.config';
 
 @Injectable()
 export class CustomThrottlerGuard extends ThrottlerGuard {
-  protected getTracker(req: Record<string, any>): string {
+  protected async getTracker(req: Record<string, any>): Promise<string> {
     // Use IP address as the primary tracker
     return req.ips.length ? req.ips[0] : req.ip;
   }
 
   protected async getThrottlerOptions(context: ExecutionContext) {
-    const { route } = context.getHandler();
     const request = context.switchToHttp().getRequest();
+    const url = request.url;
 
     // Apply stricter limits to authentication routes
-    if (route.includes('/auth') || route.includes('/login')) {
-      return { ttl: 60, limit: 10, name: 'auth' };
+    if (url.includes('/auth') || url.includes('/login')) {
+      return SecurityConfig.rateLimits.auth;
     }
 
     // Apply moderate limits to API routes
     if (
-      route.includes('/api') ||
-      route.includes('/sessions') ||
-      route.includes('/tasks')
+      url.includes('/api') ||
+      url.includes('/sessions') ||
+      url.includes('/tasks')
     ) {
-      return { ttl: 60, limit: 30, name: 'api' };
+      return SecurityConfig.rateLimits.api;
+    }
+
+    // Apply stricter limits for file uploads
+    if (url.includes('/upload-media')) {
+      return SecurityConfig.rateLimits.upload;
     }
 
     // Apply general limits to other routes
-    return { ttl: 60, limit: 100, name: 'general' };
+    return SecurityConfig.rateLimits.general;
   }
 }
