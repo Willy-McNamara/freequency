@@ -6,10 +6,11 @@ import { JwtService } from '@nestjs/jwt';
 import { MediaModule } from 'src/media/media.module';
 import { ThumbnailModule } from 'src/thumbnail/thumbnail.module';
 import { S3Module } from 'src/s3/s3.module';
+import { FileSecurityService } from '../services/file-security.service';
 
 @Module({
   controllers: [SessionsController],
-  providers: [SessionsService, JwtService],
+  providers: [SessionsService, JwtService, FileSecurityService],
   imports: [PrismaModule, MediaModule, ThumbnailModule, S3Module],
 })
 export class SessionsModule {}
