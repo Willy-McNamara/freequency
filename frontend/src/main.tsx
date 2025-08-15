@@ -7,6 +7,9 @@ import { BrowserRouter, Routes, Route } from "react-router";
 import * as Sentry from "@sentry/react";
 import Login from "./pages/Login";
 
+// Initialize CSRF protection early
+import { initializeCSRF } from "./services/csrf";
+
 // Google Analytics types
 declare global {
   interface Window {
@@ -66,6 +69,9 @@ if (import.meta.env.VITE_ENABLE_GA !== "false" || import.meta.env.PROD) {
   // Make gtag available globally
   window.gtag = gtag;
 }
+
+// Initialize CSRF protection
+initializeCSRF().catch(console.warn);
 
 // Lazy load all protected components
 const App = lazy(() => import("./App"));

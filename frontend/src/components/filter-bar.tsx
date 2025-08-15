@@ -19,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
+import { SecureInput } from "@/components/ui/secure-form";
 
 export interface FilterOption {
   id: string;
@@ -155,12 +156,12 @@ export function FilterBar({
             <DialogTitle>Filter by {currentFilterConfig?.label}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <Input
-              placeholder="Search..."
+            <SecureInput
+              type="text"
               value={searchTerm}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setSearchTerm(e.target.value)
-              }
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              placeholder="Search..."
             />
 
             <div className="max-h-60 overflow-y-auto space-y-2">

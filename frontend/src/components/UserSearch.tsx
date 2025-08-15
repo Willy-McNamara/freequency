@@ -4,6 +4,7 @@ import { Input } from "./ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Search, X } from "lucide-react";
 import { apiConfig } from "../config/api";
+import { SecureInput } from "./ui/secure-form";
 
 interface User {
   id: number;
@@ -94,7 +95,7 @@ export function UserSearch({ className = "" }: UserSearchProps) {
     <div ref={searchRef} className={`relative ${className}`}>
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-        <Input
+        <SecureInput
           type="text"
           placeholder="Search users..."
           value={searchTerm}

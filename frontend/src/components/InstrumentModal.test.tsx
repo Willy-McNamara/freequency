@@ -98,7 +98,7 @@ describe("InstrumentModal", () => {
       />
     );
 
-    const input = screen.getByPlaceholderText("Search instrument");
+    const input = screen.getByPlaceholderText("Search instruments...");
     expect(input).toBeInTheDocument();
     expect(input).toHaveAttribute("type", "text");
   });
@@ -128,7 +128,7 @@ describe("InstrumentModal", () => {
       />
     );
 
-    const input = screen.getByPlaceholderText("Search instrument");
+    const input = screen.getByPlaceholderText("Search instruments...");
     fireEvent.change(input, { target: { value: "guitar" } });
 
     expect(screen.getByText("Guitar")).toBeInTheDocument();
@@ -147,7 +147,7 @@ describe("InstrumentModal", () => {
       />
     );
 
-    const input = screen.getByPlaceholderText("Search instrument");
+    const input = screen.getByPlaceholderText("Search instruments...");
     fireEvent.change(input, { target: { value: "xyz" } });
 
     expect(screen.getByText("No instruments found.")).toBeInTheDocument();
@@ -183,7 +183,7 @@ describe("InstrumentModal", () => {
       />
     );
 
-    const input = screen.getByPlaceholderText("Search instrument");
+    const input = screen.getByPlaceholderText("Search instruments...");
     fireEvent.change(input, { target: { value: "guitar" } });
     expect(input).toHaveValue("guitar");
 
@@ -205,7 +205,7 @@ describe("InstrumentModal", () => {
       />
     );
 
-    const newInput = screen.getByPlaceholderText("Search instrument");
+    const newInput = screen.getByPlaceholderText("Search instruments...");
     expect(newInput).toHaveValue("");
   });
 
@@ -218,7 +218,7 @@ describe("InstrumentModal", () => {
       />
     );
 
-    const input = screen.getByPlaceholderText("Search instrument");
+    const input = screen.getByPlaceholderText("Search instruments...");
     fireEvent.change(input, { target: { value: "GUITAR" } });
 
     expect(screen.getByText("Guitar")).toBeInTheDocument();
@@ -234,7 +234,7 @@ describe("InstrumentModal", () => {
       />
     );
 
-    const input = screen.getByPlaceholderText("Search instrument");
+    const input = screen.getByPlaceholderText("Search instruments...");
     fireEvent.change(input, { target: { value: "in" } });
 
     expect(screen.getByText("Violin")).toBeInTheDocument();

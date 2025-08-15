@@ -20,6 +20,7 @@ import { TagList } from "@/components/TagList";
 import { isRichTextEmpty } from "@/lib/utils";
 import { MediaGalleryModal } from "@/components/MediaGalleryModal";
 import { useAudioContext } from "@/components/AudioContext";
+import { SecureTextarea } from "@/components/ui/secure-form";
 
 interface PostViewTask {
   id: number;
@@ -506,16 +507,12 @@ export const PostView: React.FC = () => {
               {/* Add Comment Form */}
               <div className="p-3 sm:p-4 border-t border-border">
                 <div className="flex flex-col sm:flex-row gap-2">
-                  <textarea
+                  <SecureTextarea
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
-                    placeholder="Write a comment..."
-                    className="flex-1 p-2 sm:p-3 border border-border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary min-h-[60px] sm:min-h-[80px] text-sm bg-background text-foreground placeholder:text-muted-foreground"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && e.metaKey) {
-                        handleSubmitComment();
-                      }
-                    }}
+                    placeholder="Add a comment..."
+                    className="w-full p-3 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                    rows={3}
                   />
                   <Button
                     onClick={handleSubmitComment}

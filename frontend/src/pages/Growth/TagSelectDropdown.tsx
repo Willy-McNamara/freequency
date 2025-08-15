@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { ChevronDownIcon, TagIcon } from "lucide-react";
+import { SecureInput } from "@/components/ui/secure-form";
 
 interface TagSelectDropdownProps {
   options: { id: number; label: string; color?: string }[];
@@ -23,9 +24,9 @@ export const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
   className = "",
 }) => {
   const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const filtered = options.filter((tag) =>
-    tag.label.toLowerCase().includes(search.toLowerCase())
+    tag.label.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -47,10 +48,12 @@ export const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
           <DialogHeader>
             <DialogTitle>Select Tag</DialogTitle>
           </DialogHeader>
-          <Input
-            placeholder="Search your tags..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+          <SecureInput
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            placeholder="Search or create tags..."
             className="mb-2"
           />
           <div className="max-h-60 overflow-y-auto space-y-1">

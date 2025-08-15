@@ -9,6 +9,7 @@ import {
 } from "./ui/dialog";
 import { Badge } from "./badge";
 import { ALL_INSTRUMENTS } from "../types/instruments.types";
+import { SecureInput } from "./ui/secure-form";
 
 interface InstrumentModalProps {
   isOpen: boolean;
@@ -21,14 +22,14 @@ export const InstrumentModal: React.FC<InstrumentModalProps> = ({
   onClose,
   onInstrumentSelected,
 }) => {
-  const [query, setQuery] = React.useState("");
+  const [searchTerm, setSearchTerm] = React.useState("");
 
   React.useEffect(() => {
-    if (!isOpen) setQuery("");
+    if (!isOpen) setSearchTerm("");
   }, [isOpen]);
 
   const filteredInstruments = ALL_INSTRUMENTS.filter((inst) =>
-    inst.label.toLowerCase().includes(query.toLowerCase())
+    inst.label.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -40,12 +41,12 @@ export const InstrumentModal: React.FC<InstrumentModalProps> = ({
             Search and select an instrument for this task.
           </DialogDescription>
         </DialogHeader>
-        <input
+        <SecureInput
           type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring mb-4"
-          placeholder="Search instrument"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          placeholder="Search instruments..."
           autoFocus
         />
         <div className="flex flex-col gap-2 max-h-48 overflow-y-auto mb-2">

@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
 import { Badge } from "../components/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { Card, CardContent } from "../components/ui/card";
+import { SecureInput, SecureTextarea } from "../components/ui/secure-form";
 import {
   Dialog,
   DialogContent,
@@ -409,11 +409,12 @@ export default function Profile() {
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <label className="text-sm font-medium">Display Name</label>
-                  <Input
+                  <SecureInput
+                    type="text"
                     value={editData.displayName}
-                    onChange={(e) =>
-                      handleEditChange("displayName", e.target.value)
-                    }
+                    onChange={(e) => handleEditChange("displayName", e.target.value)}
+                    className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    placeholder="Display name"
                   />
                 </div>
                 <div className="grid gap-2">
@@ -424,9 +425,12 @@ export default function Profile() {
                 </div>
                 <div className="grid gap-2">
                   <label className="text-sm font-medium">Bio</label>
-                  <Input
+                  <SecureTextarea
                     value={editData.bio}
                     onChange={(e) => handleEditChange("bio", e.target.value)}
+                    className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                    placeholder="Tell us about yourself..."
+                    rows={3}
                   />
                 </div>
                 <div className="grid gap-2">
