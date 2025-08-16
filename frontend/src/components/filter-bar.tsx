@@ -1,4 +1,6 @@
-import * as React from "react";
+import React from "react";
+import { Button } from "./ui/button";
+import { SecureInput } from "./ui/secure-form";
 import {
   ChevronDownIcon,
   UserIcon,
@@ -7,16 +9,13 @@ import {
   TagIcon,
   BookmarkIcon,
   CheckIcon,
-  // Container,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 
@@ -155,12 +154,12 @@ export function FilterBar({
             <DialogTitle>Filter by {currentFilterConfig?.label}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <Input
-              placeholder="Search..."
+            <SecureInput
+              type="text"
               value={searchTerm}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setSearchTerm(e.target.value)
-              }
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              placeholder="Search..."
             />
 
             <div className="max-h-60 overflow-y-auto space-y-2">

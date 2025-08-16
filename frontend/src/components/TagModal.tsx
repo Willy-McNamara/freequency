@@ -11,6 +11,7 @@ import { Badge } from "./badge";
 import { Plus } from "lucide-react";
 import { apiConfig } from "../config/api";
 import { ALL_INSTRUMENTS } from "../types/instruments.types";
+import { SecureInput } from "./ui/secure-form";
 
 interface Tag {
   id: number;
@@ -116,7 +117,7 @@ export const TagModal: React.FC<TagModalProps> = ({
             Search for an existing tag or create a new one.
           </DialogDescription>
         </DialogHeader>
-        <input
+        <SecureInput
           type="text"
           value={query}
           onChange={handleInputChange}

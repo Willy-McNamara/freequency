@@ -1,7 +1,10 @@
 import { config } from 'dotenv';
 import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
+import { SecurityConfig } from './config/security.config';
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import { Logger } from 'nestjs-pino';
@@ -17,14 +20,28 @@ async function bootstrap() {
     bufferLogs: true,
   });
   app.useLogger(app.get(Logger));
-  app.enableCors({
-    origin: [
-      'http://localhost:5173',
-      'http://localhost:3000',
-      'https://demo.freequencyapp.com',
-    ], // Vite dev server + backend
-    credentials: true, // Important for JWT cookies
-  });
+  app.enableCors(SecurityConfig.cors);
+
+  // Security middleware
+  app.use(
+    helmet({
+      contentSecurityPolicy: false, // We'll handle CSP with our custom middleware
+      crossOriginEmbedderPolicy: false, // Disable for development compatibility
+    }),
+  );
+
+  // Global validation pipe for input sanitization
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // Strip properties that don't have decorators
+      forbidNonWhitelisted: true, // Throw error if non-whitelisted values are provided
+      transform: true, // Transform payloads to be objects typed according to their DTO classes
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+    }),
+  );
+
   app.use(cookieParser());
   //app.useGlobalFilters(new AllExceptionsFilter(app.get(HttpAdapterHost)));
 

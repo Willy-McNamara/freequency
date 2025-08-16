@@ -24,11 +24,26 @@ export const apiClient = {
       // Use the centralized URL builder
       const fullUrl = buildApiUrl(url);
 
+      // Get CSRF headers for state-changing requests
+      let csrfHeaders = {};
+      if (
+        options.method &&
+        ["POST", "PUT", "DELETE", "PATCH"].includes(options.method)
+      ) {
+        try {
+          const { csrfService } = await import("./csrf");
+          csrfHeaders = await csrfService.getHeaders();
+        } catch (error) {
+          console.warn("CSRF headers unavailable:", error);
+        }
+      }
+
       const response = await fetch(fullUrl, {
         ...options,
         credentials: "include", // Include JWT cookies
         headers: {
           "Content-Type": "application/json",
+          ...csrfHeaders,
           ...options.headers,
         },
       });

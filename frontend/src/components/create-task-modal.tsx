@@ -8,6 +8,7 @@ import { InstrumentModal } from "./InstrumentModal";
 import { ALL_INSTRUMENTS } from "../types/instruments.types";
 import { TagList } from "./TagList";
 import { RichTextEditor } from "./rich-text";
+import { SecureForm, SecureInput } from "./ui/secure-form";
 
 export interface CreateTaskData {
   title: string;
@@ -188,7 +189,7 @@ export function CreateTaskModal({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="pt-4 md:pt-6 space-y-6">
+        <SecureForm onSubmit={handleSubmit} className="pt-4 md:pt-6 space-y-6" showCSRFStatus={true}>
           {/* Title */}
           <div>
             <label
@@ -197,7 +198,7 @@ export function CreateTaskModal({
             >
               Task Title *
             </label>
-            <input
+            <SecureInput
               type="text"
               id="title"
               value={formData.title}
@@ -222,7 +223,7 @@ export function CreateTaskModal({
               placeholder="Describe what this task involves..."
             />
             {/* Hidden input for browser validation */}
-            <input
+            <SecureInput
               type="text"
               value={formData.description}
               required
@@ -257,7 +258,7 @@ export function CreateTaskModal({
               >
                 {formData.instrument ? "Change" : "Select"}
                 {/* Hidden input for browser validation */}
-                <input
+                <SecureInput
                   type="text"
                   value={formData.instrument}
                   required
@@ -323,15 +324,15 @@ export function CreateTaskModal({
               Checklist
             </label>
             <div className="flex flex-row flex-nowrap gap-2 mb-3">
-              <input
+              <SecureInput
                 type="text"
                 value={newChecklistItem}
                 onChange={(e) => setNewChecklistItem(e.target.value)}
                 onKeyPress={(e) =>
                   e.key === "Enter" && (e.preventDefault(), addChecklistItem())
                 }
-                className="flex-1 min-w-0 px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-left"
-                placeholder="Add a checklist item"
+                className="flex-1 px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-left"
+                placeholder="Add checklist item"
               />
               <button
                 type="button"
@@ -388,7 +389,7 @@ export function CreateTaskModal({
                 : "Create Task"}
             </button>
           </div>
-        </form>
+        </SecureForm>
       </div>
     </div>
   );
