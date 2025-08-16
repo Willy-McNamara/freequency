@@ -17,24 +17,30 @@ export class SecurityUtils {
       input
         // Remove script tags and their content
         .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
-        // Remove event handler attributes (onclick, onload, etc.)
-        .replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, "")
-        // Remove javascript: URLs from href/src attributes - more surgical approach
-        .replace(
-          /(href|src|action|background|dynsrc|lowsrc)\s*=\s*["']\s*javascript:[^"']*["']/gi,
-          '$1=""'
-        )
+        // Remove event handler attributes - multiple passes for different quote styles
+        .replace(/\s*on\w+\s*=\s*"[^"]*"/gi, "") // Double quotes
+        .replace(/\s*on\w+\s*=\s*'[^']*'/gi, "") // Single quotes
+        // Remove javascript: URLs - multiple passes for different quote styles
+        .replace(/href\s*=\s*"[^"]*javascript:[^"]*"/gi, 'href=""') // Double quotes
+        .replace(/href\s*=\s*'[^']*javascript:[^']*'/gi, "href=''") // Single quotes
+        .replace(/src\s*=\s*"[^"]*javascript:[^"]*"/gi, 'src=""') // Double quotes
+        .replace(/src\s*=\s*'[^']*javascript:[^']*'/gi, "src=''") // Single quotes
+        .replace(/action\s*=\s*"[^"]*javascript:[^"]*"/gi, 'action=""') // Double quotes
+        .replace(/action\s*=\s*'[^']*javascript:[^']*'/gi, "action=''") // Single quotes
         // Remove data: URLs (except for images)
         .replace(/data:(?!image\/)/gi, "")
-        // Remove vbscript: URLs from href/src attributes - more surgical approach
-        .replace(
-          /(href|src|action|background|dynsrc|lowsrc)\s*=\s*["']\s*vbscript:[^"']*["']/gi,
-          '$1=""'
-        )
+        // Remove vbscript: URLs - multiple passes for different quote styles
+        .replace(/href\s*=\s*"[^"]*vbscript:[^"]*"/gi, 'href=""') // Double quotes
+        .replace(/href\s*=\s*'[^']*vbscript:[^']*'/gi, "href=''") // Single quotes
+        .replace(/src\s*=\s*"[^"]*vbscript:[^"]*"/gi, 'src=""') // Double quotes
+        .replace(/src\s*=\s*'[^']*vbscript:[^']*'/gi, "src=''") // Single quotes
+        .replace(/action\s*=\s*"[^"]*vbscript:[^"]*"/gi, 'action=""') // Double quotes
+        .replace(/action\s*=\s*'[^']*vbscript:[^']*'/gi, "action=''") // Single quotes
         // Remove expression() CSS (IE vulnerability) - more surgical approach
         .replace(/expression\s*\([^)]*\)/gi, "")
         // Remove style attributes with expression() calls
-        .replace(/style\s*=\s*["'][^"']*expression[^"']*["']/gi, 'style=""')
+        .replace(/style\s*=\s*"[^"]*expression[^"]*"/gi, 'style=""') // Double quotes
+        .replace(/style\s*=\s*'[^']*expression[^']*'/gi, "style=''") // Single quotes
         // Remove eval() calls
         .replace(/eval\s*\(/gi, "")
         // Remove iframe tags
@@ -93,14 +99,25 @@ export class SecurityUtils {
       html
         // Remove script tags and their content
         .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
-        // Remove event handler attributes
-        .replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, "")
-        // Remove javascript: URLs
-        .replace(/javascript:/gi, "")
+        // Remove event handler attributes - multiple passes for different quote styles
+        .replace(/\s*on\w+\s*=\s*"[^"]*"/gi, "") // Double quotes
+        .replace(/\s*on\w+\s*=\s*'[^']*'/gi, "") // Single quotes
+        // Remove javascript: URLs - multiple passes for different quote styles
+        .replace(/href\s*=\s*"[^"]*javascript:[^"]*"/gi, 'href=""') // Double quotes
+        .replace(/href\s*=\s*'[^']*javascript:[^']*'/gi, "href=''") // Single quotes
+        .replace(/src\s*=\s*"[^"]*javascript:[^"]*"/gi, 'src=""') // Double quotes
+        .replace(/src\s*=\s*'[^']*javascript:[^']*'/gi, "src=''") // Single quotes
+        .replace(/action\s*=\s*"[^"]*javascript:[^"]*"/gi, 'action=""') // Double quotes
+        .replace(/action\s*=\s*'[^']*javascript:[^']*'/gi, "action=''") // Single quotes
         // Remove data: URLs (except for images)
         .replace(/data:(?!image\/)/gi, "")
-        // Remove vbscript: URLs
-        .replace(/vbscript:/gi, "")
+        // Remove vbscript: URLs - multiple passes for different quote styles
+        .replace(/href\s*=\s*"[^"]*vbscript:[^"]*"/gi, 'href=""') // Double quotes
+        .replace(/href\s*=\s*'[^']*vbscript:[^']*'/gi, "href=''") // Single quotes
+        .replace(/src\s*=\s*"[^"]*vbscript:[^"]*"/gi, 'src=""') // Double quotes
+        .replace(/src\s*=\s*'[^']*vbscript:[^']*'/gi, "src=''") // Single quotes
+        .replace(/action\s*=\s*"[^"]*vbscript:[^"]*"/gi, 'action=""') // Double quotes
+        .replace(/action\s*=\s*'[^']*vbscript:[^']*'/gi, "action=''") // Single quotes
         // Remove expression() CSS
         .replace(/expression\s*\(/gi, "")
         // Remove eval() calls
@@ -110,7 +127,7 @@ export class SecurityUtils {
         // Remove object tags
         .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, "")
         // Remove embed tags
-        .replace(/<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi, "")
+        .replace(/<embed\b[^<]*>/gi, "")
         // Remove form tags
         .replace(/<form\b[^<]*(?:(?!<\/form>)<[^<]*)*<\/form>/gi, "")
         // Remove input tags
@@ -140,11 +157,6 @@ export class SecurityUtils {
         .replace(/<body\b[^<]*(?:(?!<\/body>)<[^<]*)*<\/body>/gi, "")
         // Remove html tags
         .replace(/<html\b[^<]*(?:(?!<\/html>)<[^<]*)*<\/html>/gi, "")
-        // Remove dangerous attributes
-        .replace(
-          /\s*(?:href|src|action|background|dynsrc|lowsrc)\s*=\s*["']\s*javascript:/gi,
-          ""
-        )
         // Remove dangerous CSS properties
         .replace(/url\s*\(\s*["']?\s*javascript:/gi, "")
         // Clean up excessive whitespace

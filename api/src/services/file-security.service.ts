@@ -1,5 +1,6 @@
-import { Injectable, BadRequestException, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { SecurityConfig } from '../config/security.config';
+import * as crypto from 'crypto';
 
 export interface FileValidationResult {
   isValid: boolean;
@@ -474,7 +475,6 @@ export class FileSecurityService {
    * Generate file checksum for integrity
    */
   generateChecksum(buffer: Buffer): string {
-    const crypto = require('crypto');
     return crypto.createHash('sha256').update(buffer).digest('hex');
   }
 

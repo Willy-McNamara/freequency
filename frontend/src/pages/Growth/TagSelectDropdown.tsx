@@ -1,14 +1,13 @@
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { SecureInput } from "../../components/ui/secure-form";
+import { Button } from "../../components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { ChevronDownIcon, TagIcon } from "lucide-react";
-import { SecureInput } from "@/components/ui/secure-form";
 
 interface TagSelectDropdownProps {
   options: { id: number; label: string; color?: string }[];
@@ -52,9 +51,8 @@ export const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring mb-2"
             placeholder="Search or create tags..."
-            className="mb-2"
           />
           <div className="max-h-60 overflow-y-auto space-y-1">
             {filtered.length === 0 && (

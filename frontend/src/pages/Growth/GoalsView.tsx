@@ -1,18 +1,16 @@
 import React from "react";
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button } from "../../components/ui/button";
+import { Card, CardContent, CardTitle } from "../../components/ui/card";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { PlusIcon, EditIcon, TrashIcon } from "lucide-react";
 import { Container } from "@/components/layout/Container";
 import { Section } from "@/components/layout/Section";
 import { TaskInUseMock } from "./utils";
-import { SecureInput } from "@/components/ui/secure-form";
 
 interface Goal {
   id: string;
@@ -223,7 +221,7 @@ export const GoalsView: React.FC<GoalsViewProps> = ({
             {/* Target Amount */}
             <div className="grid gap-2">
               <label className="text-sm font-medium">Target Amount</label>
-              <SecureInput
+              <input
                 type="number"
                 min="1"
                 value={

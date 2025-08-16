@@ -4,18 +4,17 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
-import { csrfService, isCSRFAvailable } from "../services/csrf";
+import { csrfService } from "../services/csrf";
 
-export interface UseCSRFReturn {
+export interface CSRFHookReturn {
   token: string | null;
   isAvailable: boolean;
   isLoading: boolean;
   error: string | null;
   refreshToken: () => Promise<void>;
-  getHeaders: () => Promise<Record<string, string>>;
 }
 
-export const useCSRF = (): UseCSRFReturn => {
+export const useCSRF = (): CSRFHookReturn => {
   const [token, setToken] = useState<string | null>(null);
   const [isAvailable, setIsAvailable] = useState(false);
   const [isLoading, setIsLoading] = useState(true);

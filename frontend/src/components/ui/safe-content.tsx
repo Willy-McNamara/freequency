@@ -44,8 +44,6 @@ interface SafeHtmlProps {
   className?: string;
   maxLength?: number;
   maxLines?: number;
-  allowedTags?: string[];
-  allowedAttributes?: string[];
 }
 
 /**
@@ -57,32 +55,6 @@ export const SafeHtml: React.FC<SafeHtmlProps> = ({
   className = "",
   maxLength,
   maxLines,
-  allowedTags = [
-    "p",
-    "div",
-    "span",
-    "strong",
-    "em",
-    "u",
-    "s",
-    "h1",
-    "h2",
-    "h3",
-    "h4",
-    "h5",
-    "h6",
-    "ul",
-    "ol",
-    "li",
-    "br",
-    "hr",
-    "blockquote",
-    "pre",
-    "code",
-    "a",
-    "img",
-  ],
-  allowedAttributes = ["href", "src", "alt", "title", "class", "id", "style"],
 }) => {
   if (!html) return null;
 
@@ -323,35 +295,29 @@ export const SafeTextarea: React.FC<SafeTextareaProps> = ({
 };
 
 /**
- * Higher-order component for adding security to any component
- * Wraps components with input sanitization and dangerous content detection
+ * Higher-order component that adds security to any component
  */
-export const withSecurity = <P extends object>(
+export function withSecurity<P extends object>(
   Component: React.ComponentType<P>,
-  securityOptions: {
-    sanitizeInputs?: boolean;
-    detectDangerousContent?: boolean;
-    escapeOutputs?: boolean;
-  } = {}
-) => {
-  const {
-    sanitizeInputs = true,
-    detectDangerousContent = true,
-    escapeOutputs = true,
-  } = securityOptions;
+  securityOptions?: {
+    sanitizeProps?: boolean;
+    allowedProps?: (keyof P)[];
+  }
+): React.ComponentType<P> {
+  return function SecureComponent(props: P) {
+    const secureProps = securityOptions?.sanitizeProps
+      ? Object.entries(props).reduce((acc, [key, value]) => {
+          if (typeof value === "string") {
+            acc[key as keyof P] = SecurityUtils.sanitizeInput(
+              value
+            ) as P[keyof P];
+          } else {
+            acc[key as keyof P] = value;
+          }
+          return acc;
+        }, {} as P)
+      : props;
 
-  return React.forwardRef<any, P>((props, ref) => {
-    // Add security props to the wrapped component
-    const securityProps = {
-      ...props,
-      // Add security methods if needed
-      sanitizeInput: sanitizeInputs ? SecurityUtils.sanitizeInput : undefined,
-      containsDangerousContent: detectDangerousContent
-        ? SecurityUtils.containsDangerousContent
-        : undefined,
-      escapeHtml: escapeOutputs ? SecurityUtils.escapeHtml : undefined,
-    };
-
-    return <Component {...securityProps} ref={ref} />;
-  });
-};
+    return <Component {...secureProps} />;
+  };
+}
