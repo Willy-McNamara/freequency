@@ -1,4 +1,4 @@
-# freequency
+# Freequency
 
 <!-- TABLE OF CONTENTS -->
 <details open="open">
@@ -35,11 +35,9 @@ The main goals of this application are to:
 
 In 2023 my idea for this app was more centered around repetitive practice and a looping tool to support it.. to see that v1 concept, check out this [demo of the UI](https://www.loom.com/share/3d44174f8a0d43c6812df4a966c41145) made on 5/11/23. 
 
-In 2024, I shifted focus to the social aspect... an app to record and share when and how you practice, to get and recieve inspiration from fellow musicians. I consider this v2, and it's currently up at https://demo.freequencyapp.com/ for select users (limited by google auth at this stage). 
+In 2024, I shifted focus to the social aspect... an app to record and share when and how you practice, to get and recieve inspiration from fellow musicians. I consider this v2, see an informal demo [here](https://drive.google.com/file/d/1g_GgxWh3f1VbKe9_hU6v53SSEZqBWUqE/view?usp=sharing). 
 
-See an informal demo [here](https://drive.google.com/file/d/1g_GgxWh3f1VbKe9_hU6v53SSEZqBWUqE/view?usp=sharing). 
-
-I am in the process of scoping the features for v3, as detailed in the above linked Google Doc. These features will enhance the social aspect, and provide for more robust tracking of your practice. 
+Now in 2025 I have a limited demo for v3 up! The new features enhance the social aspect, and provide for more robust tracking of your practice. 
 
 
 ### Built With
@@ -70,7 +68,7 @@ Please contact me for instructions on using this repo!
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-v3: Coming Winter '24/'25!
+v3: Public link coming soon!
 
 v2: Available to select users [here](https://demo.freequencyapp.com/). Check out this [informal demo](https://drive.google.com/file/d/1g_GgxWh3f1VbKe9_hU6v53SSEZqBWUqE/view?usp=sharing). 
 
