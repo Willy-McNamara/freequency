@@ -59,7 +59,8 @@ async function bootstrap() {
       req.url.startsWith('/assets') ||
       req.url.startsWith('/logo.svg') ||
       req.url.startsWith('/health') ||
-      req.url.startsWith('/vite.svg')
+      req.url.startsWith('/vite.svg') ||
+      req.url.startsWith('/legal/') // Add this line
     ) {
       return next();
     }
