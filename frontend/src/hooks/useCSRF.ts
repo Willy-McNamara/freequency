@@ -12,6 +12,7 @@ export interface CSRFHookReturn {
   isLoading: boolean;
   error: string | null;
   refreshToken: () => Promise<void>;
+  getHeaders: () => Promise<Record<string, string>>;
 }
 
 export const useCSRF = (): CSRFHookReturn => {
