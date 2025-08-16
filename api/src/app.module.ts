@@ -9,18 +9,21 @@ import { MediaModule } from './media/media.module';
 import { ThumbnailModule } from './thumbnail/thumbnail.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { LoggerMiddleware } from './logger.middleware';
+import { SecurityMiddleware } from './security.middleware';
 import { join } from 'path';
 import { MusiciansService } from './musicians/musicians.service';
 import { SessionsService } from './sessions/sessions.service';
 import { AuthModule } from './auth/auth.module';
-import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { UnauthorizedExceptionFilter } from './filters/unauthorized-exception.filter';
 import { JwtStrategy } from './auth/jwt.strategy';
 import { JwtService, JwtModule } from '@nestjs/jwt';
+import { SecurityInterceptor } from './interceptors/security.interceptor';
 
 import { S3Module } from './s3/s3.module';
 import { AllExceptionsFilter } from './filters/all-exceptions.filter';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { CustomThrottlerGuard } from './guards/throttler.guard';
 import { InstrumentsController } from './instruments/instruments.controller';
 import { TagsController } from './tags/tags.controller';
 import { LoggingModule } from './logging/logging.module';
@@ -48,7 +51,17 @@ import { HealthController } from './health/health.controller';
     ThrottlerModule.forRoot([
       {
         ttl: 60,
-        limit: 60,
+        limit: 100, // General rate limit
+      },
+      {
+        ttl: 60,
+        limit: 10, // Stricter limit for auth endpoints
+        name: 'auth',
+      },
+      {
+        ttl: 60,
+        limit: 30, // Moderate limit for API endpoints
+        name: 'api',
       },
     ]),
     LoggingModule,
@@ -77,12 +90,16 @@ import { HealthController } from './health/health.controller';
     },
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard,
+      useClass: CustomThrottlerGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: SecurityInterceptor,
     },
   ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggerMiddleware).forRoutes('*');
+    consumer.apply(SecurityMiddleware, LoggerMiddleware).forRoutes('*');
   }
 }

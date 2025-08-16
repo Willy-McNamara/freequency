@@ -33,6 +33,7 @@ import { usePageTracking } from "../hooks/useAnalytics";
 import { MediaUploadButton } from "@/components/MediaUploadButton";
 import { MediaGallery } from "@/components/MediaGallery";
 import { MediaService } from "../services/media";
+import { SecureInput } from "@/components/ui/secure-form";
 
 import { HelpCircle } from "lucide-react";
 import { AudioRecorder } from "@/components/AudioRecorder";
@@ -879,7 +880,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                   }
                 }}
               />
-              <input
+              <SecureInput
                 type="text"
                 value={sessionTitle}
                 onChange={handleTitleChange}
@@ -950,7 +951,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                     return instrumentTag ? "Change" : "Select";
                   })()}
                   {/* Hidden input for browser validation */}
-                  <input
+                  <SecureInput
                     type="text"
                     value={(() => {
                       const instrumentLabels = ALL_INSTRUMENTS.map(

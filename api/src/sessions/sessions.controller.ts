@@ -9,6 +9,7 @@ import {
   UseInterceptors,
   UploadedFile,
   Param,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express';
@@ -26,6 +27,7 @@ import {
 } from 'src/musicians/dto/musician.dto';
 import { S3Service } from 'src/s3/s3.service';
 import { MediaService } from 'src/media/media.service';
+import { FileSecurityService } from '../services/file-security.service';
 
 @Controller('sessions')
 export class SessionsController {
@@ -33,6 +35,7 @@ export class SessionsController {
     private readonly sessionsService: SessionsService,
     private readonly s3service: S3Service,
     private readonly mediaService: MediaService,
+    private readonly fileSecurityService: FileSecurityService,
   ) {}
 
   @Get(':id')
@@ -271,13 +274,38 @@ export class SessionsController {
   ): Promise<{ url: string; fileName: string; thumbnailUrl?: string }> {
     const { sessionId } = body;
 
+    // Comprehensive file security validation
+    const fileSecurityInfo = {
+      originalName: file.originalname,
+      mimetype: file.mimetype,
+      size: file.size,
+      buffer: file.buffer,
+      checksum: this.fileSecurityService.generateChecksum(file.buffer),
+    };
+
+    const validationResult =
+      await this.fileSecurityService.validateFile(fileSecurityInfo);
+
+    if (!validationResult.isValid || !validationResult.isSafe) {
+      // Log security event
+      this.fileSecurityService.logSecurityEvent(
+        fileSecurityInfo,
+        validationResult,
+        req.ip || req.connection?.remoteAddress || 'unknown',
+      );
+
+      throw new BadRequestException({
+        message: 'File upload blocked for security reasons',
+        errors: validationResult.errors,
+      });
+    }
+
     // Generate filename
     const timestamp = Date.now();
     const fileExtension = file.originalname.split('.').pop();
     const fileName = `media/${req.user.id}/${timestamp}.${fileExtension}`;
 
     // Upload to S3
-
     const uploadResult = await this.s3service.uploadFile(
       file.buffer,
       fileName,

@@ -3,6 +3,7 @@ import { SessionsController } from './sessions.controller';
 import { SessionsService } from './sessions.service';
 import { S3Service } from '../s3/s3.service';
 import { MediaService } from '../media/media.service';
+import { FileSecurityService } from '../services/file-security.service';
 
 describe('SessionsController', () => {
   let controller: SessionsController;
@@ -43,6 +44,20 @@ describe('SessionsController', () => {
         {
           provide: MediaService,
           useValue: mockMediaService,
+        },
+        {
+          provide: FileSecurityService,
+          useValue: {
+            validateFile: jest.fn().mockResolvedValue({
+              isValid: true,
+              isSafe: true,
+              errors: [],
+              fileType: 'image/jpeg',
+              fileCategory: 'image',
+            }),
+            generateChecksum: jest.fn().mockReturnValue('mock-checksum'),
+            logSecurityEvent: jest.fn(),
+          },
         },
       ],
     }).compile();

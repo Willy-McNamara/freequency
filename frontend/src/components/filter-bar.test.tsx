@@ -214,7 +214,6 @@ describe("FilterBar", () => {
     const buttons = screen.getAllByTestId("button");
     fireEvent.click(buttons[0]); // user filter
 
-    expect(screen.getByTestId("input")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Search...")).toBeInTheDocument();
   });
 
@@ -226,7 +225,7 @@ describe("FilterBar", () => {
     const buttons = screen.getAllByTestId("button");
     fireEvent.click(buttons[0]); // user filter
 
-    const searchInput = screen.getByTestId("input");
+    const searchInput = screen.getByPlaceholderText("Search...");
     fireEvent.change(searchInput, { target: { value: "User 1" } });
 
     expect(searchInput).toHaveValue("User 1");
