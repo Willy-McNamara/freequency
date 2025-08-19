@@ -68,11 +68,6 @@ jobs:
           docker push $ECR_REPOSITORY:latest
 
       - name: Deploy via AWS Systems Manager
-        uses: aws-actions/aws-cli@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
         run: |
           # Send your entire deployment script via SSM
           aws ssm send-command \
@@ -182,3 +177,7 @@ jobs:
               "echo \"✅ Deployment successful! Container is running and healthy.\""
             ]' \
             --timeout-seconds 600
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
