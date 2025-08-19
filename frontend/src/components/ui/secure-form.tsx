@@ -18,12 +18,11 @@ export interface SecureFormRef {
 interface SecureFormProps extends React.FormHTMLAttributes<HTMLFormElement> {
   children: React.ReactNode;
   onSecurityError?: (error: string) => void;
-  showCSRFStatus?: boolean;
 }
 
 // Secure Form Component
 export const SecureForm = forwardRef<SecureFormRef, SecureFormProps>(
-  ({ children, onSecurityError, showCSRFStatus = false, ...props }, ref) => {
+  ({ children, onSecurityError, ...props }, ref) => {
     const { token, isAvailable, isLoading, error: csrfError } = useCSRF();
     const formRef = useRef<HTMLFormElement>(null);
 
@@ -62,21 +61,8 @@ export const SecureForm = forwardRef<SecureFormRef, SecureFormProps>(
           />
         )}
 
-        {/* CSRF Status Indicator (optional) */}
-        {showCSRFStatus && (
-          <div className="text-xs text-muted-foreground mb-2">
-            {isLoading ? (
-              <span>🔄 Initializing security...</span>
-            ) : isAvailable ? (
-              <span>✅ CSRF protection active</span>
-            ) : (
-              <span>⚠️ CSRF protection unavailable</span>
-            )}
-          </div>
-        )}
-
-        {/* CSRF Error Display */}
-        {csrfError && (
+        {/* CSRF Error Display - only shown if explicitly handled */}
+        {csrfError && onSecurityError && (
           <div className="text-xs text-destructive mb-2">
             ⚠️ Security error: {csrfError}
           </div>
@@ -106,14 +92,12 @@ export const SecureInput = forwardRef<
   };
 
   return (
-    <div className="relative">
-      <input
-        ref={ref}
-        {...props}
-        onChange={handleChange}
-        className={props.className || ""}
-      />
-    </div>
+    <input
+      ref={ref}
+      {...props}
+      onChange={handleChange}
+      className={props.className || ""}
+    />
   );
 });
 
@@ -135,14 +119,12 @@ export const SecureTextarea = forwardRef<
   };
 
   return (
-    <div className="relative">
-      <textarea
-        ref={ref}
-        {...props}
-        onChange={handleChange}
-        className={props.className || ""}
-      />
-    </div>
+    <textarea
+      ref={ref}
+      {...props}
+      onChange={handleChange}
+      className={props.className || ""}
+    />
   );
 });
 
