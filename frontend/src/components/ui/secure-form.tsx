@@ -106,14 +106,12 @@ export const SecureInput = forwardRef<
   };
 
   return (
-    <div className="relative">
-      <input
-        ref={ref}
-        {...props}
-        onChange={handleChange}
-        className={props.className || ""}
-      />
-    </div>
+    <input
+      ref={ref}
+      {...props}
+      onChange={handleChange}
+      className={props.className || ""}
+    />
   );
 });
 
@@ -135,14 +133,12 @@ export const SecureTextarea = forwardRef<
   };
 
   return (
-    <div className="relative">
-      <textarea
-        ref={ref}
-        {...props}
-        onChange={handleChange}
-        className={props.className || ""}
-      />
-    </div>
+    <textarea
+      ref={ref}
+      {...props}
+      onChange={handleChange}
+      className={props.className || ""}
+    />
   );
 });
 
