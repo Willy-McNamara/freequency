@@ -189,7 +189,7 @@ export function CreateTaskModal({
         </div>
 
         {/* Form */}
-        <SecureForm onSubmit={handleSubmit} className="pt-4 md:pt-6 space-y-6" showCSRFStatus={true}>
+        <SecureForm onSubmit={handleSubmit} className="pt-4 md:pt-6 space-y-6">
           {/* Title */}
           <div>
             <label
