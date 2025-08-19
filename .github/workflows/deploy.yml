@@ -127,7 +127,7 @@ jobs:
               "  sudo apt-get clean || true",
               "  sudo apt-get autoremove -y || true",
               "  FREE_SPACE=$(df / | awk \"NR==2 {print \\$4}\")",
-              "FREE_SPACE_MB=$((FREE_SPACE / 1024))",
+              "  FREE_SPACE_MB=$((FREE_SPACE / 1024))",
               "  echo \"📊 Available space after emergency cleanup: ${FREE_SPACE_MB}MB\"",
               "  if [ $FREE_SPACE_MB -lt 1024 ]; then",
               "    echo \"❌ Still insufficient space after cleanup. Manual intervention required.\"",
