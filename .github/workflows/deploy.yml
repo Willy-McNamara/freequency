@@ -67,143 +67,118 @@ jobs:
         run: |
           docker push $ECR_REPOSITORY:latest
 
-      - name: Deploy on EC2 via SSH
-        uses: appleboy/ssh-action@v1
+      - name: Deploy via AWS Systems Manager
+        uses: aws-actions/aws-cli@v2
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            set -e  # Exit on any error
-
-            echo "🚀 Starting deployment..."
-
-            # Set environment variables
-            export AWS_REGION=${{ secrets.AWS_REGION }}
-            export ECR_REPOSITORY=${{ secrets.ECR_REPOSITORY }}
-            export DATABASE_URL_V3='${{ secrets.DATABASE_URL_V3 }}'
-            export GOOGLE_CLIENT_ID='${{ secrets.GOOGLE_CLIENT_ID }}'
-            export GOOGLE_CLIENT_SECRET='${{ secrets.GOOGLE_CLIENT_SECRET }}'
-            export JWT_SECRET='${{ secrets.JWT_SECRET }}'
-            export AWS_S3_BUCKET_NAME='${{ secrets.AWS_S3_BUCKET_NAME }}'
-            export AWS_BUCKET_REGION='${{ secrets.AWS_BUCKET_REGION }}'
-            export AWS_S3_DEV_ACCESS_KEY='${{ secrets.AWS_S3_DEV_ACCESS_KEY }}'
-            export AWS_S3_DEV_SECRET_ACCESS_KEY='${{ secrets.AWS_S3_DEV_SECRET_ACCESS_KEY }}'
-            export BACKEND_URL='${{ secrets.BACKEND_URL }}'
-            export DEBUG='${{ secrets.DEBUG }}'
-            export SENTRY_AUTH_TOKEN='${{ secrets.SENTRY_AUTH_TOKEN }}'
-
-            echo "🔐 Authenticating with ECR..."
-            aws ecr get-login-password --region $AWS_REGION | sudo docker login --username AWS --password-stdin $ECR_REPOSITORY
-
-            echo "📤 Pre-deployment: Uploading current logs to S3..."
-            if sudo docker ps | grep -q freequency-app; then
-              echo "  Container is running, uploading logs before stopping..."
-              sudo docker exec freequency-app /bin/sh -lc '/bin/sh /app/api/scripts/upload-logs-to-s3.sh' || {
-                echo "  Warning: Log upload failed, but continuing with deployment..."
-              }
-            else
-              echo "  No running container found, skipping log upload..."
-            fi
-
-            echo "🛑 Stopping and removing existing container..."
-            sudo docker stop freequency-app || true
-            sudo docker rm freequency-app || true
-
-            echo "🧹 Aggressive cleanup of old images and containers..."
-            # Remove all stopped containers
-            sudo docker container prune -f || true
-
-            # Remove all unused images (including the old one)
-            sudo docker image prune -a -f || true
-
-            # Remove any dangling images
-            sudo docker image prune -f || true
-
-            # Clean up build cache
-            sudo docker builder prune -f || true
-
-            echo "📊 Checking available disk space..."
-            df -h /
-
-            echo "📊 Checking Docker disk usage..."
-            sudo docker system df
-
-            echo "🔍 Verifying sufficient disk space for new image..."
-            # Check if we have at least 2GB free space
-            FREE_SPACE=$(df / | awk 'NR==2 {print $4}')
-            FREE_SPACE_MB=$((FREE_SPACE / 1024))
-
-            if [ $FREE_SPACE_MB -lt 2048 ]; then
-              echo "❌ Insufficient disk space! Only ${FREE_SPACE_MB}MB available, need at least 2GB"
-              echo "🧹 Attempting emergency cleanup..."
-              sudo docker system prune -a -f --volumes || true
-              sudo apt-get clean || true
-              sudo apt-get autoremove -y || true
-
-              # Check space again
-              FREE_SPACE=$(df / | awk 'NR==2 {print $4}')
-              FREE_SPACE_MB=$((FREE_SPACE / 1024))
-              echo "📊 Available space after emergency cleanup: ${FREE_SPACE_MB}MB"
-
-              if [ $FREE_SPACE_MB -lt 1024 ]; then
-                echo "❌ Still insufficient space after cleanup. Manual intervention required."
-                exit 1
-              fi
-            else
-              echo "✅ Sufficient disk space available: ${FREE_SPACE_MB}MB"
-            fi
-
-            echo "📥 Pulling latest image..."
-            sudo docker pull $ECR_REPOSITORY:latest
-
-            echo "🚀 Starting new container..."
-            sudo docker run --name freequency-app \
-              -e DATABASE_URL_V3="$DATABASE_URL_V3" \
-              -e GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID" \
-              -e GOOGLE_CLIENT_SECRET="$GOOGLE_CLIENT_SECRET" \
-              -e JWT_SECRET="$JWT_SECRET" \
-              -e AWS_S3_BUCKET_NAME="$AWS_S3_BUCKET_NAME" \
-              -e AWS_BUCKET_REGION="$AWS_BUCKET_REGION" \
-              -e AWS_S3_DEV_ACCESS_KEY="$AWS_S3_DEV_ACCESS_KEY" \
-              -e AWS_S3_DEV_SECRET_ACCESS_KEY="$AWS_S3_DEV_SECRET_ACCESS_KEY" \
-              -e BACKEND_URL="$BACKEND_URL" \
-              -e DEBUG="$DEBUG" \
-              -e SENTRY_AUTH_TOKEN="$SENTRY_AUTH_TOKEN" \
-              -p 3000:3000 -d $ECR_REPOSITORY:latest
-
-                        echo "⏳ Waiting for container to start..."
-            sleep 10
-
-            echo "🔍 Verifying container is running..."
-            if ! sudo docker ps | grep -q freequency-app; then
-              echo "❌ Container failed to start!"
-              sudo docker logs freequency-app
-              exit 1
-            fi
-
-            echo "🏥 Checking container health (with retries)..."
-            max_attempts=6
-            attempt=1
-
-            while [ $attempt -le $max_attempts ]; do
-              echo "  Attempt $attempt/$max_attempts..."
-
-              if curl -f https://demo.freequencyapp.com/health > /dev/null 2>&1; then
-                echo "✅ Health check passed!"
-                break
-              fi
-
-              if [ $attempt -eq $max_attempts ]; then
-                echo "❌ Health check failed after $max_attempts attempts!"
-                echo "📋 Container logs:"
-                sudo docker logs freequency-app
-                exit 1
-              fi
-
-              echo "  Health check failed, waiting 10 seconds before retry..."
-              sleep 10
-              attempt=$((attempt + 1))
-            done
-
-            echo "✅ Deployment successful! Container is running and healthy."
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+        run: |
+          # Send your entire deployment script via SSM
+          aws ssm send-command \
+            --instance-ids ${{ secrets.EC2_INSTANCE_ID }} \
+            --document-name "AWS-RunShellScript" \
+            --parameters 'commands=[
+              "set -e",
+              "echo \"🚀 Starting deployment...\"",
+              "export AWS_REGION=${{ secrets.AWS_REGION }}",
+              "export ECR_REPOSITORY=${{ secrets.ECR_REPOSITORY }}",
+              "export DATABASE_URL_V3=\"${{ secrets.DATABASE_URL_V3 }}\"",
+              "export GOOGLE_CLIENT_ID=\"${{ secrets.GOOGLE_CLIENT_ID }}\"",
+              "export GOOGLE_CLIENT_SECRET=\"${{ secrets.GOOGLE_CLIENT_SECRET }}\"",
+              "export JWT_SECRET=\"${{ secrets.JWT_SECRET }}\"",
+              "export AWS_S3_BUCKET_NAME=\"${{ secrets.AWS_S3_BUCKET_NAME }}\"",
+              "export AWS_BUCKET_REGION=\"${{ secrets.AWS_BUCKET_REGION }}\"",
+              "export AWS_S3_DEV_ACCESS_KEY=\"${{ secrets.AWS_S3_DEV_ACCESS_KEY }}\"",
+              "export AWS_S3_DEV_SECRET_ACCESS_KEY=\"${{ secrets.AWS_S3_DEV_SECRET_ACCESS_KEY }}\"",
+              "export BACKEND_URL=\"${{ secrets.BACKEND_URL }}\"",
+              "export DEBUG=\"${{ secrets.DEBUG }}\"",
+              "export SENTRY_AUTH_TOKEN=\"${{ secrets.SENTRY_AUTH_TOKEN }}\"",
+              "echo \"🔐 Authenticating with ECR...\"",
+              "aws ecr get-login-password --region $AWS_REGION | sudo docker login --username AWS --password-stdin $ECR_REPOSITORY",
+              "echo \"📤 Pre-deployment: Uploading current logs to S3...\"",
+              "if sudo docker ps | grep -q freequency-app; then",
+              "  echo \"  Container is running, uploading logs before stopping...\"",
+              "  sudo docker exec freequency-app /bin/sh -lc \"/bin/sh /app/api/scripts/upload-logs-to-s3.sh\" || {",
+              "    echo \"  Warning: Log upload failed, but continuing with deployment...\"",
+              "  }",
+              "else",
+              "  echo \"  No running container found, skipping log upload...\"",
+              "fi",
+              "echo \"🛑 Stopping and removing existing container...\"",
+              "sudo docker stop freequency-app || true",
+              "sudo docker rm freequency-app || true",
+              "echo \"🧹 Aggressive cleanup of old images and containers...\"",
+              "sudo docker container prune -f || true",
+              "sudo docker image prune -a -f || true",
+              "sudo docker image prune -f || true",
+              "sudo docker builder prune -f || true",
+              "echo \"📊 Checking available disk space...\"",
+              "df -h /",
+              "echo \"📊 Checking Docker disk usage...\"",
+              "sudo docker system df",
+              "echo \"🔍 Verifying sufficient disk space for new image...\"",
+              "FREE_SPACE=$(df / | awk \"NR==2 {print \\$4}\")",
+              "FREE_SPACE_MB=$((FREE_SPACE / 1024))",
+              "if [ $FREE_SPACE_MB -lt 2048 ]; then",
+              "  echo \"❌ Insufficient disk space! Only ${FREE_SPACE_MB}MB available, need at least 2GB\"",
+              "  echo \"🧹 Attempting emergency cleanup...\"",
+              "  sudo docker system prune -a -f --volumes || true",
+              "  sudo apt-get clean || true",
+              "  sudo apt-get autoremove -y || true",
+              "  FREE_SPACE=$(df / | awk \"NR==2 {print \\$4}\")",
+              "FREE_SPACE_MB=$((FREE_SPACE / 1024))",
+              "  echo \"📊 Available space after emergency cleanup: ${FREE_SPACE_MB}MB\"",
+              "  if [ $FREE_SPACE_MB -lt 1024 ]; then",
+              "    echo \"❌ Still insufficient space after cleanup. Manual intervention required.\"",
+              "    exit 1",
+              "  fi",
+              "else",
+              "  echo \"✅ Sufficient disk space available: ${FREE_SPACE_MB}MB\"",
+              "fi",
+              "echo \"📥 Pulling latest image...\"",
+              "sudo docker pull $ECR_REPOSITORY:latest",
+              "echo \"🚀 Starting new container...\"",
+              "sudo docker run --name freequency-app \\",
+              "  -e DATABASE_URL_V3=\"$DATABASE_URL_V3\" \\",
+              "  -e GOOGLE_CLIENT_ID=\"$GOOGLE_CLIENT_ID\" \\",
+              "  -e GOOGLE_CLIENT_SECRET=\"$GOOGLE_CLIENT_SECRET\" \\",
+              "  -e JWT_SECRET=\"$JWT_SECRET\" \\",
+              "  -e AWS_S3_BUCKET_NAME=\"$AWS_S3_BUCKET_NAME\" \\",
+              "  -e AWS_BUCKET_REGION=\"$AWS_BUCKET_REGION\" \\",
+              "  -e AWS_S3_DEV_ACCESS_KEY=\"$AWS_S3_DEV_ACCESS_KEY\" \\",
+              "  -e AWS_S3_DEV_SECRET_ACCESS_KEY=\"$AWS_S3_DEV_SECRET_ACCESS_KEY\" \\",
+              "  -e BACKEND_URL=\"$BACKEND_URL\" \\",
+              "  -e DEBUG=\"$DEBUG\" \\",
+              "  -e SENTRY_AUTH_TOKEN=\"$SENTRY_AUTH_TOKEN\" \\",
+              "  -p 3000:3000 -d $ECR_REPOSITORY:latest",
+              "echo \"⏳ Waiting for container to start...\"",
+              "sleep 10",
+              "echo \"🔍 Verifying container is running...\"",
+              "if ! sudo docker ps | grep -q freequency-app; then",
+              "  echo \"❌ Container failed to start!\"",
+              "  sudo docker logs freequency-app",
+              "  exit 1",
+              "fi",
+              "echo \"🏥 Checking container health (with retries)...\"",
+              "max_attempts=6",
+              "attempt=1",
+              "while [ $attempt -le $max_attempts ]; do",
+              "  echo \"  Attempt $attempt/$max_attempts...\"",
+              "  if curl -f https://demo.freequencyapp.com/health > /dev/null 2>&1; then",
+              "    echo \"✅ Health check passed!\"",
+              "    break",
+              "  fi",
+              "  if [ $attempt -eq $max_attempts ]; then",
+              "    echo \"❌ Health check failed after $max_attempts attempts!\"",
+              "    echo \"📋 Container logs:\"",
+              "    sudo docker logs freequency-app",
+              "    exit 1",
+              "  fi",
+              "  echo \"  Health check failed, waiting 10 seconds before retry...\"",
+              "  sleep 10",
+              "  attempt=$((attempt + 1))",
+              "done",
+              "echo \"✅ Deployment successful! Container is running and healthy.\""
+            ]' \
+            --timeout-seconds 600
