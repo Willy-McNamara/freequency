@@ -1,4 +1,5 @@
 import { MiddlewareConsumer, Module, NestModule, Logger } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
@@ -19,6 +20,7 @@ import { UnauthorizedExceptionFilter } from './filters/unauthorized-exception.fi
 import { JwtStrategy } from './auth/jwt.strategy';
 import { JwtService, JwtModule } from '@nestjs/jwt';
 import { SecurityInterceptor } from './interceptors/security.interceptor';
+import { SharedModule } from './shared/shared.module';
 
 import { S3Module } from './s3/s3.module';
 import { AllExceptionsFilter } from './filters/all-exceptions.filter';
@@ -29,9 +31,14 @@ import { TagsController } from './tags/tags.controller';
 import { LoggingModule } from './logging/logging.module';
 import { TerminusModule } from '@nestjs/terminus';
 import { HealthController } from './health/health.controller';
+import { JwtAuthGuard } from './auth/jwt.guard';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    SharedModule, // Import the shared module
     PrismaModule,
     SessionsModule,
     MusiciansModule,
@@ -91,6 +98,10 @@ import { HealthController } from './health/health.controller';
     {
       provide: APP_GUARD,
       useClass: CustomThrottlerGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
     },
     {
       provide: APP_INTERCEPTOR,

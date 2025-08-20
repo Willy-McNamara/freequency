@@ -1,9 +1,17 @@
-import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Req,
+  Res,
+  UseGuards,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { GoogleAuthGuard } from './google.guard';
 import { JwtAuthGuard } from './jwt.guard';
 import { MusiciansService } from '../musicians/musicians.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthService } from './auth.service';
+import { CSRFService } from '../services/csrf.service';
 
 @Controller('auth')
 export class AuthController {
@@ -11,7 +19,31 @@ export class AuthController {
     private readonly musiciansService: MusiciansService,
     private readonly prisma: PrismaService,
     private readonly authService: AuthService,
+    private readonly csrfService: CSRFService,
   ) {}
+
+  @Get('csrf-token')
+  @UseGuards(JwtAuthGuard)
+  async getCSRFToken(@Req() req: any) {
+    try {
+      const userId = req.user.id;
+
+      if (!userId) {
+        throw new UnauthorizedException('User not authenticated');
+      }
+
+      // Generate a new CSRF token for the user
+      const token = await this.csrfService.generateToken(userId);
+
+      return {
+        token,
+        expiresIn: this.csrfService.getTokenTTL(),
+        tokenLength: this.csrfService.getTokenLength(),
+      };
+    } catch (error) {
+      throw new UnauthorizedException('Failed to generate CSRF token');
+    }
+  }
 
   @Get('login')
   async googleLogin(@Req() req: any, @Res() res: any) {

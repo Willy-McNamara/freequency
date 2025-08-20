@@ -21,6 +21,7 @@ import {
   NewGasUpDto,
 } from './dto/session.dto';
 import { JwtAuthGuard } from '../auth/jwt.guard';
+import { CSRFGuard } from '../guards/csrf.guard';
 import {
   CreatedCommentDto,
   CreatedGasUpDto,
@@ -89,7 +90,7 @@ export class SessionsController {
   // }
 
   @Post('newSessionWithoutAudio')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, CSRFGuard)
   async createSessionWithoutAudio(
     @Body() body: any,
     @Req() req: any,
@@ -161,7 +162,7 @@ export class SessionsController {
   // }
 
   @Post('addComment')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, CSRFGuard)
   async addComment(
     @Body() body: any,
     @Req() req: any,
@@ -175,7 +176,7 @@ export class SessionsController {
   }
 
   @Post('addGasUp')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, CSRFGuard)
   async addGasUp(@Body() body: any, @Req() req: any): Promise<CreatedGasUpDto> {
     const newGasUp: NewGasUpDto = {
       gasserId: req.user.id, // the one doing the gassing up
@@ -186,7 +187,7 @@ export class SessionsController {
   }
 
   @Post('signed-url')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, CSRFGuard)
   async getSignedUrl(
     @Body() body: any,
     @Req() req: any,
@@ -212,7 +213,7 @@ export class SessionsController {
   }
 
   @Post('connect-media')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, CSRFGuard)
   async connectMedia(@Body() body: any, @Req() req: any): Promise<any> {
     const { fileName, sessionId, displayName, thumbnailUrl } = body;
 
@@ -265,7 +266,7 @@ export class SessionsController {
   }
 
   @Post('upload-media')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, CSRFGuard)
   @UseInterceptors(FileInterceptor('file'))
   async uploadMedia(
     @UploadedFile() file: Express.Multer.File,

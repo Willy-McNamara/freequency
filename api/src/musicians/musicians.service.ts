@@ -248,8 +248,8 @@ export class MusiciansService {
           // Update instruments by disconnecting all and connecting new ones
           instruments: {
             set: [], // Clear existing instruments
-            connect: profileUpdateDto.instruments.map((instrument) => ({
-              label: instrument.label,
+            connect: profileUpdateDto.instruments.map((instrumentLabel) => ({
+              label: instrumentLabel,
             })),
           },
         },

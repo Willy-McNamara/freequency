@@ -27,19 +27,24 @@ class CSRFService {
    * Get CSRF token, refreshing if necessary
    */
   async getToken(): Promise<string> {
-    if (this.token) {
-      return this.token;
-    }
+    // Always refresh to ensure we have the latest token
+    console.log("CSRF: Always refreshing token to avoid stale tokens...");
 
     // If already refreshing, wait for that promise
     if (this.refreshPromise) {
+      console.log("CSRF: Waiting for existing refresh promise...");
       return this.refreshPromise;
     }
 
     // Start refresh
+    console.log("CSRF: Starting token refresh...");
     this.refreshPromise = this.refreshToken();
     try {
       this.token = await this.refreshPromise;
+      console.log(
+        "CSRF: Token refresh completed:",
+        this.token.substring(0, 8) + "..."
+      );
       return this.token;
     } finally {
       this.refreshPromise = null;
@@ -47,10 +52,34 @@ class CSRFService {
   }
 
   /**
-   * Refresh CSRF token from server
+   * Get CSRF token with automatic refresh on failure
    */
-  private async refreshToken(): Promise<string> {
+  async getTokenWithRefresh(): Promise<string> {
     try {
+      console.log("CSRF: Attempting to get token...");
+      return await this.getToken();
+    } catch {
+      // If getting token fails, try to refresh and get a new one
+      console.log("CSRF: Token retrieval failed, refreshing...");
+      this.clearToken();
+      const newToken = await this.refreshToken();
+      console.log(
+        "CSRF: Token refresh successful:",
+        newToken.substring(0, 8) + "..."
+      );
+      return newToken;
+    }
+  }
+
+  /**
+   * Refresh CSRF token from backend
+   */
+  async refreshToken(): Promise<string> {
+    try {
+      // Clear any existing token to prevent conflicts
+      this.clearToken();
+
+      console.log("CSRF: Refreshing token from backend...");
       const response = await apiClient.get<{ token: string }>(
         CSRF_CONFIG.refreshEndpoint
       );
@@ -109,10 +138,13 @@ class CSRFService {
    * Get headers with CSRF token
    */
   async getHeaders(): Promise<Record<string, string>> {
-    const token = await this.getToken();
-    return {
+    console.log("CSRF: Getting headers...");
+    const token = await this.getTokenWithRefresh();
+    const headers = {
       [CSRF_CONFIG.tokenHeader]: token,
     };
+    console.log("CSRF: Generated headers:", headers);
+    return headers;
   }
 
   /**
@@ -120,14 +152,8 @@ class CSRFService {
    */
   async initialize(): Promise<void> {
     try {
-      // Try to get stored token first
-      const stored = this.getStoredToken();
-      if (stored && this.validateTokenFormat(stored)) {
-        this.token = stored;
-        return;
-      }
-
-      // If no valid stored token, refresh
+      // Always refresh token to ensure we have the latest one
+      console.log("CSRF: Initializing - always refreshing token...");
       await this.refreshToken();
     } catch (error) {
       console.warn("CSRF initialization failed:", error);
