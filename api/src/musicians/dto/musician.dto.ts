@@ -1,10 +1,4 @@
-import {
-  IsString,
-  IsArray,
-  IsNumber,
-  IsEnum,
-  IsDateString,
-} from 'class-validator';
+import { IsString, IsArray, IsNumber, IsEnum } from 'class-validator';
 
 export class TagDTO {
   id: number;

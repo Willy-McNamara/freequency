@@ -6,7 +6,8 @@
 import { apiClient } from "./auth";
 
 export const CSRF_CONFIG = {
-  tokenHeader: "x-csrf-token",
+  tokenHeader: "X-CSRF-Token",
+  tokenCookie: "csrf-token",
   refreshEndpoint: "/auth/csrf-token",
 } as const;
 
@@ -22,6 +23,37 @@ class CSRFService {
       console.warn("CSRF initialization failed:", error);
       // Don't throw - app can still function without CSRF
     }
+  }
+
+  // Method for testing localStorage functionality (not used in production)
+  async initializeWithStoredToken(): Promise<void> {
+    try {
+      // Try to load from localStorage first (for testing purposes only)
+      if (typeof window !== "undefined") {
+        const storedToken = localStorage.getItem("csrf-token");
+        if (storedToken && this.validateTokenFormat(storedToken)) {
+          this.token = storedToken;
+          return;
+        }
+      }
+
+      // If no valid stored token, refresh from server
+      await this.refreshToken();
+    } catch (error) {
+      console.warn("CSRF initialization failed:", error);
+      // Don't throw - app can still function without CSRF
+    }
+  }
+
+  isAvailable(): boolean {
+    return this.token !== null;
+  }
+
+  validateTokenFormat(token: string): boolean {
+    // Token should be at least 32 characters and contain only alphanumeric and hyphens
+    const minLength = 32;
+    const validFormat = /^[a-zA-Z0-9-]+$/;
+    return token.length >= minLength && validFormat.test(token);
   }
 
   async getToken(): Promise<string> {

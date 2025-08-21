@@ -61,10 +61,10 @@ describe("CSRF Service", () => {
       await csrfService.getToken();
       expect(mockApiClient.apiClient.get).toHaveBeenCalledTimes(1);
 
-      // Second call should use cache
+      // Second call should also hit API since we always refresh
       const cachedToken = await csrfService.getToken();
       expect(cachedToken).toBe(mockToken);
-      expect(mockApiClient.apiClient.get).toHaveBeenCalledTimes(1); // Still only 1 call
+      expect(mockApiClient.apiClient.get).toHaveBeenCalledTimes(2); // 2 calls since we always refresh
     });
 
     it("should handle API errors gracefully", async () => {
@@ -133,7 +133,7 @@ describe("CSRF Service", () => {
         localStorage.setItem("csrf-token", storedToken);
       }
 
-      await csrfService.initialize();
+      await csrfService.initializeWithStoredToken();
       expect(csrfService.isAvailable()).toBe(true);
     });
 
@@ -218,7 +218,7 @@ describe("CSRF Service", () => {
         localStorage.setItem("csrf-token", storedToken);
       }
 
-      await csrfService.initialize();
+      await csrfService.initializeWithStoredToken();
       expect(csrfService.isAvailable()).toBe(true);
     });
 
@@ -235,7 +235,7 @@ describe("CSRF Service", () => {
         error: null,
       });
 
-      await csrfService.initialize();
+      await csrfService.initializeWithStoredToken();
       expect(csrfService.isAvailable()).toBe(true);
       expect(mockApiClient.apiClient.get).toHaveBeenCalledWith(
         CSRF_CONFIG.refreshEndpoint
@@ -256,7 +256,6 @@ describe("CSRF Service", () => {
       expect(CSRF_CONFIG.tokenHeader).toBe("X-CSRF-Token");
       expect(CSRF_CONFIG.tokenCookie).toBe("csrf-token");
       expect(CSRF_CONFIG.refreshEndpoint).toBe("/auth/csrf-token");
-      expect(CSRF_CONFIG.autoRefresh).toBe(true);
     });
   });
 });

@@ -8,7 +8,6 @@ import { JwtAuthGuard } from '../auth/jwt.guard';
 describe('MusiciansController', () => {
   let controller: MusiciansController;
   let musiciansService: jest.Mocked<MusiciansService>;
-  let prismaService: jest.Mocked<PrismaService>;
 
   const mockMusiciansService = {
     getAllDisplayNames: jest.fn(),
@@ -46,7 +45,7 @@ describe('MusiciansController', () => {
 
     controller = module.get<MusiciansController>(MusiciansController);
     musiciansService = module.get(MusiciansService);
-    prismaService = module.get(PrismaService);
+    // prismaService = module.get(PrismaService); // This line is removed
 
     jest.clearAllMocks();
   });
