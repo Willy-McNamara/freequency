@@ -8,9 +8,18 @@ export class RedisService implements OnModuleDestroy {
   private client: RedisClientType;
 
   constructor(private configService: ConfigService) {
+    const redisConfig = {
+      host: this.configService.get('REDIS_HOST') || 'localhost',
+      port: parseInt(this.configService.get('REDIS_PORT')) || 6379,
+      password: this.configService.get('REDIS_PASSWORD'),
+      retryDelayOnFailover: 100,
+      maxRetriesPerRequest: 3,
+    };
+
     this.client = createClient({
-      url: this.configService.get('REDIS_URL') || 'redis://localhost:6379',
       socket: {
+        host: redisConfig.host,
+        port: redisConfig.port,
         reconnectStrategy: (retries) => {
           if (retries > 10) {
             this.logger.error('Redis reconnection failed after 10 attempts');
@@ -19,6 +28,7 @@ export class RedisService implements OnModuleDestroy {
           return Math.min(retries * 100, 3000);
         },
       },
+      password: redisConfig.password,
     });
 
     this.client.on('error', (err) => {
@@ -41,10 +51,11 @@ export class RedisService implements OnModuleDestroy {
   async onModuleInit() {
     try {
       console.log('🔄 [DEBUG] Attempting to connect to Redis...');
-      console.log(
-        '🔄 [DEBUG] Redis URL:',
-        this.configService.get('REDIS_URL') || 'redis://localhost:6379',
-      );
+      console.log('🔄 [DEBUG] Redis config:', {
+        host: this.configService.get('REDIS_HOST') || 'localhost',
+        port: this.configService.get('REDIS_PORT') || 6379,
+        hasPassword: !!this.configService.get('REDIS_PASSWORD'),
+      });
 
       await this.client.connect();
       console.log('✅ [DEBUG] Redis connection established successfully');

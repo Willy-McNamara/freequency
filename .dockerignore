@@ -68,3 +68,7 @@ logs/
 # Ignore temporary files
 tmp/
 temp/
+
+# Redis data files (added for Redis caching)
+*.rdb
+*.aof
