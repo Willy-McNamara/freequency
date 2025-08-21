@@ -3,12 +3,14 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { MusiciansService } from '../musicians/musicians.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { CSRFService } from '../services/csrf.service';
 
 describe('AuthController', () => {
   let controller: AuthController;
   let authService: jest.Mocked<AuthService>;
   let musiciansService: jest.Mocked<MusiciansService>;
   let prismaService: jest.Mocked<PrismaService>;
+  let csrfService: jest.Mocked<CSRFService>;
 
   const mockAuthService = {
     validateUser: jest.fn(),
@@ -29,6 +31,12 @@ describe('AuthController', () => {
     },
   };
 
+  const mockCSRFService = {
+    generateToken: jest.fn(),
+    getTokenTTL: jest.fn(),
+    getTokenLength: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
@@ -36,6 +44,7 @@ describe('AuthController', () => {
         { provide: AuthService, useValue: mockAuthService },
         { provide: MusiciansService, useValue: mockMusiciansService },
         { provide: PrismaService, useValue: mockPrismaService },
+        { provide: CSRFService, useValue: mockCSRFService },
       ],
     }).compile();
 
@@ -43,6 +52,7 @@ describe('AuthController', () => {
     authService = module.get(AuthService);
     musiciansService = module.get(MusiciansService);
     prismaService = module.get(PrismaService);
+    csrfService = module.get(CSRFService);
 
     jest.clearAllMocks();
   });
@@ -210,6 +220,48 @@ describe('AuthController', () => {
 
       // Restore environment
       process.env = originalEnv;
+    });
+  });
+
+  describe('getCSRFToken', () => {
+    it('should generate and return CSRF token', async () => {
+      const mockReq = { user: { id: 1 } };
+      const mockToken = 'test-csrf-token-123';
+      const mockTTL = 5400;
+      const mockLength = 64;
+
+      (csrfService.generateToken as jest.Mock).mockResolvedValue(mockToken);
+      (csrfService.getTokenTTL as jest.Mock).mockReturnValue(mockTTL);
+      (csrfService.getTokenLength as jest.Mock).mockReturnValue(mockLength);
+
+      const result = await controller.getCSRFToken(mockReq as any);
+
+      expect(result).toEqual({
+        token: mockToken,
+        expiresIn: mockTTL,
+        tokenLength: mockLength,
+      });
+      expect(csrfService.generateToken).toHaveBeenCalledWith(1);
+    });
+
+    it('should throw error when user not authenticated', async () => {
+      const mockReq = { user: {} };
+
+      await expect(controller.getCSRFToken(mockReq as any)).rejects.toThrow(
+        'Failed to generate CSRF token',
+      );
+    });
+
+    it('should throw error when CSRF token generation fails', async () => {
+      const mockReq = { user: { id: 1 } };
+
+      (csrfService.generateToken as jest.Mock).mockRejectedValue(
+        new Error('CSRF generation failed'),
+      );
+
+      await expect(controller.getCSRFToken(mockReq as any)).rejects.toThrow(
+        'Failed to generate CSRF token',
+      );
     });
   });
 });

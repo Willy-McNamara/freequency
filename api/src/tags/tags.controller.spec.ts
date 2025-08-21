@@ -2,6 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TagsController } from './tags.controller';
 import { PrismaService } from '../prisma/prisma.service';
 import { BadRequestException } from '@nestjs/common';
+import { CSRFGuard } from '../guards/csrf.guard';
+import { JwtAuthGuard } from '../auth/jwt.guard';
 
 describe('TagsController', () => {
   let controller: TagsController;
@@ -19,7 +21,12 @@ describe('TagsController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [TagsController],
       providers: [{ provide: PrismaService, useValue: mockPrismaService }],
-    }).compile();
+    })
+      .overrideGuard(CSRFGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .compile();
 
     controller = module.get<TagsController>(TagsController);
     prismaService = module.get(PrismaService);

@@ -12,18 +12,22 @@ describe('CSRFGuard', () => {
     path: string,
     user?: any,
     headers?: any,
-  ) => ({
-    switchToHttp: () => ({
-      getRequest: () => ({
-        method,
-        path,
-        user,
-        headers: headers || {},
-        body: {},
-        query: {},
+  ) => {
+    const request = {
+      method,
+      path,
+      user,
+      headers: headers || {},
+      body: {},
+      query: {},
+    };
+
+    return {
+      switchToHttp: () => ({
+        getRequest: () => request,
       }),
-    }),
-  });
+    };
+  };
 
   beforeEach(async () => {
     const mockCSRFService = {
@@ -70,62 +74,6 @@ describe('CSRFGuard', () => {
 
   describe('State-changing HTTP methods', () => {
     it('should require CSRF validation for POST requests', async () => {
-      const context = mockExecutionContext('POST', '/tasks', { id: 1 });
-      csrfService.validateToken.mockResolvedValue(true);
-
-      const result = await guard.canActivate(context as ExecutionContext);
-      expect(result).toBe(true);
-      expect(csrfService.validateToken).toHaveBeenCalledWith(
-        1,
-        expect.any(String),
-      );
-    });
-
-    it('should require CSRF validation for PUT requests', async () => {
-      const context = mockExecutionContext('PUT', '/tasks/1', { id: 1 });
-      csrfService.validateToken.mockResolvedValue(true);
-
-      const result = await guard.canActivate(context as ExecutionContext);
-      expect(result).toBe(true);
-    });
-
-    it('should require CSRF validation for PATCH requests', async () => {
-      const context = mockExecutionContext('PATCH', '/tasks/1', { id: 1 });
-      csrfService.validateToken.mockResolvedValue(true);
-
-      const result = await guard.canActivate(context as ExecutionContext);
-      expect(result).toBe(true);
-    });
-
-    it('should require CSRF validation for DELETE requests', async () => {
-      const context = mockExecutionContext('DELETE', '/tasks/1', { id: 1 });
-      csrfService.validateToken.mockResolvedValue(true);
-
-      const result = await guard.canActivate(context as ExecutionContext);
-      expect(result).toBe(true);
-    });
-  });
-
-  describe('User authentication', () => {
-    it('should skip CSRF validation when no user is authenticated', async () => {
-      const context = mockExecutionContext('POST', '/tasks');
-      const result = await guard.canActivate(context as ExecutionContext);
-      expect(result).toBe(true);
-      expect(csrfService.validateToken).not.toHaveBeenCalled();
-    });
-
-    it('should proceed with CSRF validation when user is authenticated', async () => {
-      const context = mockExecutionContext('POST', '/tasks', { id: 1 });
-      csrfService.validateToken.mockResolvedValue(true);
-
-      const result = await guard.canActivate(context as ExecutionContext);
-      expect(result).toBe(true);
-      expect(csrfService.validateToken).toHaveBeenCalled();
-    });
-  });
-
-  describe('CSRF token extraction', () => {
-    it('should extract token from X-CSRF-Token header', async () => {
       const context = mockExecutionContext(
         'POST',
         '/tasks',
@@ -141,6 +89,112 @@ describe('CSRFGuard', () => {
       expect(csrfService.validateToken).toHaveBeenCalledWith(
         1,
         'valid-token-123',
+      );
+    });
+
+    it('should require CSRF validation for PUT requests', async () => {
+      const context = mockExecutionContext(
+        'PUT',
+        '/tasks/1',
+        { id: 1 },
+        {
+          'x-csrf-token': 'valid-token-456',
+        },
+      );
+      csrfService.validateToken.mockResolvedValue(true);
+
+      const result = await guard.canActivate(context as ExecutionContext);
+      expect(result).toBe(true);
+      expect(csrfService.validateToken).toHaveBeenCalledWith(
+        1,
+        'valid-token-456',
+      );
+    });
+
+    it('should require CSRF validation for PATCH requests', async () => {
+      const context = mockExecutionContext(
+        'PATCH',
+        '/tasks/1',
+        { id: 1 },
+        {
+          'x-csrf-token': 'valid-token-789',
+        },
+      );
+      csrfService.validateToken.mockResolvedValue(true);
+
+      const result = await guard.canActivate(context as ExecutionContext);
+      expect(result).toBe(true);
+      expect(csrfService.validateToken).toHaveBeenCalledWith(
+        1,
+        'valid-token-789',
+      );
+    });
+
+    it('should require CSRF validation for DELETE requests', async () => {
+      const context = mockExecutionContext(
+        'DELETE',
+        '/tasks/1',
+        { id: 1 },
+        {
+          'x-csrf-token': 'valid-token-abc',
+        },
+      );
+      csrfService.validateToken.mockResolvedValue(true);
+
+      const result = await guard.canActivate(context as ExecutionContext);
+      expect(result).toBe(true);
+      expect(csrfService.validateToken).toHaveBeenCalledWith(
+        1,
+        'valid-token-abc',
+      );
+    });
+  });
+
+  describe('User authentication', () => {
+    it('should skip CSRF validation when no user is authenticated', async () => {
+      const context = mockExecutionContext('POST', '/tasks');
+      const result = await guard.canActivate(context as ExecutionContext);
+      expect(result).toBe(true);
+      expect(csrfService.validateToken).not.toHaveBeenCalled();
+    });
+
+    it('should proceed with CSRF validation when user is authenticated', async () => {
+      const context = mockExecutionContext(
+        'POST',
+        '/tasks',
+        { id: 1 },
+        {
+          'x-csrf-token': 'valid-token-123',
+        },
+      );
+      csrfService.validateToken.mockResolvedValue(true);
+
+      const result = await guard.canActivate(context as ExecutionContext);
+      expect(result).toBe(true);
+      expect(csrfService.validateToken).toHaveBeenCalledWith(
+        1,
+        'valid-token-123',
+      );
+    });
+  });
+
+  describe('CSRF token extraction', () => {
+    it('should extract token from X-CSRF-Token header', async () => {
+      const context = mockExecutionContext(
+        'POST',
+        '/tasks',
+        { id: 1 },
+        {
+          'x-csrf-token': 'header-token-123',
+        },
+      );
+      csrfService.validateToken.mockResolvedValue(true);
+
+      const result = await guard.canActivate(context as ExecutionContext);
+      expect(result).toBe(true);
+      expect(csrfService.validateToken).toHaveBeenCalledWith(
+        1,
+        'header-token-123',
       );
     });
 
