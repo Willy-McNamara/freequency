@@ -46,9 +46,14 @@ export const useCSRF = (): CSRFHookReturn => {
     const initialize = async () => {
       try {
         await csrfService.initialize();
-        const currentToken = csrfService.getStoredToken();
-        setToken(currentToken);
-        setIsAvailable(csrfService.isAvailable());
+        // After initialization, try to get a token
+        try {
+          const currentToken = await csrfService.getToken();
+          setToken(currentToken);
+          setIsAvailable(true);
+        } catch {
+          setIsAvailable(false);
+        }
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "CSRF initialization failed";
