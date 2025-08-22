@@ -29,6 +29,7 @@ import {
 import { createGoal, deleteGoal, updateGoal } from "../services/musicians";
 import { Container } from "@/components/layout/Container";
 import { usePageTracking } from "../hooks/useAnalytics";
+import { apiClient } from "../services/auth";
 
 // Define the possible views as a union type
 type ViewType = "MENU" | "TOTAL" | "CHRONOLOGICAL" | "GOALS";
@@ -160,8 +161,9 @@ const Growth: React.FC = () => {
   function fetchUserTags(): Promise<
     { id: number; label: string; color?: string }[]
   > {
-    return fetch(apiConfig.endpoints.tags.all)
-      .then((res) => res.json())
+    return apiClient
+      .get(apiConfig.endpoints.tags.all)
+      .then((res) => res.data as string[])
       .then((labels: string[]) =>
         labels.map((label, idx) => ({
           id: idx + 1,
@@ -175,8 +177,9 @@ const Growth: React.FC = () => {
   function fetchAllTasksInUse(): Promise<TaskInUseMock[]> {
     // Use authenticated user's ID instead of hardcoded 26
     const musicianId = user?.id || 26; // Fallback to 26 if no user
-    return fetch(apiConfig.endpoints.tasksInUse.byMusician(musicianId))
-      .then((res) => res.json())
+    return apiClient
+      .get(apiConfig.endpoints.tasksInUse.byMusician(musicianId))
+      .then((res) => res.data as TaskInUseApiResponse[])
       .then((tasks: TaskInUseApiResponse[]) =>
         tasks.map((t) => ({
           label: "", // Not provided by backend
@@ -193,8 +196,9 @@ const Growth: React.FC = () => {
   }
 
   function fetchGoals(musicianId: number): Promise<Goal[]> {
-    return fetch(apiConfig.endpoints.musicians.goals(musicianId))
-      .then((res) => res.json())
+    return apiClient
+      .get(apiConfig.endpoints.musicians.goals(musicianId))
+      .then((res) => res.data as Goal[])
       .then((goals: Goal[]) =>
         goals.map((g) => ({
           ...g,

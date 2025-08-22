@@ -1,23 +1,47 @@
-# version: "3.8"
+version: "3.8"
 
 services:
   app:
     build: .
     ports:
       - "3000:3000"
-    env_file:
-      - ./api/.env.production # Load environment variables from .env.local or .env.production (uses local or RDS db)
-# no need for db sidecare when using RDS, commenting out for now.
-#     depends_on:
-#       - db
+    environment:
+      - REDIS_HOST=localhost
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-default_password}
+      - DATABASE_URL_V3=${DATABASE_URL_V3}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - JWT_SECRET=${JWT_SECRET}
+      - AWS_S3_BUCKET_NAME=${AWS_S3_BUCKET_NAME}
+      - AWS_BUCKET_REGION=${AWS_BUCKET_REGION}
+      - AWS_S3_DEV_ACCESS_KEY=${AWS_S3_DEV_ACCESS_KEY}
+      - AWS_S3_DEV_SECRET_ACCESS_KEY=${AWS_S3_DEV_SECRET_ACCESS_KEY}
+      - BACKEND_URL=${BACKEND_URL}
+      - DEBUG=${DEBUG}
+      - SENTRY_AUTH_TOKEN=${SENTRY_AUTH_TOKEN}
+    volumes:
+      - ./logs:/app/logs
+    depends_on:
+      - redis
+    networks:
+      - app-network
+    restart: unless-stopped
 
-#   db:
-#     image: postgres:13
-#     env_file:
-#       - .env.local # Load environment variables from .env.local
-#     volumes:
-#       - pgdata:/var/lib/postgresql/data
-#       - ./db-backup:/docker-entrypoint-initdb.d
+  redis:
+    image: redis:7-alpine
+    command: redis-server --requirepass ${REDIS_PASSWORD:-default_password} --bind 0.0.0.0
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - app-network
+    restart: unless-stopped
 
-# volumes:
-#   pgdata:
+volumes:
+  redis-data:
+
+networks:
+  app-network:
+    driver: bridge

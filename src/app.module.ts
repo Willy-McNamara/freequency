@@ -32,53 +32,6 @@ import { LoggingModule } from './logging/logging.module';
 import { TerminusModule } from '@nestjs/terminus';
 import { HealthController } from './health/health.controller';
 
-@Module({
-  imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-    }),
-    SharedModule, // Import the shared module
-    PrismaModule,
-    SessionsModule,
-    MusiciansModule,
-    TasksModule,
-    MediaModule,
-    ThumbnailModule,
-    S3Module,
-    ServeStaticModule.forRoot({
-      rootPath: join(process.cwd(), '../frontend/dist'),
-      serveRoot: '/',
-    }),
-    AuthModule,
-    JwtModule.register({
-      secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '90m' },
-    }),
-    ThrottlerModule.forRoot([
-      {
-        ttl: 60,
-        limit: 100, // General rate limit
-      },
-      {
-        ttl: 60,
-        limit: 10, // Stricter limit for auth endpoints
-        name: 'auth',
-      },
-      {
-        ttl: 60,
-        limit: 30, // Moderate limit for API endpoints
-        name: 'api',
-      },
-    ]),
-    LoggingModule,
-    TerminusModule,
-  ],
-  controllers: [
-    AppController,
-    InstrumentsController,
-    TagsController,
-    HealthController,
-  ],
   providers: [
     AppService,
     MusiciansService,
@@ -103,9 +56,3 @@ import { HealthController } from './health/health.controller';
       useClass: SecurityInterceptor,
     },
   ],
-})
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(SecurityMiddleware, LoggerMiddleware).forRoutes('*');
-  }
-}

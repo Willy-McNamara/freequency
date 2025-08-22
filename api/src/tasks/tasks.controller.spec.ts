@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TasksController } from './tasks.controller';
 import { TasksService } from './tasks.service';
+import { CSRFGuard } from '../guards/csrf.guard';
+import { JwtAuthGuard } from '../auth/jwt.guard';
 
 describe('TasksController', () => {
   let controller: TasksController;
@@ -18,7 +20,12 @@ describe('TasksController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [TasksController],
       providers: [{ provide: TasksService, useValue: mockTasksService }],
-    }).compile();
+    })
+      .overrideGuard(CSRFGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .compile();
 
     controller = module.get<TasksController>(TasksController);
     tasksService = module.get(TasksService);

@@ -4,6 +4,8 @@ import { SessionsService } from './sessions.service';
 import { S3Service } from '../s3/s3.service';
 import { MediaService } from '../media/media.service';
 import { FileSecurityService } from '../services/file-security.service';
+import { CSRFGuard } from '../guards/csrf.guard';
+import { JwtAuthGuard } from '../auth/jwt.guard';
 
 describe('SessionsController', () => {
   let controller: SessionsController;
@@ -60,7 +62,12 @@ describe('SessionsController', () => {
           },
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(CSRFGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: jest.fn(() => true) })
+      .compile();
 
     controller = module.get<SessionsController>(SessionsController);
     sessionsService = module.get(SessionsService);

@@ -10,7 +10,6 @@ describe('Authentication Security Integration', () => {
   let authSecurityService: AuthSecurityService;
   let jwtService: JwtService;
   let secureJwtStrategy: SecureJwtStrategy;
-  let secureJwtGuard: SecureJwtGuard;
 
   beforeEach(async () => {
     // Set environment variables for testing
@@ -66,7 +65,6 @@ describe('Authentication Security Integration', () => {
     authSecurityService = module.get<AuthSecurityService>(AuthSecurityService);
     jwtService = module.get<JwtService>(JwtService);
     secureJwtStrategy = module.get<SecureJwtStrategy>(SecureJwtStrategy);
-    secureJwtGuard = module.get<SecureJwtGuard>(SecureJwtGuard);
   });
 
   afterEach(async () => {
@@ -230,9 +228,6 @@ describe('Authentication Security Integration', () => {
 
   describe('Rate Limiting Integration', () => {
     it('should enforce rate limits for authentication endpoints', () => {
-      const ip = '192.168.1.103';
-      const userAgent = 'rate-limited-user';
-
       // Test login rate limiting
       const loginLimit = AuthConfig.rateLimits.login;
       expect(loginLimit.limit).toBe(5); // 5 attempts per minute
@@ -247,46 +242,43 @@ describe('Authentication Security Integration', () => {
 
   describe('Security Monitoring', () => {
     it('should provide security event data for monitoring', () => {
-      const ip = '192.168.1.104';
-      const userAgent = 'monitoring-test';
-
       // Generate some security events
       authSecurityService.recordLoginAttempt(
-        ip,
+        '192.168.1.104',
         'user1@example.com',
         false,
-        userAgent,
+        'monitoring-test',
       );
       authSecurityService.recordLoginAttempt(
-        ip,
+        '192.168.1.104',
         'user2@example.com',
         false,
-        userAgent,
+        'monitoring-test',
       );
       authSecurityService.recordLoginAttempt(
-        ip,
+        '192.168.1.104',
         'user3@example.com',
         false,
-        userAgent,
+        'monitoring-test',
       );
       authSecurityService.recordLoginAttempt(
-        ip,
+        '192.168.1.104',
         'user4@example.com',
         false,
-        userAgent,
+        'monitoring-test',
       );
       authSecurityService.recordLoginAttempt(
-        ip,
+        '192.168.1.104',
         'user5@example.com',
         false,
-        userAgent,
+        'monitoring-test',
       );
 
       const events = authSecurityService.getSecurityEvents();
       const blockedIPs = authSecurityService.getBlockedIPs();
 
       expect(events.length).toBeGreaterThan(0);
-      expect(blockedIPs.has(ip)).toBe(true);
+      expect(blockedIPs.has('192.168.1.104')).toBe(true);
     });
 
     it('should allow manual IP management for administrators', () => {

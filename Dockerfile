@@ -35,8 +35,8 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install AWS CLI for log uploads to S3 (using alpine package manager)
-RUN apk add --no-cache aws-cli
+# Install AWS CLI and Redis for log uploads and caching
+RUN apk add --no-cache aws-cli redis
 
 # Copy backend dependencies and built backend code
 COPY api/package.json api/package-lock.json ./
@@ -55,6 +55,12 @@ RUN chmod +x /app/api/scripts/upload-logs-to-s3.sh
 
 # Create logs directory
 RUN mkdir -p /app/logs
+
+# Create Redis configuration
+RUN echo "requirepass \${REDIS_PASSWORD:-default_password}" > /etc/redis.conf && \
+    echo "bind 127.0.0.1" >> /etc/redis.conf && \
+    echo "protected-mode yes" >> /etc/redis.conf && \
+    echo "port 6379" >> /etc/redis.conf
 
 # Serve the frontend with the backend
 EXPOSE 3000

@@ -4,8 +4,11 @@ import {
   Post,
   Body,
   BadRequestException,
+  UseGuards,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { JwtAuthGuard } from '../auth/jwt.guard';
+import { CSRFGuard } from '../guards/csrf.guard';
 
 const MAX_LENGTH = 30;
 const ALLOWED_REGEX = /^[a-z0-9 _\-.,!?()'":;]+$/;
@@ -21,6 +24,13 @@ function sanitizeTagLabel(label: string): string {
 export class TagsController {
   constructor(private readonly prisma: PrismaService) {}
 
+  @Get()
+  async getAllTags() {
+    return this.prisma.tag.findMany({
+      orderBy: { label: 'asc' },
+    });
+  }
+
   @Get('all-labels')
   async getAllLabels(): Promise<string[]> {
     const tags = await this.prisma.tag.findMany({
@@ -31,6 +41,7 @@ export class TagsController {
   }
 
   @Post()
+  @UseGuards(JwtAuthGuard, CSRFGuard)
   async createTag(
     @Body() body: { label: string; color?: string },
   ): Promise<{ id: number; label: string; color?: string }> {

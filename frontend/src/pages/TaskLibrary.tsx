@@ -23,7 +23,6 @@ import { SessionContext } from "@/components/SessionContext";
 import { Timer, Plus, Play } from "lucide-react";
 import { apiConfig } from "../config/api";
 import { Button } from "@/components/ui/button";
-// import { useAuth } from "../components/auth/AuthProvider";
 import { ALL_INSTRUMENTS } from "../types/instruments.types";
 import { Container } from "@/components/layout/Container";
 import { Section } from "@/components/layout/Section";
@@ -38,6 +37,7 @@ import { Loading } from "@/components/ui/loading";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { usePageTracking } from "../hooks/useAnalytics";
+import { apiClient } from "../services/auth";
 
 const TaskLibrary: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -161,15 +161,13 @@ const TaskLibrary: React.FC = () => {
 
       const url = `${apiConfig.endpoints.tasks}?${params.toString()}`;
 
-      const response = await fetch(url, {
-        credentials: "include",
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      const response = await apiClient.get(url);
+      if (response.data) {
+        const data = response.data;
+        setTasks(Array.isArray(data) ? data : []);
+      } else {
+        throw new Error(response.error || "Failed to fetch tasks");
       }
-
-      const data = await response.json();
-      setTasks(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Error fetching tasks:", err);
       setError(err instanceof Error ? err.message : "Failed to fetch tasks");
@@ -186,19 +184,22 @@ const TaskLibrary: React.FC = () => {
   useEffect(() => {
     async function fetchUsers() {
       try {
-        const response = await fetch(apiConfig.endpoints.musicians.allIdNames, {
-          credentials: "include",
-        });
-        if (!response.ok) throw new Error("Failed to fetch users");
-        const data = await response.json();
-        // Assume data is an array of { id, displayName }
-        setUserOptions(
-          data.map((user: { id: number; displayName: string }) => ({
-            id: String(user.id),
-            label: user.displayName,
-            checked: false,
-          }))
+        const response = await apiClient.get(
+          apiConfig.endpoints.musicians.allIdNames
         );
+        if (response.data) {
+          const data = response.data as { id: number; displayName: string }[];
+          // Assume data is an array of { id, displayName }
+          setUserOptions(
+            data.map((user) => ({
+              id: String(user.id),
+              label: user.displayName,
+              checked: false,
+            }))
+          );
+        } else {
+          throw new Error(response.error || "Failed to fetch users");
+        }
       } catch (err) {
         console.error("Error fetching users:", err);
       }
@@ -417,39 +418,21 @@ const TaskLibrary: React.FC = () => {
 
   const handleCreateTask = async (taskData: CreateTaskData) => {
     try {
-      const apiPromise = fetch(apiConfig.endpoints.tasks, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(taskData),
-      }).then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      });
-
-      // Show toast notification
-      toast.promise(apiPromise, {
-        loading: "Creating task...",
-        success: (newTask) => {
-          // Add the new task to the beginning of the list
-          setTasks((prev) => [newTask, ...prev]);
-          setIsCreateModalOpen(false);
-
-          return `Task "${newTask.title}" created successfully!`;
-        },
-        error: "Failed to create task. Please try again.",
-      });
-
-      await apiPromise;
-      // Add a small delay so the user can read the toast
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await apiClient.post(
+        apiConfig.endpoints.tasks,
+        taskData as unknown as Record<string, unknown>
+      );
+      if (response.data) {
+        const newTask = response.data as Task;
+        setTasks((prev) => [newTask, ...prev]);
+        setIsCreateModalOpen(false);
+        toast.success(`Task "${newTask.title}" created successfully!`);
+      } else {
+        throw new Error(response.error || "Failed to create task");
+      }
     } catch (err) {
       console.error("Error creating task:", err);
-      // Error toast is handled by toast.promise
+      toast.error("Failed to create task. Please try again.");
     }
   };
 
@@ -469,41 +452,23 @@ const TaskLibrary: React.FC = () => {
 
   const handleModifySubmit = async (taskData: CreateTaskData) => {
     try {
-      const apiPromise = fetch(apiConfig.endpoints.tasks, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(taskData),
-      }).then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      });
-
-      // Show toast notification
-      toast.promise(apiPromise, {
-        loading: "Creating modified task...",
-        success: (newTask) => {
-          setIsModifyModalOpen(false);
-          setModifyTaskData(undefined);
-
-          // Reload the page and navigate to the new task's detail view
-          window.location.href = `/task-library?task=${newTask.id}`;
-
-          return `Task "${newTask.title}" created successfully!`;
-        },
-        error: "Failed to create modified task. Please try again.",
-      });
-
-      await apiPromise;
-      // Add a small delay so the user can read the toast before the view changes
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await apiClient.post(
+        apiConfig.endpoints.tasks,
+        taskData as unknown as Record<string, unknown>
+      );
+      if (response.data) {
+        const newTask = response.data as Task;
+        setIsModifyModalOpen(false);
+        setModifyTaskData(undefined);
+        toast.success(`Task "${newTask.title}" created successfully!`);
+        // Reload the page and navigate to the new task's detail view
+        window.location.href = `/task-library?task=${newTask.id}`;
+      } else {
+        throw new Error(response.error || "Failed to create modified task");
+      }
     } catch (err) {
       console.error("Error creating modified task:", err);
-      // Error toast is handled by toast.promise
+      toast.error("Failed to create modified task. Please try again.");
     }
   };
 

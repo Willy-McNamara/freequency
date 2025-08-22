@@ -1,32 +1,23 @@
-import * as React from "react";
-import {
-  ArrowLeft,
-  User,
-  Bookmark,
-  Play,
-  BookmarkIcon,
-  Edit,
-} from "lucide-react";
+import React from "react";
 import { cn } from "../lib/utils";
-import { Task } from "./task-list-item";
 import { Button } from "./ui/button";
 import { Section } from "./layout/Section";
+import { ArrowLeft, User, Play, Bookmark, Edit } from "lucide-react";
+import { Task } from "./task-list-item";
 import { apiConfig } from "../config/api";
+import { apiClient } from "../services/auth";
 import { RichTextRenderer } from "./rich-text";
 import { TagList } from "./TagList";
 import { useNavigate } from "react-router-dom";
 import { Separator } from "./ui/separator";
 
 async function saveTask(taskId: number) {
-  return fetch(`${apiConfig.endpoints.tasks}/${taskId}/save`, {
-    method: "POST",
-    credentials: "include",
-  });
+  return apiClient.post(`${apiConfig.endpoints.tasks}/${taskId}/save`, {});
 }
+
 async function unsaveTask(taskId: number) {
-  return fetch(`${apiConfig.endpoints.tasks}/${taskId}/save`, {
+  return apiClient.request(`${apiConfig.endpoints.tasks}/${taskId}/save`, {
     method: "DELETE",
-    credentials: "include",
   });
 }
 
@@ -211,7 +202,7 @@ export function TaskDetail({
                   : "border border-border"
               )}
             >
-              <BookmarkIcon className="w-4 h-4" />
+              <Bookmark className="w-4 h-4" />
               {isSaved ? "Saved" : "Save"}
             </Button>
           </div>

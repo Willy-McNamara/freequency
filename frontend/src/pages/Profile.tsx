@@ -15,6 +15,7 @@ import { Container } from "../components/layout/Container";
 import { Section } from "../components/layout/Section";
 import { useAuth } from "../components/auth/AuthProvider";
 import { apiConfig } from "../config/api";
+import { apiClient } from "../services/auth";
 import { Music, Clock, Fuel, Pencil, X } from "lucide-react";
 import { InstrumentModal } from "../components/InstrumentModal";
 import { AlertTriangle } from "lucide-react";
@@ -90,9 +91,16 @@ export default function Profile() {
       try {
         const id = userId;
         if (!id) throw new Error("No user ID");
-        const response = await fetch(apiConfig.endpoints.musicians.profile(id));
-        if (!response.ok) throw new Error("Failed to fetch profile");
-        const profileData = await response.json();
+        const response = await apiClient.get<UserProfile>(
+          apiConfig.endpoints.musicians.profile(id)
+        );
+        if (response.error) {
+          throw new Error(response.error);
+        }
+        if (!response.data) {
+          throw new Error("No data received from server");
+        }
+        const profileData = response.data;
         setData(profileData);
 
         // Set initial follow status if not viewing own profile
@@ -150,16 +158,25 @@ export default function Profile() {
     try {
       const id = userId;
       if (!id) throw new Error("No user ID");
-      const response = await fetch(apiConfig.endpoints.musicians.profile(id), {
-        method: "PUT",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(editData),
-      });
-      if (!response.ok) throw new Error("Failed to save profile changes");
-      const updatedProfile = await response.json();
+
+      // Only send the fields that can be updated
+      const updateData = {
+        bio: editData.bio,
+        displayName: editData.displayName,
+        instruments: editData.instruments.map((instrument) => instrument.label), // Send instrument labels
+      };
+
+      const response = await apiClient.put<UserProfile>(
+        apiConfig.endpoints.musicians.profile(id),
+        updateData as unknown as Record<string, unknown>
+      );
+      if (response.error) {
+        throw new Error(response.error);
+      }
+      if (!response.data) {
+        throw new Error("No data received from server");
+      }
+      const updatedProfile = response.data;
       setData(updatedProfile);
       setEditOpen(false);
     } catch (error: unknown) {
@@ -177,18 +194,14 @@ export default function Profile() {
     setIsFollowLoading(true);
     try {
       const method = isFollowing ? "DELETE" : "POST";
-      const response = await fetch(
+      const response = await apiClient.request(
         apiConfig.endpoints.musicians.follow(data.id),
         {
           method,
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
         }
       );
 
-      if (!response.ok) {
+      if (response.error) {
         throw new Error(`Failed to ${isFollowing ? "unfollow" : "follow"}`);
       }
 
@@ -412,7 +425,9 @@ export default function Profile() {
                   <SecureInput
                     type="text"
                     value={editData.displayName}
-                    onChange={(e) => handleEditChange("displayName", e.target.value)}
+                    onChange={(e) =>
+                      handleEditChange("displayName", e.target.value)
+                    }
                     className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                     placeholder="Display name"
                   />

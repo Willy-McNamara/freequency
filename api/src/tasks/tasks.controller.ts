@@ -13,6 +13,7 @@ import {
 import { TasksService } from './tasks.service';
 import { TaskDTO, CreateTaskDto } from './dto/task.dto';
 import { JwtAuthGuard } from '../auth/jwt.guard';
+import { CSRFGuard } from '../guards/csrf.guard';
 
 @Controller('tasks')
 export class TasksController {
@@ -46,7 +47,7 @@ export class TasksController {
   }
 
   @Post()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, CSRFGuard)
   async createTask(
     @Body() createTaskDto: CreateTaskDto,
     @Req() req: any,
@@ -54,14 +55,14 @@ export class TasksController {
     return this.tasksService.createTask(createTaskDto, req.user.id);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, CSRFGuard)
   @Post(':id/save')
   async saveTask(@Param('id') id: number, @Req() req: any) {
     const userId = req.user.id;
     return this.tasksService.saveTaskForUser(Number(id), userId);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, CSRFGuard)
   @Delete(':id/save')
   async unsaveTask(@Param('id') id: number, @Req() req: any) {
     const userId = req.user.id;
