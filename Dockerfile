@@ -35,8 +35,8 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install AWS CLI and Redis for log uploads and caching
-RUN apk add --no-cache aws-cli redis
+# Install AWS CLI for log uploads
+RUN apk add --no-cache aws-cli
 
 # Copy backend dependencies and built backend code
 COPY api/package.json api/package-lock.json ./
