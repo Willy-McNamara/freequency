@@ -41,6 +41,8 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
 
   // Pre-load audio element when component mounts
   useEffect(() => {
+    let seekTimeout: ReturnType<typeof setTimeout> | null = null;
+
     if (!audioElements[audioId]) {
       const audio = new Audio(url);
       audio.addEventListener("ended", () => setPlayingAudio(null));
@@ -50,9 +52,24 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
         } else {
           // If duration is not available, try to load it by seeking
           audio.currentTime = 24 * 60 * 60; // Seek to a large number
+
+          // Add timeout to prevent infinite loading
+          seekTimeout = setTimeout(() => {
+            // If seek takes too long, use fallback duration
+            setAudioDuration((prev) => ({
+              ...prev,
+              [audioId]: 30, // Default to 30 seconds
+            }));
+            audio.currentTime = 0;
+          }, 3000); // 3 second timeout
+
           audio.addEventListener(
             "seeked",
             () => {
+              if (seekTimeout) {
+                clearTimeout(seekTimeout); // Clear timeout if seek succeeds
+                seekTimeout = null;
+              }
               if (audio.duration && isFinite(audio.duration)) {
                 setAudioDuration((prev) => ({
                   ...prev,
@@ -86,6 +103,9 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
 
     // Cleanup audio elements on unmount
     return () => {
+      if (seekTimeout) {
+        clearTimeout(seekTimeout);
+      }
       Object.values(audioElements).forEach((audio) => {
         audio.pause();
         audio.remove();

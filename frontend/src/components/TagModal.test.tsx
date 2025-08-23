@@ -44,10 +44,19 @@ vi.mock("../config/api", () => ({
   apiConfig: {
     endpoints: {
       tags: {
-        all: "/api/tags",
-        create: "/api/tags/create",
+        all: "/api/tags/all-labels",
+        create: "/api/tags",
       },
     },
+  },
+  buildApiUrl: vi.fn((endpoint: string) => `http://localhost:3000${endpoint}`),
+}));
+
+// Mock the auth service
+vi.mock("../services/auth", () => ({
+  apiClient: {
+    get: vi.fn(),
+    post: vi.fn(),
   },
 }));
 
@@ -60,20 +69,30 @@ vi.mock("../types/instruments.types", () => ({
   ],
 }));
 
-// Mock fetch globally
-global.fetch = vi.fn();
+// Remove the global fetch mock since we're using apiClient
+// global.fetch = vi.fn();
 
 describe("TagModal", () => {
   const mockOnClose = vi.fn();
   const mockOnTagSelected = vi.fn();
+  let mockApiClient: any;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
-    vi.mocked(fetch).mockClear();
-    // Provide a default mock for tests that don't explicitly mock fetch
-    vi.mocked(fetch).mockResolvedValue({
-      json: () => Promise.resolve([]),
-    } as Response);
+
+    // Get the mocked apiClient
+    const authModule = await import("../services/auth");
+    mockApiClient = authModule.apiClient;
+
+    // Provide a default mock for tests that don't explicitly mock apiClient
+    mockApiClient.get.mockResolvedValue({
+      data: [],
+      error: null,
+    });
+    mockApiClient.post.mockResolvedValue({
+      data: { id: 1, label: "test" },
+      error: null,
+    });
   });
 
   it("renders when open", () => {
@@ -137,7 +156,8 @@ describe("TagModal", () => {
   });
 
   it("shows loading state when fetching tags", async () => {
-    vi.mocked(fetch).mockImplementation(() => new Promise(() => {})); // Never resolves
+    // Mock a never-resolving promise to test loading state
+    mockApiClient.get.mockImplementation(() => new Promise(() => {})); // Never resolves
 
     render(
       <TagModal
@@ -151,9 +171,10 @@ describe("TagModal", () => {
   });
 
   it('shows "No tags found" when no tags are available', async () => {
-    vi.mocked(fetch).mockResolvedValue({
-      json: () => Promise.resolve([]),
-    } as Response);
+    mockApiClient.get.mockResolvedValue({
+      data: [],
+      error: null,
+    });
 
     render(
       <TagModal
@@ -170,8 +191,9 @@ describe("TagModal", () => {
 
   it("displays existing tags as clickable buttons", async () => {
     const mockTags = ["practice", "scales", "technique"];
-    (fetch as any).mockResolvedValue({
-      json: () => Promise.resolve(mockTags),
+    mockApiClient.get.mockResolvedValue({
+      data: mockTags,
+      error: null,
     });
 
     render(
@@ -191,8 +213,9 @@ describe("TagModal", () => {
 
   it("calls onTagSelected when an existing tag is clicked", async () => {
     const mockTags = ["practice"];
-    (fetch as any).mockResolvedValue({
-      json: () => Promise.resolve(mockTags),
+    mockApiClient.get.mockResolvedValue({
+      data: mockTags,
+      error: null,
     });
 
     render(
@@ -217,8 +240,9 @@ describe("TagModal", () => {
 
   it("shows create button when query does not match existing tags", async () => {
     const mockTags = ["practice"];
-    (fetch as any).mockResolvedValue({
-      json: () => Promise.resolve(mockTags),
+    mockApiClient.get.mockResolvedValue({
+      data: mockTags,
+      error: null,
     });
 
     render(
@@ -239,8 +263,9 @@ describe("TagModal", () => {
 
   it("does not show create button when query matches existing tag", async () => {
     const mockTags = ["practice"];
-    (fetch as any).mockResolvedValue({
-      json: () => Promise.resolve(mockTags),
+    mockApiClient.get.mockResolvedValue({
+      data: mockTags,
+      error: null,
     });
 
     render(

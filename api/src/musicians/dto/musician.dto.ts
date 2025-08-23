@@ -1,3 +1,12 @@
+import { IsString, IsArray, IsNumber, IsEnum } from 'class-validator';
+
+export class TagDTO {
+  id: number;
+  label: string;
+  color?: string | null;
+  createdAt: Date;
+}
+
 export class CreateMusicianDto {
   googleId: string;
   displayName: string;
@@ -34,13 +43,6 @@ export class MusicianDto {
   sessions?: SessionDto[];
 }
 
-export type TagDTO = {
-  id: number;
-  label: string;
-  color?: string | null;
-  createdAt: Date;
-};
-
 // remove password, sessions, comments for frontend
 export class MusicianFrontendDTO {
   id: number;
@@ -67,9 +69,15 @@ export class MusicianUpdateDto {
 }
 
 export class ProfileUpdateDto {
+  @IsString()
   displayName: string;
+
+  @IsString()
   bio: string;
-  instruments: TagDTO[];
+
+  @IsArray()
+  @IsString({ each: true })
+  instruments: string[]; // Accept instrument labels, not IDs
 }
 
 export class SessionDto {
@@ -123,13 +131,17 @@ export class CommentDto {
 }
 
 export class GoalDto {
-  id: number;
-  musicianId: number;
+  id?: number;
+  musicianId?: number;
+  @IsString()
   tag: string;
+  @IsEnum(['duration', 'frequency'])
   type: 'duration' | 'frequency';
+  @IsNumber()
   target: number;
+  @IsEnum(['daily', 'weekly', 'monthly', 'annually'])
   timeFrame: 'daily' | 'weekly' | 'monthly' | 'annually';
-  createdAt: Date;
+  createdAt?: Date;
 }
 
 export class FollowDto {

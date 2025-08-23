@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import {
   Dialog,
   DialogContent,
@@ -10,6 +10,7 @@ import {
 import { Badge } from "./badge";
 import { Plus } from "lucide-react";
 import { apiConfig } from "../config/api";
+import { apiClient } from "../services/auth";
 import { ALL_INSTRUMENTS } from "../types/instruments.types";
 import { SecureInput } from "./ui/secure-form";
 
@@ -56,8 +57,14 @@ export const TagModal: React.FC<TagModalProps> = ({
   React.useEffect(() => {
     if (!isOpen) return;
     setLoading(true);
-    fetch(apiConfig.endpoints.tags.all)
-      .then((res) => res.json())
+    apiClient
+      .get<string[]>(apiConfig.endpoints.tags.all)
+      .then((res) => {
+        if (res.error) {
+          throw new Error(res.error);
+        }
+        return res.data || [];
+      })
       .then((data) => setTags(data))
       .catch(() => setTags([]))
       .finally(() => setLoading(false));
@@ -85,13 +92,18 @@ export const TagModal: React.FC<TagModalProps> = ({
     setCreating(true);
     setError(null);
     try {
-      const res = await fetch(apiConfig.endpoints.tags.create, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ label: query.trim() }),
-      });
-      if (!res.ok) throw new Error("Failed to create tag");
-      const tag = await res.json();
+      const res = await apiClient.post<{
+        id: number;
+        label: string;
+        color?: string;
+      }>(apiConfig.endpoints.tags.create, { label: query.trim() });
+      if (res.error) {
+        throw new Error(res.error);
+      }
+      if (!res.data) {
+        throw new Error("No data received from server");
+      }
+      const tag = res.data;
       onTagSelected(tag);
       onClose();
     } catch {

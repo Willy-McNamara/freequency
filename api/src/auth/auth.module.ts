@@ -8,6 +8,7 @@ import { MusiciansService } from '../musicians/musicians.service';
 import { MusiciansModule } from '../musicians/musicians.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { PrismaService } from '../prisma/prisma.service';
+import { SharedModule } from '../shared/shared.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { PrismaService } from '../prisma/prisma.service';
       secret: process.env.JWT_SECRET || 'dev-secret-key-change-in-production',
       signOptions: { expiresIn: '24h' },
     }),
+    SharedModule, // Import shared module for Redis and CSRF services
     MusiciansModule,
     PrismaModule,
   ],

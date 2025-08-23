@@ -2,20 +2,21 @@ import {
   Controller,
   Get,
   Post,
-  Put,
   Body,
   Param,
   UseGuards,
   Req,
+  Put,
   Delete,
 } from '@nestjs/common';
 import { MusiciansService } from './musicians.service';
+import { JwtAuthGuard } from '../auth/jwt.guard';
+import { CSRFGuard } from '../guards/csrf.guard';
 import {
   MusicianFrontendDTO,
   ProfileUpdateDto,
   GoalDto,
 } from './dto/musician.dto';
-import { JwtAuthGuard } from '../auth/jwt.guard';
 
 @Controller('musicians')
 export class MusiciansController {
@@ -48,6 +49,7 @@ export class MusiciansController {
   }
 
   @Post(':id/goals')
+  @UseGuards(JwtAuthGuard)
   async createGoalForMusician(
     @Param('id') id: string,
     @Body() goalDto: GoalDto,
@@ -56,7 +58,7 @@ export class MusiciansController {
   }
 
   @Put(':id/goals/:goalId')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, CSRFGuard)
   async updateGoalForMusician(
     @Param('id') id: string,
     @Param('goalId') goalId: string,
@@ -75,7 +77,7 @@ export class MusiciansController {
   }
 
   @Delete(':id/goals/:goalId')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, CSRFGuard)
   async deleteGoal(
     @Param('id') id: string,
     @Param('goalId') goalId: string,
@@ -87,7 +89,7 @@ export class MusiciansController {
   }
 
   @Post(':id/follow')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, CSRFGuard)
   async followMusician(
     @Param('id') id: string,
     @Req() req: any,
@@ -96,7 +98,7 @@ export class MusiciansController {
   }
 
   @Delete(':id/follow')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, CSRFGuard)
   async unfollowMusician(
     @Param('id') id: string,
     @Req() req: any,
@@ -121,7 +123,7 @@ export class MusiciansController {
   }
 
   @Put(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, CSRFGuard)
   async updateProfile(
     @Param('id') id: string,
     @Body() profileUpdateDto: ProfileUpdateDto,

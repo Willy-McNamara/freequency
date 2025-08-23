@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { FileSecurityService, FileSecurityInfo } from './file-security.service';
-import { SecurityConfig } from '../config/security.config';
 
 describe('FileSecurityService', () => {
   let service: FileSecurityService;

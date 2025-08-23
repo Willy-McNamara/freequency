@@ -310,9 +310,7 @@ describe('MusiciansService', () => {
       const profileUpdateDto = {
         displayName: 'New Display Name',
         bio: 'New bio',
-        instruments: [
-          { id: 1, label: 'Guitar', color: '#FF0000', createdAt: new Date() },
-        ],
+        instruments: ['Guitar'],
       };
 
       const mockUpdatedMusician = {
