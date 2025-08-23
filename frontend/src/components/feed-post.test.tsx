@@ -101,6 +101,12 @@ describe("FeedPost", () => {
     });
   });
 
+  afterEach(() => {
+    // Ensure any pending async operations are completed
+    vi.runAllTimers();
+    vi.clearAllTimers();
+  });
+
   const renderFeedPost = (postData = mockPostData) => {
     return render(
       <MemoryRouter>
@@ -229,6 +235,15 @@ describe("FeedPost", () => {
       await waitFor(() => {
         expect(checkGasUpText("0 gas ups")).toBe(true);
       });
+
+      // Wait for any pending state updates to complete
+      await waitFor(() => {
+        expect(gasUpButton).not.toHaveClass("opacity-50");
+        expect(gasUpButton).not.toHaveClass("pointer-events-none");
+      });
+
+      // Additional wait to ensure all async operations complete
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     it("should prevent users from gassing up their own posts", () => {
