@@ -205,7 +205,7 @@ jobs:
               "  sudo curl -L \"https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)\" -o /usr/local/bin/docker-compose",
               "  sudo chmod +x /usr/local/bin/docker-compose",
               "  echo \"✅ Docker Compose installed successfully\"",
-              "}",
+              "fi",
               "echo \"🔍 Verifying docker-compose installation...\"",
               "sudo docker-compose --version || {",
               "  echo \"❌ Docker Compose still not available after installation\"",
