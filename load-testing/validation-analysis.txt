@@ -1,0 +1,42 @@
+🔍 Freequency Load Test Results Analyzer
+========================================
+
+🎯 BASELINE TEST RESULTS
+========================
+📊 Analyzing baseline-results.json...
+----------------------------------------
+📈 Key Metrics:
+   Total Requests: 10
+   HTTP 200 (Success): 10
+   HTTP 302 (Redirects): N/A
+   HTTP 404 (Not Found): N/A
+   HTTP 429 (Rate Limited): N/A
+   HTTP 500 (Server Errors): N/A
+   Response Time - Median: N/Ams
+   Response Time - P95: N/Ams
+   Response Time - P99: N/Ams
+   Virtual Users Created: 10
+   Virtual Users Failed: 0
+   Success Rate: 100%
+
+🔍 Artillery v2.0.0 Structure Analysis:
+   ✅ HTTP metrics structure found (Artillery v2.0.0)
+   ⚠️  Latency metrics structure not found
+
+📊 Overall Assessment
+====================
+✅ Baseline test completed!
+🔥 Ready for stress testing: npm run test:stress:output
+
+📁 Result files created:
+-rw-r--r--@ 1 user  staff  5252 Aug 24 11:20 baseline-results.json
+-rw-r--r--@ 1 user  staff  5252 Aug 24 11:20 validation-results.json
+
+💡 Next steps:
+1. Review the metrics above
+2. Check the detailed JSON files for specific endpoint performance
+3. Look for bottlenecks in response times
+4. Identify where your system starts to struggle
+5. Run stress test if baseline looks good: npm run test:stress:output
+
+🧹 Clean up files: npm run clean

@@ -18,6 +18,8 @@ services:
       - BACKEND_URL=${BACKEND_URL}
       - DEBUG=${DEBUG}
       - SENTRY_AUTH_TOKEN=${SENTRY_AUTH_TOKEN}
+      - NODE_ENV=production
+      - MAX_OLD_SPACE_SIZE=512
     volumes:
       - ./logs:/app/logs
     depends_on:
@@ -25,6 +27,25 @@ services:
     networks:
       - app-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 60s
+      timeout: 15s
+      retries: 4
+      start_period: 90s
+    deploy:
+      resources:
+        limits:
+          memory: 400M
+          cpus: "0.8"
+        reservations:
+          memory: 200M
+          cpus: "0.3"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   redis:
     image: redis:7-alpine
@@ -36,6 +57,19 @@ services:
     networks:
       - app-network
     restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "redis-cli",
+          "-a",
+          "${REDIS_PASSWORD:-default_password}",
+          "ping",
+        ]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
 volumes:
   redis-data:

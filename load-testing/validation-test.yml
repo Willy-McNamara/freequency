@@ -1,0 +1,18 @@
+config:
+  target: "https://demo.freequencyapp.com"
+  phases:
+    - duration: 10
+      arrivalRate: 1
+      name: "Validation test"
+  http:
+    timeout: 10
+    headers:
+      User-Agent: "Artillery Validation Test"
+
+scenarios:
+  - name: "Health check only"
+    flow:
+      - get:
+          url: "/health"
+          expect:
+            - statusCode: 200
