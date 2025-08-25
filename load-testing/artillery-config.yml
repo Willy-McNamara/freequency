@@ -1,0 +1,118 @@
+config:
+  target: "https://demo.freequencyapp.com"
+  phases:
+    # Warm-up phase - gentle start
+    - duration: 60
+      arrivalRate: 1
+      name: "Warm up"
+
+    # Ramp-up phase - gradually increase load
+    - duration: 300
+      arrivalRate: 1
+      rampTo: 10
+      name: "Ramp up"
+
+    # Sustained load phase - test stability
+    - duration: 600
+      arrivalRate: 10
+      name: "Sustained load"
+
+    # Peak load phase - test maximum normal capacity
+    - duration: 300
+      arrivalRate: 10
+      rampTo: 25
+      name: "Peak load"
+
+    # Cool-down phase - gradual reduction
+    - duration: 120
+      arrivalRate: 25
+      rampTo: 1
+      name: "Cool down"
+
+  # Environment variables for authentication
+  variables:
+    jwt_token: "{{ $processEnvironment.JWT_TOKEN || 'NO_TOKEN_PROVIDED' }}"
+
+  http:
+    timeout: 30
+    pool: 10
+    headers:
+      User-Agent: "Artillery Load Test"
+      Accept: "application/json"
+
+scenarios:
+  - name: "Public endpoints"
+    weight: 40
+    flow:
+      - get:
+          url: "/health"
+          expect:
+            - statusCode: 200
+
+      - get:
+          url: "/"
+          expect:
+            - statusCode: 200
+
+      - get:
+          url: "/api/instruments"
+          expect:
+            - statusCode: 200
+
+      - get:
+          url: "/api/tags"
+          expect:
+            - statusCode: 200
+
+  - name: "Authentication flow"
+    weight: 20
+    flow:
+      - get:
+          url: "/auth/google"
+          expect:
+            - statusCode: 302
+
+      - post:
+          url: "/auth/login"
+          json:
+            email: "test@example.com"
+            password: "testpass"
+          expect:
+            - statusCode: [200, 401]
+
+  - name: "API endpoints (authenticated)"
+    weight: 25
+    flow:
+      - get:
+          url: "/api/sessions"
+          headers:
+            Authorization: "Bearer {{ jwt_token }}"
+          expect:
+            - statusCode: [200, 401, 429, 500]
+
+      - get:
+          url: "/api/tasks"
+          headers:
+            Authorization: "Bearer {{ jwt_token }}"
+          expect:
+            - statusCode: [200, 401, 429, 500]
+
+      - get:
+          url: "/api/musicians"
+          headers:
+            Authorization: "Bearer {{ jwt_token }}"
+          expect:
+            - statusCode: [200, 401, 429, 500]
+
+  - name: "Static assets"
+    weight: 15
+    flow:
+      - get:
+          url: "/logo.svg"
+          expect:
+            - statusCode: 200
+
+      - get:
+          url: "/favicon.ico"
+          expect:
+            - statusCode: 200

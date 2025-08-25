@@ -1,0 +1,27 @@
+{
+  "name": "freequency-load-testing",
+  "version": "1.0.0",
+  "description": "Load testing suite for Freequency app",
+  "scripts": {
+    "test:artillery": "artillery run artillery-config.yml",
+    "test:artillery:auth": "JWT_TOKEN=$JWT_TOKEN artillery run artillery-config.yml",
+    "test:artillery:quiet": "JWT_TOKEN=$JWT_TOKEN NODE_OPTIONS='--max-old-space-size=4096' artillery run artillery-config.yml 2>/dev/null || true",
+    "test:artillery:output": "JWT_TOKEN=$JWT_TOKEN artillery run --output baseline-results.json artillery-config.yml",
+    "test:stress": "artillery run stress-test.yml",
+    "test:stress:auth": "JWT_TOKEN=$JWT_TOKEN artillery run stress-test.yml",
+    "test:stress:quiet": "JWT_TOKEN=$JWT_TOKEN NODE_OPTIONS='--max-old-space-size=4096' artillery run stress-test.yml 2>/dev/null || true",
+    "test:stress:output": "JWT_TOKEN=$JWT_TOKEN artillery run --output stress-results.json stress-test.yml",
+    "test:stress:fast": "JWT_TOKEN=$JWT_TOKEN artillery run --output stress-results.json stress-test.yml",
+    "test:k6": "k6 run k6-scripts/basic-load.js",
+    "monitor": "artillery run --output report.json artillery-config.yml && artillery report report.json",
+    "analyze": "./analyze-results.sh",
+    "validate": "./validate-output.sh",
+    "help": "echo 'Usage: JWT_TOKEN=your_token_here npm run test:artillery:output'",
+    "clean": "rm -f *.json *.csv *.txt",
+    "report": "artillery report baseline-results.json"
+  },
+  "devDependencies": {
+    "artillery": "^2.0.0",
+    "artillery-plugin-metrics-by-endpoint": "^1.3.0"
+  }
+}
