@@ -51,7 +51,7 @@ export const TagSelectDropdown: React.FC<TagSelectDropdownProps> = ({
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring mb-2"
+            className="w-full focus:outline-none focus:ring-2 focus:ring-ring mb-2"
             placeholder="Search or create tags..."
           />
           <div className="max-h-60 overflow-y-auto space-y-1">

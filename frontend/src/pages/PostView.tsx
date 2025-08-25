@@ -511,7 +511,7 @@ export const PostView: React.FC = () => {
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
                     placeholder="Add a comment..."
-                    className="w-full p-3 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                    className="w-full resize-none"
                     rows={3}
                   />
                   <Button

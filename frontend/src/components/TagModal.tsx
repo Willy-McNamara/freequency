@@ -133,7 +133,7 @@ export const TagModal: React.FC<TagModalProps> = ({
           type="text"
           value={query}
           onChange={handleInputChange}
-          className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring mb-4"
+          className="w-full focus:outline-none focus:ring-2 focus:ring-ring mb-4"
           placeholder="Search or create tag"
           autoFocus
           maxLength={MAX_LENGTH}
