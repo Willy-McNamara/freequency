@@ -428,7 +428,7 @@ export default function Profile() {
                     onChange={(e) =>
                       handleEditChange("displayName", e.target.value)
                     }
-                    className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    className="w-full"
                     placeholder="Display name"
                   />
                 </div>
@@ -443,7 +443,7 @@ export default function Profile() {
                   <SecureTextarea
                     value={editData.bio}
                     onChange={(e) => handleEditChange("bio", e.target.value)}
-                    className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                    className="w-full resize-none"
                     placeholder="Tell us about yourself..."
                     rows={3}
                   />
