@@ -1,0 +1,89 @@
+config:
+  target: "https://demo.freequencyapp.com" # Replace with your actual domain
+  phases:
+    # Phase 1: Immediate high load to test resilience
+    - duration: 30
+      arrivalRate: 200 # Start with 200 requests per second
+      name: "Resilience Test - High Load"
+
+    # Phase 2: Maximum load to test breaking point
+    - duration: 30
+      arrivalRate: 300
+      name: "Resilience Test - Breaking Point"
+
+    # Phase 3: Wind down and generate results
+    - duration: 15
+      arrivalRate: 50
+      name: "Wind Down & Results"
+
+  # Aggressive settings to maximize failure probability
+  http:
+    timeout: 30
+    pool: 1000 # Large connection pool
+    keepAlive: false # Don't reuse connections
+
+  # Process multiple requests simultaneously
+  processor: "./crash-processor.js"
+
+  # Output results for analysis
+  output: "crash-induction-results.json"
+
+# Test scenarios designed to test resilience and recovery
+scenarios:
+  - name: "Resilience Test - Heavy API Calls"
+    weight: 40
+    flow:
+      - get:
+          url: "/api/sessions"
+          headers:
+            Authorization: "Bearer {{ jwt_token }}"
+          expect:
+            - statusCode: [200, 401, 429, 500, 502, 503]
+
+      - get:
+          url: "/api/tasks"
+          headers:
+            Authorization: "Bearer {{ jwt_token }}"
+          expect:
+            - statusCode: [200, 401, 429, 500, 502, 503]
+
+      - get:
+          url: "/api/musicians"
+          headers:
+            Authorization: "Bearer {{ jwt_token }}"
+          expect:
+            - statusCode: [200, 401, 429, 500, 502, 503]
+
+      - think: 0.1 # Minimal delay between requests
+
+  - name: "Resilience Test - Health Endpoint Bombardment"
+    weight: 30
+    flow:
+      - get:
+          url: "/health"
+          expect:
+            - statusCode: [200, 500, 502, 503]
+
+      - think: 0.05 # Very fast requests to overwhelm health checks
+
+  - name: "Resilience Test - Mixed Load"
+    weight: 30
+    flow:
+      - get:
+          url: "/"
+          expect:
+            - statusCode: [200, 500, 502, 503]
+
+      - get:
+          url: "/api/sessions"
+          headers:
+            Authorization: "Bearer {{ jwt_token }}"
+          expect:
+            - statusCode: [200, 401, 429, 500, 502, 503]
+
+      - get:
+          url: "/health"
+          expect:
+            - statusCode: [200, 500, 502, 503]
+
+      - think: 0.1
