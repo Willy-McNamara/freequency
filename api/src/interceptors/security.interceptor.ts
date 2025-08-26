@@ -58,30 +58,56 @@ export class SecurityInterceptor implements NestInterceptor {
     // Remove control characters (except newlines and tabs)
     str = str.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
 
-    // Basic SQL injection prevention (basic level - validation pipe handles more)
-    const sqlPatterns = [
-      /(\b(union|select|insert|update|delete|drop|create|alter|exec|execute|script)\b)/gi,
-      /(\b(or|and)\b\s+\d+\s*[=<>])/gi,
-      /(\b(union|select|insert|update|delete|drop|create|alter|exec|execute|script)\b)/gi,
+    // Focus on actual malicious patterns, not just keywords
+    const maliciousPatterns = [
+      // Actual SQL injection attempts with UNION SELECT
+      {
+        pattern: /(\bunion\s+select\b)/gi,
+        message: 'Content contains potentially unsafe SQL patterns',
+      },
+      // SQL injection with stacked queries and semicolons
+      {
+        pattern:
+          /(\b(select|insert|update|delete|drop|create|alter|exec|execute)\b\s+[^;]*;\s*\b(select|insert|update|delete|drop|create|alter|exec|execute)\b)/gi,
+        message: 'Content contains potentially unsafe SQL patterns',
+      },
+      // SQL injection with comment syntax
+      {
+        pattern:
+          /(\b(select|insert|update|delete|drop|create|alter|exec|execute)\b\s+[^;]*--)/gi,
+        message: 'Content contains potentially unsafe SQL patterns',
+      },
+      // SQL injection with MySQL comment syntax
+      {
+        pattern:
+          /(\b(select|insert|update|delete|drop|create|alter|exec|execute)\b\s+[^;]*\/\*)/gi,
+        message: 'Content contains potentially unsafe SQL patterns',
+      },
+      // XSS with script tags
+      {
+        pattern: /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+        message: 'Content contains potentially unsafe HTML elements',
+      },
+      // XSS with javascript: URLs
+      {
+        pattern: /javascript:/gi,
+        message: 'Content contains potentially unsafe URLs',
+      },
+      // XSS with event handlers (only actual event handlers, not CSS pseudo-selectors)
+      {
+        pattern: /on\w+\s*=\s*["'][^"']*["']/gi,
+        message: 'Content contains potentially unsafe HTML attributes',
+      },
+      // XSS with iframe tags
+      {
+        pattern: /<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi,
+        message: 'Content contains potentially unsafe HTML elements',
+      },
     ];
 
-    for (const pattern of sqlPatterns) {
+    for (const { pattern, message } of maliciousPatterns) {
       if (pattern.test(str)) {
-        throw new BadRequestException('Invalid input detected');
-      }
-    }
-
-    // Basic XSS prevention
-    const xssPatterns = [
-      /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
-      /javascript:/gi,
-      /on\w+\s*=/gi,
-      /<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi,
-    ];
-
-    for (const pattern of xssPatterns) {
-      if (pattern.test(str)) {
-        throw new BadRequestException('Invalid input detected');
+        throw new BadRequestException(message);
       }
     }
 

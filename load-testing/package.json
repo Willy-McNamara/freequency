@@ -12,13 +12,15 @@
     "test:stress:quiet": "JWT_TOKEN=$JWT_TOKEN NODE_OPTIONS='--max-old-space-size=4096' artillery run stress-test.yml 2>/dev/null || true",
     "test:stress:output": "JWT_TOKEN=$JWT_TOKEN artillery run --output stress-results.json stress-test.yml",
     "test:stress:fast": "JWT_TOKEN=$JWT_TOKEN artillery run --output stress-results.json stress-test.yml",
+    "test:resilience": "JWT_TOKEN=$JWT_TOKEN artillery run --output resilience-test-results.json resilience-test.yml",
     "test:k6": "k6 run k6-scripts/basic-load.js",
     "monitor": "artillery run --output report.json artillery-config.yml && artillery report report.json",
     "analyze": "./analyze-results.sh",
     "validate": "./validate-output.sh",
     "help": "echo 'Usage: JWT_TOKEN=your_token_here npm run test:artillery:output'",
     "clean": "rm -f *.json *.csv *.txt",
-    "report": "artillery report baseline-results.json"
+    "report": "artillery report baseline-results.json",
+    "crash-test": "sudo ./crash-test.sh"
   },
   "devDependencies": {
     "artillery": "^2.0.0",

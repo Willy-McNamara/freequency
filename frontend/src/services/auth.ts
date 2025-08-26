@@ -54,21 +54,22 @@ export const apiClient = {
         contentType && contentType.includes("application/json");
 
       let data: T | null = null;
-      
+
       if (response.status === 401) {
         // Check if this is a CSRF token failure by looking at the response body
         try {
           const errorData = await response.clone().json();
-          if (errorData.message && (
-            errorData.message.includes('CSRF') || 
-            errorData.message.includes('Invalid CSRF token') ||
-            errorData.message.includes('CSRF token required')
-          )) {
+          if (
+            errorData.message &&
+            (errorData.message.includes("CSRF") ||
+              errorData.message.includes("Invalid CSRF token") ||
+              errorData.message.includes("CSRF token required"))
+          ) {
             // CSRF token failure - refresh token and retry
             console.log("CSRF token failed, refreshing and retrying...");
             const { csrfService } = await import("./csrf");
             await csrfService.refreshToken();
-            
+
             // Retry the request with new CSRF token
             const newCsrfHeaders = await csrfService.getHeaders();
             const retryResponse = await fetch(fullUrl, {
@@ -80,7 +81,7 @@ export const apiClient = {
                 ...options.headers,
               },
             });
-            
+
             if (retryResponse.status === 401) {
               // Still failing after refresh, redirect to login
               if (window.location.pathname !== "/login") {
@@ -88,15 +89,16 @@ export const apiClient = {
               }
               throw new Error("Authentication required");
             }
-            
+
             if (!retryResponse.ok) {
               throw new Error(`HTTP error! status: ${retryResponse.status}`);
             }
-            
+
             // Parse retry response
             const retryContentType = retryResponse.headers.get("content-type");
-            const retryHasContent = retryContentType && retryContentType.includes("application/json");
-            
+            const retryHasContent =
+              retryContentType && retryContentType.includes("application/json");
+
             if (retryHasContent) {
               try {
                 data = await retryResponse.json();
@@ -104,24 +106,40 @@ export const apiClient = {
                 console.warn("Failed to parse JSON response:", parseError);
               }
             }
-            
+
             return { data };
           }
         } catch {
           // If we can't parse the error response, assume it's not CSRF related
         }
-        
+
         // Redirect to login on authentication failure if not already on /login
         if (window.location.pathname !== "/login") {
           window.location.href = "/login";
         }
         throw new Error("Authentication required");
       }
-      
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        // Try to extract error message from response body
+        let errorMessage = `HTTP error! status: ${response.status}`;
+
+        if (hasContent) {
+          try {
+            const errorData = await response.json();
+            if (errorData.message) {
+              errorMessage = errorData.message;
+            } else if (errorData.error) {
+              errorMessage = errorData.error;
+            }
+          } catch (parseError) {
+            console.warn("Failed to parse error response:", parseError);
+          }
+        }
+
+        throw new Error(errorMessage);
       }
-      
+
       if (hasContent) {
         try {
           data = await response.json();

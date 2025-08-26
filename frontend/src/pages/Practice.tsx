@@ -950,25 +950,25 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
                     );
                     return instrumentTag ? "Change" : "Select";
                   })()}
-                  {/* Hidden input for browser validation */}
-                  <SecureInput
-                    type="text"
-                    value={(() => {
-                      const instrumentLabels = ALL_INSTRUMENTS.map(
-                        (i) => i.label
-                      );
-                      const instrumentTag = tags.find((tag) =>
-                        instrumentLabels.includes(tag.label)
-                      );
-                      return instrumentTag ? instrumentTag.label : "";
-                    })()}
-                    required
-                    tabIndex={-1}
-                    autoComplete="off"
-                    style={{ opacity: 0, width: "1px" }}
-                    onChange={() => {}}
-                  />
                 </button>
+                {/* Hidden input for browser validation - moved outside button to prevent layout interference */}
+                <SecureInput
+                  type="text"
+                  value={(() => {
+                    const instrumentLabels = ALL_INSTRUMENTS.map(
+                      (i) => i.label
+                    );
+                    const instrumentTag = tags.find((tag) =>
+                      instrumentLabels.includes(tag.label)
+                    );
+                    return instrumentTag ? instrumentTag.label : "";
+                  })()}
+                  required
+                  tabIndex={-1}
+                  autoComplete="off"
+                  style={{ opacity: 0, width: "1px" }}
+                  onChange={() => {}}
+                />
               </div>
               <InstrumentModal
                 isOpen={instrumentModalOpen}

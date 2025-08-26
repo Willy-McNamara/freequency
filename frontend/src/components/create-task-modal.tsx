@@ -203,7 +203,7 @@ export function CreateTaskModal({
               id="title"
               value={formData.title}
               onChange={(e) => handleInputChange("title", e.target.value)}
-              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-left"
+              className="w-full text-left"
               placeholder="Enter task title"
               required
             />
@@ -331,7 +331,7 @@ export function CreateTaskModal({
                 onKeyPress={(e) =>
                   e.key === "Enter" && (e.preventDefault(), addChecklistItem())
                 }
-                className="flex-1 px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-left"
+                className="flex-1 text-left"
                 placeholder="Add checklist item"
               />
               <button

@@ -432,7 +432,20 @@ const TaskLibrary: React.FC = () => {
       }
     } catch (err) {
       console.error("Error creating task:", err);
-      toast.error("Failed to create task. Please try again.");
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to create task";
+
+      // Show more specific error messages for security-related issues
+      if (
+        errorMessage.includes("unsafe") ||
+        errorMessage.includes("potentially unsafe")
+      ) {
+        toast.error(
+          `Task creation failed: ${errorMessage}. Please check your content and try again.`
+        );
+      } else {
+        toast.error(`Failed to create task: ${errorMessage}`);
+      }
     }
   };
 
@@ -468,7 +481,20 @@ const TaskLibrary: React.FC = () => {
       }
     } catch (err) {
       console.error("Error creating modified task:", err);
-      toast.error("Failed to create modified task. Please try again.");
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to create modified task";
+
+      // Show more specific error messages for security-related issues
+      if (
+        errorMessage.includes("unsafe") ||
+        errorMessage.includes("potentially unsafe")
+      ) {
+        toast.error(
+          `Task modification failed: ${errorMessage}. Please check your content and try again.`
+        );
+      } else {
+        toast.error(`Failed to create modified task: ${errorMessage}`);
+      }
     }
   };
 
