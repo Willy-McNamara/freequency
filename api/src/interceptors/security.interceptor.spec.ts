@@ -141,6 +141,9 @@ describe('SecurityInterceptor', () => {
     expect(() =>
       interceptor.intercept(mockExecutionContext, mockCallHandler),
     ).toThrow(BadRequestException);
+    expect(() =>
+      interceptor.intercept(mockExecutionContext, mockCallHandler),
+    ).toThrow('Content contains potentially unsafe HTML elements');
   });
 
   it('should block javascript: URLs', () => {
@@ -160,6 +163,9 @@ describe('SecurityInterceptor', () => {
     expect(() =>
       interceptor.intercept(mockExecutionContext, mockCallHandler),
     ).toThrow(BadRequestException);
+    expect(() =>
+      interceptor.intercept(mockExecutionContext, mockCallHandler),
+    ).toThrow('Content contains potentially unsafe URLs');
   });
 
   it('should block actual event handlers', () => {
@@ -179,6 +185,9 @@ describe('SecurityInterceptor', () => {
     expect(() =>
       interceptor.intercept(mockExecutionContext, mockCallHandler),
     ).toThrow(BadRequestException);
+    expect(() =>
+      interceptor.intercept(mockExecutionContext, mockCallHandler),
+    ).toThrow('Content contains potentially unsafe HTML attributes');
   });
 
   it('should block SQL injection attempts', () => {
@@ -198,6 +207,9 @@ describe('SecurityInterceptor', () => {
     expect(() =>
       interceptor.intercept(mockExecutionContext, mockCallHandler),
     ).toThrow(BadRequestException);
+    expect(() =>
+      interceptor.intercept(mockExecutionContext, mockCallHandler),
+    ).toThrow('Content contains potentially unsafe SQL patterns');
   });
 
   it('should block UNION SELECT attacks', () => {
@@ -217,6 +229,9 @@ describe('SecurityInterceptor', () => {
     expect(() =>
       interceptor.intercept(mockExecutionContext, mockCallHandler),
     ).toThrow(BadRequestException);
+    expect(() =>
+      interceptor.intercept(mockExecutionContext, mockCallHandler),
+    ).toThrow('Content contains potentially unsafe SQL patterns');
   });
 
   it('should allow legitimate text with SQL-like words', () => {
