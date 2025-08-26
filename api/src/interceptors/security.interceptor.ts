@@ -58,28 +58,27 @@ export class SecurityInterceptor implements NestInterceptor {
     // Remove control characters (except newlines and tabs)
     str = str.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
 
-    // Basic SQL injection prevention (basic level - validation pipe handles more)
-    const sqlPatterns = [
-      /(\b(union|select|insert|update|delete|drop|create|alter|exec|execute|script)\b)/gi,
-      /(\b(or|and)\b\s+\d+\s*[=<>])/gi,
-      /(\b(union|select|insert|update|delete|drop|create|alter|exec|execute|script)\b)/gi,
-    ];
-
-    for (const pattern of sqlPatterns) {
-      if (pattern.test(str)) {
-        throw new BadRequestException('Invalid input detected');
-      }
-    }
-
-    // Basic XSS prevention
-    const xssPatterns = [
+    // Focus on actual malicious patterns, not just keywords
+    const maliciousPatterns = [
+      // Actual SQL injection attempts with UNION SELECT
+      /(\bunion\s+select\b)/gi,
+      // SQL injection with stacked queries and semicolons
+      /(\b(select|insert|update|delete|drop|create|alter|exec|execute)\b\s+[^;]*;\s*\b(select|insert|update|delete|drop|create|alter|exec|execute)\b)/gi,
+      // SQL injection with comment syntax
+      /(\b(select|insert|update|delete|drop|create|alter|exec|execute)\b\s+[^;]*--)/gi,
+      // SQL injection with MySQL comment syntax
+      /(\b(select|insert|update|delete|drop|create|alter|exec|execute)\b\s+[^;]*\/\*)/gi,
+      // XSS with script tags
       /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+      // XSS with javascript: URLs
       /javascript:/gi,
-      /on\w+\s*=/gi,
+      // XSS with event handlers (only actual event handlers, not CSS pseudo-selectors)
+      /on\w+\s*=\s*["'][^"']*["']/gi,
+      // XSS with iframe tags
       /<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi,
     ];
 
-    for (const pattern of xssPatterns) {
+    for (const pattern of maliciousPatterns) {
       if (pattern.test(str)) {
         throw new BadRequestException('Invalid input detected');
       }
