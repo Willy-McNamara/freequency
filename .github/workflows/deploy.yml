@@ -71,7 +71,7 @@ jobs:
       - name: Deploy via AWS Systems Manager
         run: |
           # Create a JSON file for the commands to avoid parsing issues
-          cat > deploy-commands.json << 'EOF'
+          cat > deploy-commands.json << EOF
           {
             "commands": [
               "set -e",
