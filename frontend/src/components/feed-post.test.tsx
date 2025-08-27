@@ -229,6 +229,12 @@ describe("FeedPost", () => {
       await waitFor(() => {
         expect(checkGasUpText("0 gas ups")).toBe(true);
       });
+
+      // Wait for loading state to be reset to prevent post-test cleanup errors
+      await waitFor(() => {
+        expect(gasUpButton).not.toHaveClass("opacity-50");
+        expect(gasUpButton).not.toHaveClass("pointer-events-none");
+      });
     });
 
     it("should prevent users from gassing up their own posts", () => {
@@ -259,6 +265,12 @@ describe("FeedPost", () => {
       // Should show loading state immediately
       expect(gasUpButton).toHaveClass("opacity-50");
       expect(gasUpButton).toHaveClass("pointer-events-none");
+
+      // Wait for the Promise to resolve to prevent post-test cleanup errors
+      await waitFor(() => {
+        expect(gasUpButton).not.toHaveClass("opacity-50");
+        expect(gasUpButton).not.toHaveClass("pointer-events-none");
+      });
     });
   });
 
