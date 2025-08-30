@@ -17,7 +17,7 @@ describe("MediaFallback", () => {
     expect(img).toHaveAttribute("src", "https://example.com/image.jpg");
   });
 
-  it("renders video correctly", () => {
+  it("renders video correctly when no thumbnail", () => {
     render(
       <MediaFallback
         url="https://example.com/video.mp4"
@@ -29,6 +29,21 @@ describe("MediaFallback", () => {
     const video = screen.getByTestId("video-element");
     expect(video).toBeInTheDocument();
     expect(video).toHaveAttribute("src", "https://example.com/video.mp4");
+  });
+
+  it("renders video thumbnail when available", () => {
+    render(
+      <MediaFallback
+        url="https://example.com/video.mp4"
+        type="video"
+        thumbnailUrl="https://example.com/thumb.jpg"
+        className="w-full h-full"
+      />
+    );
+
+    const img = screen.getByAltText("Video thumbnail");
+    expect(img).toBeInTheDocument();
+    expect(img).toHaveAttribute("src", "https://example.com/thumb.jpg");
   });
 
   it("renders audio icon correctly", () => {
@@ -84,8 +99,8 @@ describe("MediaFallback", () => {
     expect(screen.getByTestId("image-icon")).toBeInTheDocument();
   });
 
-  it("shows correct icon for different media types", () => {
-    const { rerender } = render(
+  it("shows image fallback icon when image fails", () => {
+    render(
       <MediaFallback
         url="https://example.com/image.jpg"
         type="image"
@@ -98,9 +113,10 @@ describe("MediaFallback", () => {
     fireEvent.error(img);
 
     expect(screen.getByTestId("image-icon")).toBeInTheDocument();
+  });
 
-    // Test video type
-    rerender(
+  it("shows video fallback icon when video fails", () => {
+    render(
       <MediaFallback
         url="https://example.com/video.mp4"
         type="video"
@@ -112,9 +128,10 @@ describe("MediaFallback", () => {
     fireEvent.error(video);
 
     expect(screen.getByTestId("video-icon")).toBeInTheDocument();
+  });
 
-    // Test audio type
-    rerender(
+  it("shows audio icon for audio type", () => {
+    render(
       <MediaFallback
         url="https://example.com/audio.mp3"
         type="audio"
@@ -150,12 +167,13 @@ describe("MediaFallback", () => {
     const img = screen.getByAltText("Media");
     fireEvent.error(img);
 
-    const fallback = screen.getByTestId("image-icon").closest("div");
+    // fallbackClassName applies to the outer div, not the icon container
+    const fallback = screen.getByLabelText("image media");
     expect(fallback).toHaveClass("fallback-class");
   });
 
-  it("renders with different icon sizes", () => {
-    const { rerender } = render(
+  it("renders with small icon size", () => {
+    render(
       <MediaFallback
         url="https://example.com/image.jpg"
         type="image"
@@ -163,40 +181,42 @@ describe("MediaFallback", () => {
       />
     );
 
-    let img = screen.getByAltText("Media");
+    const img = screen.getByAltText("Media");
     fireEvent.error(img);
 
-    let icon = screen.getByTestId("image-icon");
+    const icon = screen.getByTestId("image-icon");
     expect(icon).toHaveClass("w-4", "h-4");
+  });
 
-    // Test medium size
-    rerender(
+  it("renders with medium icon size", () => {
+    render(
       <MediaFallback
-        url="https://example.com/image.jpg"
+        url="https://example.com/image2.jpg"
         type="image"
         iconSize="md"
       />
     );
 
-    img = screen.getByAltText("Media");
+    const img = screen.getByAltText("Media");
     fireEvent.error(img);
 
-    icon = screen.getByTestId("image-icon");
+    const icon = screen.getByTestId("image-icon");
     expect(icon).toHaveClass("w-6", "h-6");
+  });
 
-    // Test large size
-    rerender(
+  it("renders with large icon size", () => {
+    render(
       <MediaFallback
-        url="https://example.com/image.jpg"
+        url="https://example.com/image3.jpg"
         type="image"
         iconSize="lg"
       />
     );
 
-    img = screen.getByAltText("Media");
+    const img = screen.getByAltText("Media");
     fireEvent.error(img);
 
-    icon = screen.getByTestId("image-icon");
+    const icon = screen.getByTestId("image-icon");
     expect(icon).toHaveClass("w-8", "h-8");
   });
 
