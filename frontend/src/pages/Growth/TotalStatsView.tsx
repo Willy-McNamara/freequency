@@ -121,7 +121,7 @@ export const TotalStatsView: React.FC<TotalStatsViewProps> = ({
         )}
       </div>
       {/* Tag breakdown cards */}
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 mb-8">
         {tagTotals.length > 0 ? (
           tagTotals.map((tag) => (
             <Card
