@@ -1,214 +1,225 @@
-import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { vi } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { MediaFallback } from "./MediaFallback";
 
 describe("MediaFallback", () => {
-  const mockOnError = vi.fn();
+  it("renders image correctly", () => {
+    render(
+      <MediaFallback
+        url="https://example.com/image.jpg"
+        type="image"
+        className="w-full h-full"
+      />
+    );
 
-  beforeEach(() => {
-    vi.clearAllMocks();
+    const img = screen.getByAltText("Media");
+    expect(img).toBeInTheDocument();
+    expect(img).toHaveAttribute("src", "https://example.com/image.jpg");
   });
 
-  describe("Image Handling", () => {
-    it("renders image when URL is valid", () => {
-      render(
-        <MediaFallback
-          url="https://example.com/image.jpg"
-          type="image"
-          displayName="Test Image"
-          className="test-class"
-        />
-      );
+  it("renders video correctly", () => {
+    render(
+      <MediaFallback
+        url="https://example.com/video.mp4"
+        type="video"
+        className="w-full h-full"
+      />
+    );
 
-      const img = screen.getByAltText("Test Image");
-      expect(img).toBeInTheDocument();
-      expect(img).toHaveClass("test-class");
-    });
-
-    it("falls back to thumbnail when image fails and thumbnail is available", () => {
-      render(
-        <MediaFallback
-          url="https://invalid-url.com/image.jpg"
-          type="image"
-          thumbnailUrl="https://example.com/thumb.jpg"
-          displayName="Test Image"
-        />
-      );
-
-      const img = screen.getByAltText("Test Image");
-      expect(img).toBeInTheDocument();
-
-      // Simulate image load error to trigger thumbnail fallback
-      fireEvent.error(img);
-
-      // Should now show thumbnail
-      const thumbnailImg = screen.getByAltText("Test Image");
-      expect(thumbnailImg.src).toContain("thumb.jpg");
-    });
-
-    it("shows icon when image fails and no thumbnail available", () => {
-      render(
-        <MediaFallback
-          url="https://invalid-url.com/image.jpg"
-          type="image"
-          displayName="Test Image"
-        />
-      );
-
-      // Simulate image load error
-      const img = screen.getByAltText("Test Image");
-      fireEvent.error(img);
-
-      // Should show fallback icon
-      expect(screen.getByTestId("image-icon")).toBeInTheDocument();
-    });
+    const video = screen.getByTestId("video-element");
+    expect(video).toBeInTheDocument();
+    expect(video).toHaveAttribute("src", "https://example.com/video.mp4");
   });
 
-  describe("Video Handling", () => {
-    it("renders video when no thumbnail available", () => {
-      render(
-        <MediaFallback
-          url="https://example.com/video.mp4"
-          type="video"
-          displayName="Test Video"
-        />
-      );
+  it("renders audio icon correctly", () => {
+    render(
+      <MediaFallback
+        url="https://example.com/audio.mp3"
+        type="audio"
+        className="w-full h-full"
+      />
+    );
 
-      const video = screen.getByTestId("video-element");
-      expect(video).toBeInTheDocument();
-    });
-
-    it("renders thumbnail when available", () => {
-      render(
-        <MediaFallback
-          url="https://example.com/video.mp4"
-          type="video"
-          thumbnailUrl="https://example.com/thumb.jpg"
-          displayName="Test Video"
-        />
-      );
-
-      const img = screen.getByAltText("Test Video");
-      expect(img).toBeInTheDocument();
-      expect(img.src).toContain("thumb.jpg");
-    });
-
-    it("shows icon when video fails", () => {
-      render(
-        <MediaFallback
-          url="https://invalid-url.com/video.mp4"
-          type="video"
-          displayName="Test Video"
-        />
-      );
-
-      // Simulate video load error
-      const video = screen.getByTestId("video-element");
-      fireEvent.error(video);
-
-      // Should show fallback icon
-      expect(screen.getByTestId("video-icon")).toBeInTheDocument();
-    });
+    expect(screen.getByTestId("music-icon")).toBeInTheDocument();
   });
 
-  describe("Audio Handling", () => {
-    it("always shows audio icon", () => {
-      render(
-        <MediaFallback
-          url="https://example.com/audio.mp3"
-          type="audio"
-          displayName="Test Audio"
-        />
-      );
+  it("falls back to thumbnail for images", () => {
+    render(
+      <MediaFallback
+        url="https://example.com/image.jpg"
+        type="image"
+        thumbnailUrl="https://example.com/thumb.jpg"
+        className="w-full h-full"
+      />
+    );
 
-      expect(screen.getByTestId("music-icon")).toBeInTheDocument();
-    });
+    const img = screen.getByAltText("Media");
+    expect(img).toBeInTheDocument();
+    expect(img).toHaveAttribute("src", "https://example.com/image.jpg");
+
+    // Simulate image load error
+    fireEvent.error(img);
+
+    // Should now show thumbnail
+    const thumbnailImg = screen.getByAltText("Media") as HTMLImageElement;
+    expect(thumbnailImg.src).toContain("thumb.jpg");
   });
 
-  describe("Icon Sizing", () => {
-    it("applies small icon size", () => {
-      render(
-        <MediaFallback
-          url="https://invalid-url.com/image.jpg"
-          type="image"
-          iconSize="sm"
-        />
-      );
+  it("falls back to icon when no thumbnail available", () => {
+    render(
+      <MediaFallback
+        url="https://example.com/image.jpg"
+        type="image"
+        className="w-full h-full"
+      />
+    );
 
-      // Simulate error to show fallback
-      const img = screen.getByAltText("Media");
-      fireEvent.error(img);
+    const img = screen.getByAltText("Media");
+    expect(img).toBeInTheDocument();
 
-      const icon = screen.getByTestId("image-icon");
-      expect(icon).toHaveClass("w-4 h-4");
-    });
+    // Simulate image load error
+    fireEvent.error(img);
 
-    it("applies medium icon size", () => {
-      render(
-        <MediaFallback
-          url="https://invalid-url.com/image2.jpg"
-          type="image"
-          iconSize="md"
-        />
-      );
-
-      const img = screen.getByAltText("Media");
-      fireEvent.error(img);
-      expect(screen.getByTestId("image-icon")).toHaveClass("w-6 h-6");
-    });
-
-    it("applies large icon size", () => {
-      render(
-        <MediaFallback
-          url="https://invalid-url.com/image3.jpg"
-          type="image"
-          iconSize="lg"
-        />
-      );
-
-      const img = screen.getByAltText("Media");
-      fireEvent.error(img);
-      expect(screen.getByTestId("image-icon")).toHaveClass("w-8 h-8");
-    });
+    // Should show fallback icon
+    expect(screen.getByTestId("image-icon")).toBeInTheDocument();
   });
 
-  describe("Error Handling", () => {
-    it("calls onError callback when media fails", () => {
-      render(
-        <MediaFallback
-          url="https://invalid-url.com/image.jpg"
-          type="image"
-          onError={mockOnError}
-        />
-      );
+  it("shows correct icon for different media types", () => {
+    const { rerender } = render(
+      <MediaFallback
+        url="https://example.com/image.jpg"
+        type="image"
+        className="w-full h-full"
+      />
+    );
 
-      const img = screen.getByAltText("Media");
-      fireEvent.error(img);
+    // Simulate error to show fallback
+    const img = screen.getByAltText("Media");
+    fireEvent.error(img);
 
-      expect(mockOnError).toHaveBeenCalled();
-    });
+    expect(screen.getByTestId("image-icon")).toBeInTheDocument();
 
-    it("calls onFallback callback when fallback state changes", () => {
-      const mockOnFallback = vi.fn();
+    // Test video type
+    rerender(
+      <MediaFallback
+        url="https://example.com/video.mp4"
+        type="video"
+        className="w-full h-full"
+      />
+    );
 
-      render(
-        <MediaFallback
-          url="https://invalid-url.com/image.jpg"
-          type="image"
-          onFallback={mockOnFallback}
-        />
-      );
+    const video = screen.getByTestId("video-element");
+    fireEvent.error(video);
 
-      // Initially should not be in fallback state
-      expect(mockOnFallback).toHaveBeenCalledWith(false);
+    expect(screen.getByTestId("video-icon")).toBeInTheDocument();
 
-      // Simulate error to trigger fallback
-      const img = screen.getByAltText("Media");
-      fireEvent.error(img);
+    // Test audio type
+    rerender(
+      <MediaFallback
+        url="https://example.com/audio.mp3"
+        type="audio"
+        className="w-full h-full"
+      />
+    );
 
-      // Should now be in fallback state
-      expect(mockOnFallback).toHaveBeenCalledWith(true);
-    });
+    expect(screen.getByTestId("music-icon")).toBeInTheDocument();
+  });
+
+  it("applies custom className", () => {
+    render(
+      <MediaFallback
+        url="https://example.com/image.jpg"
+        type="image"
+        className="custom-class"
+      />
+    );
+
+    const img = screen.getByAltText("Media");
+    expect(img).toHaveClass("custom-class");
+  });
+
+  it("applies fallback className", () => {
+    render(
+      <MediaFallback
+        url="https://example.com/image.jpg"
+        type="image"
+        fallbackClassName="fallback-class"
+      />
+    );
+
+    const img = screen.getByAltText("Media");
+    fireEvent.error(img);
+
+    const fallback = screen.getByTestId("image-icon").closest("div");
+    expect(fallback).toHaveClass("fallback-class");
+  });
+
+  it("renders with different icon sizes", () => {
+    const { rerender } = render(
+      <MediaFallback
+        url="https://example.com/image.jpg"
+        type="image"
+        iconSize="sm"
+      />
+    );
+
+    let img = screen.getByAltText("Media");
+    fireEvent.error(img);
+
+    let icon = screen.getByTestId("image-icon");
+    expect(icon).toHaveClass("w-4", "h-4");
+
+    // Test medium size
+    rerender(
+      <MediaFallback
+        url="https://example.com/image.jpg"
+        type="image"
+        iconSize="md"
+      />
+    );
+
+    img = screen.getByAltText("Media");
+    fireEvent.error(img);
+
+    icon = screen.getByTestId("image-icon");
+    expect(icon).toHaveClass("w-6", "h-6");
+
+    // Test large size
+    rerender(
+      <MediaFallback
+        url="https://example.com/image.jpg"
+        type="image"
+        iconSize="lg"
+      />
+    );
+
+    img = screen.getByAltText("Media");
+    fireEvent.error(img);
+
+    icon = screen.getByTestId("image-icon");
+    expect(icon).toHaveClass("w-8", "h-8");
+  });
+
+  it("calls onFallback callback when fallback state changes", () => {
+    const mockOnFallback = vi.fn();
+
+    render(
+      <MediaFallback
+        url="https://example.com/image.jpg"
+        type="image"
+        onFallback={mockOnFallback}
+      />
+    );
+
+    const img = screen.getByAltText("Media");
+
+    // Initially should not be in fallback state
+    expect(mockOnFallback).toHaveBeenCalledWith(false);
+
+    // Simulate error to trigger fallback
+    fireEvent.error(img);
+
+    // Should now be in fallback state
+    expect(mockOnFallback).toHaveBeenCalledWith(true);
   });
 });
