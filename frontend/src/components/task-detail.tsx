@@ -149,7 +149,7 @@ export function TaskDetail({
                   className="flex flex-row items-center gap-3 p-3 bg-muted/30 rounded-lg w-full min-w-0"
                 >
                   <div className="w-5 h-5 rounded border-2 border-muted-foreground/30 flex-shrink-0"></div>
-                  <span className="flex-1 min-w-0 text-sm text-foreground text-left break-words truncate">
+                  <span className="flex-1 min-w-0 text-sm text-foreground text-left break-words">
                     {item}
                   </span>
                 </div>

@@ -257,17 +257,17 @@ export function CreateTaskModal({
                 className="text-xs underline text-muted-foreground hover:text-foreground"
               >
                 {formData.instrument ? "Change" : "Select"}
-                {/* Hidden input for browser validation */}
-                <SecureInput
-                  type="text"
-                  value={formData.instrument}
-                  required
-                  tabIndex={-1}
-                  autoComplete="off"
-                  style={{ opacity: 0, width: "1px" }}
-                  onChange={() => {}}
-                />
               </button>
+              {/* Hidden input for browser validation - moved outside button to prevent layout interference */}
+              <SecureInput
+                type="text"
+                value={formData.instrument}
+                required
+                tabIndex={-1}
+                autoComplete="off"
+                style={{ opacity: 0, width: "1px" }}
+                onChange={() => {}}
+              />
             </div>
             <InstrumentModal
               isOpen={instrumentModalOpen}
@@ -323,17 +323,25 @@ export function CreateTaskModal({
             <label className="block text-sm font-medium text-foreground mb-2 text-left">
               Checklist
             </label>
+
             <div className="flex flex-row flex-nowrap gap-2 mb-3">
-              <SecureInput
-                type="text"
-                value={newChecklistItem}
-                onChange={(e) => setNewChecklistItem(e.target.value)}
-                onKeyPress={(e) =>
-                  e.key === "Enter" && (e.preventDefault(), addChecklistItem())
-                }
-                className="flex-1 text-left"
-                placeholder="Add checklist item"
-              />
+              <div className="flex-1 relative">
+                <SecureInput
+                  type="text"
+                  value={newChecklistItem}
+                  onChange={(e) => setNewChecklistItem(e.target.value)}
+                  onKeyPress={(e) =>
+                    e.key === "Enter" &&
+                    (e.preventDefault(), addChecklistItem())
+                  }
+                  className="w-full text-left pr-16"
+                  placeholder="Add checklist item"
+                  maxLength={600}
+                />
+                <div className="absolute right-2 top-1/2 transform -translate-y-1/2 text-xs text-muted-foreground">
+                  {newChecklistItem.length}/600
+                </div>
+              </div>
               <button
                 type="button"
                 onClick={addChecklistItem}
@@ -350,7 +358,7 @@ export function CreateTaskModal({
                     className="flex flex-row items-center gap-3 p-3 bg-muted/30 rounded-lg w-full min-w-0"
                   >
                     <div className="w-5 h-5 rounded border-2 border-muted-foreground/30 flex-shrink-0"></div>
-                    <span className="flex-1 min-w-0 text-sm text-foreground text-left break-words truncate">
+                    <span className="flex-1 min-w-0 text-sm text-foreground text-left break-words">
                       {item}
                     </span>
                     <button
