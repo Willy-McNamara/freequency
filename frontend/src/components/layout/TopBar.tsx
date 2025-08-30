@@ -46,7 +46,7 @@ export function TopBar() {
           )}
           <nav className="flex flex-col gap-2 mt-4">
             <NavLink
-              to="/"
+              to="/feed"
               className={({ isActive }) =>
                 `px-3 py-2 rounded-md transition-colors text-base font-medium ${
                   isActive

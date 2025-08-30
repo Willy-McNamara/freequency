@@ -104,7 +104,7 @@ describe("TopBar", () => {
   it("displays navigation links", () => {
     renderTopBar();
 
-    expect(screen.getByTestId("nav-link-/")).toBeInTheDocument();
+    expect(screen.getByTestId("nav-link-/feed")).toBeInTheDocument();
     expect(screen.getByTestId("nav-link-/practice")).toBeInTheDocument();
     expect(screen.getByTestId("nav-link-/task-library")).toBeInTheDocument();
     expect(screen.getByTestId("nav-link-/growth")).toBeInTheDocument();
