@@ -148,16 +148,34 @@ const Feed = () => {
       const userFilter = activeFilters.find((f) => f.type === "user");
 
       if (userFilter?.isSelected && userFilter.options) {
+        // Check if "Me" is selected
+        const meSelected = userFilter.options.some(
+          (option) => option.id === "me" && option.checked
+        );
+
+        // Get selected user IDs (excluding "following" and "me")
         const selectedUserIds = userFilter.options
-          .filter((option) => option.checked && option.id !== "following")
+          .filter(
+            (option) =>
+              option.checked && option.id !== "following" && option.id !== "me"
+          )
           .map((option) => option.id);
+
+        // Check if "Following" is selected
         const followingSelected = userFilter.options.some(
           (option) => option.id === "following" && option.checked
         );
+
         if (followingSelected) {
           params.append("following", "true");
         }
-        if (selectedUserIds.length > 0) {
+
+        // If "Me" is selected, add current user's ID to the users parameter
+        if (meSelected && user?.id) {
+          const allUserIds = [...selectedUserIds, String(user.id)];
+          params.append("users", allUserIds.join(","));
+        } else if (selectedUserIds.length > 0) {
+          // Only add users param if there are other selected users
           params.append("users", selectedUserIds.join(","));
         }
       }
