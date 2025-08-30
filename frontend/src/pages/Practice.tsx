@@ -379,7 +379,7 @@ const PracticeInner: React.FC<{ session: SessionContextValue }> = ({
       }
 
       toast.success(`Successful save! Routing to your posts...`);
-      await new Promise((resolve) => setTimeout(resolve, 2500)); // Pause so the user can read the toast before redirect
+      await new Promise((resolve) => setTimeout(resolve, 1200)); // Pause so the user can read the toast before redirect
 
       // Extract current instrument before clearing session data
       const instrumentLabels = ALL_INSTRUMENTS.map((i) => i.label);
