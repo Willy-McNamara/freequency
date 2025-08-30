@@ -124,7 +124,7 @@ ReactDOM.createRoot(root).render(
                 index
                 element={
                   <Suspense fallback={<LoadingScreen />}>
-                    <Feed />
+                    <About />
                   </Suspense>
                 }
               />
