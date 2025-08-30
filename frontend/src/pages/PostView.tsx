@@ -448,8 +448,14 @@ export const PostView: React.FC = () => {
       {/* Comments Modal/Drawer */}
       {showCommentModal && (
         <Section spacing="md">
-          <div className="fixed inset-0 bg-black/50 flex items-end justify-center z-50">
-            <div className="bg-background border-t border-border rounded-t-lg w-full h-[70vh] sm:h-[80vh] flex flex-col animate-in slide-in-from-bottom duration-300">
+          <div
+            className="fixed inset-0 bg-black/50 flex items-end justify-center z-50"
+            onClick={() => setShowCommentModal(false)}
+          >
+            <div
+              className="bg-background border-t border-border rounded-t-lg w-full h-[70vh] sm:h-[80vh] flex flex-col animate-in slide-in-from-bottom duration-300"
+              onClick={(e) => e.stopPropagation()}
+            >
               {/* Header */}
               <div className="flex items-center justify-between p-3 sm:p-4 border-b border-border">
                 <h3 className="text-base sm:text-lg font-semibold">
