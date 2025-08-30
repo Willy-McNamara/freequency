@@ -58,6 +58,7 @@ export const SecurityConfig = {
       'X-Requested-With',
       'Accept',
       'Origin',
+      'x-csrf-token',
     ],
   },
 

@@ -8,8 +8,8 @@ import {
   Video,
 } from "lucide-react";
 import { Button } from "./ui/button";
-
 import { AudioPlayer } from "./AudioPlayer";
+import { MediaFallback } from "./MediaFallback";
 
 interface MediaItem {
   url: string;
@@ -143,10 +143,13 @@ export const MediaGalleryModal: React.FC<MediaGalleryModalProps> = ({
               className="relative rounded-lg overflow-hidden bg-muted cursor-pointer hover:opacity-90 transition-opacity"
               onClick={() => handleImageClick(index)}
             >
-              <img
-                src={item.url}
-                alt="Media"
+              <MediaFallback
+                url={item.url}
+                type={item.type}
+                displayName={item.displayName}
                 className="w-full h-32 md:h-40 object-cover"
+                fallbackClassName="w-full h-32 md:h-40"
+                iconSize="lg"
               />
               <div className="absolute top-2 left-2">
                 <div className="bg-black/50 text-white p-1 rounded">
@@ -165,34 +168,15 @@ export const MediaGalleryModal: React.FC<MediaGalleryModalProps> = ({
                 className="relative rounded-lg overflow-hidden bg-muted cursor-pointer hover:opacity-90 transition-opacity"
                 onClick={() => handleImageClick(videoIndex)}
               >
-                {item.thumbnailUrl ? (
-                  <img
-                    src={item.thumbnailUrl}
-                    alt={item.displayName || "Video thumbnail"}
-                    className="w-full h-32 md:h-40 object-cover"
-                  />
-                ) : (
-                  <video
-                    src={item.url}
-                    className="w-full h-32 md:h-40 object-cover"
-                    muted
-                    preload="metadata"
-                    poster={item.url}
-                    onError={(e) => {
-                      // Fallback to video icon if video fails to load
-                      const target = e.target as HTMLVideoElement;
-                      target.style.display = "none";
-                      const fallback = target.parentElement?.querySelector(
-                        ".video-fallback"
-                      ) as HTMLElement;
-                      if (fallback) fallback.style.display = "flex";
-                    }}
-                  />
-                )}
-                {/* Fallback video icon */}
-                <div className="video-fallback hidden absolute inset-0 bg-muted flex items-center justify-center">
-                  <Video className="w-8 h-8 text-muted-foreground" />
-                </div>
+                <MediaFallback
+                  url={item.url}
+                  type={item.type}
+                  displayName={item.displayName}
+                  thumbnailUrl={item.thumbnailUrl}
+                  className="w-full h-32 md:h-40 object-cover"
+                  fallbackClassName="w-full h-32 md:h-40"
+                  iconSize="lg"
+                />
                 <div className="absolute top-2 left-2">
                   <div className="bg-black/50 text-white p-1 rounded">
                     {getFileTypeIcon(item.type)}

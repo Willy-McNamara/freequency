@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { Music, Video, Image } from "lucide-react";
+import { MediaFallback } from "./MediaFallback";
 
 interface MediaThumbnailProps {
   media: Array<{
@@ -39,42 +40,32 @@ export const MediaThumbnail: React.FC<MediaThumbnailProps> = ({
   return (
     <div className={`flex gap-2 ${className}`}>
       {displayMedia.map((item, index) => {
+        const [isFallback, setIsFallback] = useState(false);
+
         return (
           <div
             key={index}
             className="relative w-16 h-16 rounded-md overflow-hidden bg-muted flex-shrink-0"
           >
-            {item.type === "image" && (
-              <img
-                src={item.url}
-                alt="Media"
-                className="w-full h-full object-cover"
-              />
-            )}
-            {item.type === "audio" && (
-              <div className="w-full h-full flex items-center justify-center">
-                <Music className="w-6 h-6 text-muted-foreground" />
-              </div>
-            )}
-            {item.type === "video" &&
-              (item.thumbnailUrl ? (
-                <img
-                  src={item.thumbnailUrl}
-                  alt={item.displayName || "Video thumbnail"}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <Video className="w-6 h-6 text-muted-foreground" />
-                </div>
-              ))}
+            <MediaFallback
+              url={item.url}
+              type={item.type}
+              displayName={item.displayName}
+              thumbnailUrl={item.thumbnailUrl}
+              className="w-full h-full object-cover"
+              fallbackClassName="w-full h-full"
+              iconSize="md"
+              onFallback={setIsFallback}
+            />
 
-            {/* File type icon overlay */}
-            <div className="absolute top-1 left-1">
-              <div className="bg-black/50 text-white p-0.5 rounded">
-                {getFileTypeIcon(item.type)}
+            {/* File type icon overlay - hidden for fallback states */}
+            {!isFallback && (
+              <div className="absolute top-1 left-1 pointer-events-none">
+                <div className="bg-black/50 text-white p-0.5 rounded">
+                  {getFileTypeIcon(item.type)}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         );
       })}

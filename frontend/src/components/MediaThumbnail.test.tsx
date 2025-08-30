@@ -74,9 +74,9 @@ describe("MediaThumbnail", () => {
 
       render(<MediaThumbnail media={media} />);
 
-      const audioIcon = document.querySelector(".lucide-music");
+      const audioIcon = screen.getByTestId("music-icon");
       expect(audioIcon).toBeInTheDocument();
-      expect(audioIcon).toHaveClass("w-6", "h-6", "text-muted-foreground");
+      expect(audioIcon).toHaveClass("w-6", "h-6");
     });
 
     it("shows audio icon overlay", () => {
@@ -114,7 +114,7 @@ describe("MediaThumbnail", () => {
       expect(thumbnail).toHaveClass("w-full", "h-full", "object-cover");
     });
 
-    it("renders video icon when no thumbnail", () => {
+    it("renders video element when no thumbnail", () => {
       const media = [
         {
           url: "https://example.com/video.mp4",
@@ -124,9 +124,9 @@ describe("MediaThumbnail", () => {
 
       render(<MediaThumbnail media={media} />);
 
-      const videoIcon = document.querySelector(".lucide-video");
-      expect(videoIcon).toBeInTheDocument();
-      expect(videoIcon).toHaveClass("w-6", "h-6", "text-muted-foreground");
+      const videoElement = screen.getByTestId("video-element");
+      expect(videoElement).toBeInTheDocument();
+      expect(videoElement).toHaveClass("w-full", "h-full", "object-cover");
     });
 
     it("uses default alt text when no displayName", () => {
