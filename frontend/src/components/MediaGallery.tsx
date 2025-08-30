@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { X, Image, Music, Video, File } from "lucide-react";
 import { Button } from "./ui/button";
 import { AudioPlayer } from "./AudioPlayer";
@@ -19,15 +19,13 @@ interface MediaGalleryProps {
   className?: string;
 }
 
-export const MediaGallery: React.FC<MediaGalleryProps> = ({
-  media,
-  onRemove,
-  className = "",
-}) => {
-  // Separate media types
-  const photos = media.filter((item) => item.type === "image");
-  const audioFiles = media.filter((item) => item.type === "audio");
-  const videos = media.filter((item) => item.type === "video");
+// Separate component to handle individual media items with fallback state
+const MediaGalleryItem: React.FC<{
+  item: MediaItem;
+  originalIndex: number;
+  onRemove?: (index: number) => void;
+}> = ({ item, originalIndex, onRemove }) => {
+  const [isFallback, setIsFallback] = useState(false);
 
   const getFileTypeIcon = (type: string) => {
     switch (type) {
@@ -41,6 +39,49 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
         return <File className="w-4 h-4" />;
     }
   };
+
+  return (
+    <div className="relative rounded-lg overflow-hidden bg-muted border">
+      <MediaFallback
+        url={item.url}
+        type={item.type}
+        displayName={item.fileName}
+        thumbnailUrl={item.thumbnailUrl}
+        className="w-full h-32 md:h-40 object-cover"
+        fallbackClassName="w-full h-32 md:h-40"
+        iconSize="lg"
+        onFallback={setIsFallback}
+      />
+      {/* File type icon - hidden for fallback states */}
+      {!isFallback && (
+        <div className="absolute top-2 left-2 bg-black/50 text-white p-1 rounded">
+          {getFileTypeIcon(item.type)}
+        </div>
+      )}
+      {onRemove && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => onRemove(originalIndex)}
+          className="absolute top-2 right-2 h-6 w-6 p-0 bg-black/50 text-white hover:bg-black/70"
+        >
+          <X className="h-3 w-3" />
+        </Button>
+      )}
+    </div>
+  );
+};
+
+export const MediaGallery: React.FC<MediaGalleryProps> = ({
+  media,
+  onRemove,
+  className = "",
+}) => {
+  // Separate media types
+  const photos = media.filter((item) => item.type === "image");
+  const audioFiles = media.filter((item) => item.type === "audio");
+  const videos = media.filter((item) => item.type === "video");
 
   if (media.length === 0) {
     return (
@@ -92,34 +133,12 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
           {photos.map((item, index) => {
             const originalIndex = media.findIndex((m) => m === item);
             return (
-              <div
+              <MediaGalleryItem
                 key={item.id || index}
-                className="relative rounded-lg overflow-hidden bg-muted border"
-              >
-                <MediaFallback
-                  url={item.url}
-                  type={item.type}
-                  displayName={item.fileName}
-                  className="w-full h-32 md:h-40 object-cover"
-                  fallbackClassName="w-full h-32 md:h-40"
-                  iconSize="lg"
-                />
-                {/* File type icon */}
-                <div className="absolute top-2 left-2 bg-black/50 text-white p-1 rounded">
-                  {getFileTypeIcon(item.type)}
-                </div>
-                {onRemove && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onRemove(originalIndex)}
-                    className="absolute top-2 right-2 h-6 w-6 p-0 bg-black/50 text-white hover:bg-black/70"
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                )}
-              </div>
+                item={item}
+                originalIndex={originalIndex}
+                onRemove={onRemove}
+              />
             );
           })}
 
@@ -127,35 +146,12 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
           {videos.map((item, index) => {
             const originalIndex = media.findIndex((m) => m === item);
             return (
-              <div
+              <MediaGalleryItem
                 key={item.id || index}
-                className="relative rounded-lg overflow-hidden bg-muted border"
-              >
-                <MediaFallback
-                  url={item.url}
-                  type={item.type}
-                  displayName={item.fileName}
-                  thumbnailUrl={item.thumbnailUrl}
-                  className="w-full h-32 md:h-40 object-cover"
-                  fallbackClassName="w-full h-32 md:h-40"
-                  iconSize="lg"
-                />
-                {/* File type icon */}
-                <div className="absolute top-2 left-2 bg-black/50 text-white p-1 rounded">
-                  {getFileTypeIcon(item.type)}
-                </div>
-                {onRemove && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onRemove(originalIndex)}
-                    className="absolute top-2 right-2 h-6 w-6 p-0 bg-black/50 text-white hover:bg-black/70"
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                )}
-              </div>
+                item={item}
+                originalIndex={originalIndex}
+                onRemove={onRemove}
+              />
             );
           })}
         </div>

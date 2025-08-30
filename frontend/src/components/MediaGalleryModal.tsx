@@ -31,30 +31,71 @@ export const MediaGalleryModal: React.FC<MediaGalleryModalProps> = ({
     null
   );
 
+  // Define functions that will be used in useEffect
+  const closeModal = () => {
+    setSelectedImageIndex(null);
+  };
+
+  const nextImage = () => {
+    if (selectedImageIndex !== null && media) {
+      const photos = media.filter((item) => item.type === "image");
+      const videos = media.filter((item) => item.type === "video");
+      const imageAndVideoMedia = [...photos, ...videos];
+      setSelectedImageIndex(
+        (selectedImageIndex + 1) % imageAndVideoMedia.length
+      );
+    }
+  };
+
+  const prevImage = () => {
+    if (selectedImageIndex !== null && media) {
+      const photos = media.filter((item) => item.type === "image");
+      const videos = media.filter((item) => item.type === "video");
+      const imageAndVideoMedia = [...photos, ...videos];
+      setSelectedImageIndex(
+        selectedImageIndex === 0
+          ? imageAndVideoMedia.length - 1
+          : selectedImageIndex - 1
+      );
+    }
+  };
+
   // Keyboard navigation
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (selectedImageIndex === null) return;
-
-      switch (event.key) {
-        case "Escape":
-          event.preventDefault();
-          closeModal();
-          break;
-        case "ArrowLeft":
-          event.preventDefault();
-          prevImage();
-          break;
-        case "ArrowRight":
-          event.preventDefault();
-          nextImage();
-          break;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (selectedImageIndex !== null) {
+        switch (e.key) {
+          case "Escape":
+            closeModal();
+            break;
+          case "ArrowRight":
+            nextImage();
+            break;
+          case "ArrowLeft":
+            prevImage();
+            break;
+        }
       }
     };
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [selectedImageIndex]);
+
+  if (!media || media.length === 0) {
+    return null;
+  }
+
+  // Separate media types
+  const photos = media.filter((item) => item.type === "image");
+  const audioFiles = media.filter((item) => item.type === "audio");
+  const videos = media.filter((item) => item.type === "video");
+
+  // Combine photos and videos for modal navigation
+  const imageAndVideoMedia = [...photos, ...videos];
+
+  const selectedMedia =
+    selectedImageIndex !== null ? imageAndVideoMedia[selectedImageIndex] : null;
 
   const handleImageClick = (index: number) => {
     setSelectedImageIndex(index);
@@ -72,47 +113,6 @@ export const MediaGalleryModal: React.FC<MediaGalleryModalProps> = ({
         return <Image className="w-4 h-4" />;
     }
   };
-
-  const closeModal = () => {
-    setSelectedImageIndex(null);
-  };
-
-  const nextImage = () => {
-    if (selectedImageIndex !== null) {
-      setSelectedImageIndex(
-        (selectedImageIndex + 1) %
-          media.filter((m) => m.type === "image" || m.type === "video").length
-      );
-    }
-  };
-
-  const prevImage = () => {
-    if (selectedImageIndex !== null) {
-      const imageAndVideoMedia = media.filter(
-        (m) => m.type === "image" || m.type === "video"
-      );
-      setSelectedImageIndex(
-        selectedImageIndex === 0
-          ? imageAndVideoMedia.length - 1
-          : selectedImageIndex - 1
-      );
-    }
-  };
-
-  if (!media || media.length === 0) {
-    return null;
-  }
-
-  const imageAndVideoMedia = media.filter(
-    (m) => m.type === "image" || m.type === "video"
-  );
-  const selectedMedia =
-    selectedImageIndex !== null ? imageAndVideoMedia[selectedImageIndex] : null;
-
-  // Separate media types for display
-  const photos = media.filter((item) => item.type === "image");
-  const audioFiles = media.filter((item) => item.type === "audio");
-  const videos = media.filter((item) => item.type === "video");
 
   return (
     <>

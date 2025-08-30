@@ -105,16 +105,16 @@ export const buildApiUrl = (endpoint: string): string => {
 };
 
 // Environment detection
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 export const isDevelopment = (import.meta as any).env.DEV;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 export const isProduction = (import.meta as any).env.PROD;
 
 // Log configuration in development
 if (isDevelopment) {
   console.log("API Configuration:", {
     baseUrl: apiConfig.baseUrl,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     environment: (import.meta as any).env.MODE,
   });
 }
