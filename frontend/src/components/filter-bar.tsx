@@ -118,6 +118,12 @@ export function FilterBar({
     handleModalClose();
   };
 
+  const handleClearFilters = () => {
+    setLocalOptions((prev) =>
+      prev.map((option) => ({ ...option, checked: false }))
+    );
+  };
+
   const filteredOptions = localOptions.filter((option) =>
     option.label.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -308,8 +314,12 @@ export function FilterBar({
               )}
             </div>
             <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={handleModalClose}>
-                Cancel
+              <Button
+                variant="outline"
+                onClick={handleClearFilters}
+                disabled={!localOptions.some((option) => option.checked)}
+              >
+                Clear
               </Button>
               <Button onClick={handleApplyFilters}>Apply</Button>
             </div>
