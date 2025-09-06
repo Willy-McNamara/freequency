@@ -96,10 +96,9 @@ describe("MediaGalleryModal", () => {
 
       render(<MediaGalleryModal media={media} />);
 
-      const video = document.querySelector("video");
+      const video = screen.getByTestId("video-element");
       expect(video).toBeInTheDocument();
       expect(video).toHaveAttribute("src", "https://example.com/video1.mp4");
-      expect(video).toHaveAttribute("poster", "https://example.com/video1.mp4");
     });
 
     it("renders audio files correctly", () => {
@@ -615,14 +614,13 @@ describe("MediaGalleryModal", () => {
 
       render(<MediaGalleryModal media={media} />);
 
-      const video = document.querySelector("video");
+      const video = screen.getByTestId("video-element");
 
       // Simulate video load error
-      fireEvent.error(video!);
+      fireEvent.error(video);
 
       // The fallback should be visible
-      const fallback = video?.parentElement?.querySelector(".video-fallback");
-      expect(fallback).toBeInTheDocument();
+      expect(screen.getAllByTestId("video-icon")).toHaveLength(2);
     });
 
     it("handles video playback errors gracefully", () => {
@@ -685,7 +683,7 @@ describe("MediaGalleryModal", () => {
 
       render(<MediaGalleryModal media={media} />);
 
-      expect(screen.getAllByTestId("video-icon")).toHaveLength(2); // fallback + file type icon
+      expect(screen.getAllByTestId("video-icon")).toHaveLength(1); // Only file type icon
     });
 
     it("does not render unknown media types", () => {

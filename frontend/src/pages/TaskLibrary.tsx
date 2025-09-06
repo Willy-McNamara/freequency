@@ -38,6 +38,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { usePageTracking } from "../hooks/useAnalytics";
 import { apiClient } from "../services/auth";
+import { useAuth } from "../components/auth/AuthProvider";
 
 const TaskLibrary: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -62,7 +63,7 @@ const TaskLibrary: React.FC = () => {
   const previousFilterState = useRef<string>("");
   const hasProcessedUrlParam = useRef(false);
   const shouldFetchAfterUrlParam = useRef(false);
-  // const { user } = useAuth();
+  const { user } = useAuth();
   const [userOptions, setUserOptions] = useState<FilterOption[]>([]);
 
   const [activeFilters, setActiveFilters] = useState<FilterState[]>(() => [
@@ -132,13 +133,26 @@ const TaskLibrary: React.FC = () => {
           .filter((option) => option.checked)
           .map((option) => option.label);
 
+        // Check if "Me" is selected and add current user's display name
+        const meSelected = userFilter.options.some(
+          (option) => option.id === "me" && option.checked
+        );
+
         // Check if "Following" is selected
         const followingSelected = selectedUsers.includes("Following");
+
         if (followingSelected) {
           params.append("following", "true");
         } else if (selectedUsers.length > 0) {
           // Only add users param if not using following filter
           params.append("users", selectedUsers.join(","));
+        }
+
+        // If "Me" is selected, add current user's display name to users param
+        if (meSelected && user?.displayName) {
+          const currentUsers = selectedUsers.filter((name) => name !== "Me");
+          const allUsers = [...currentUsers, user.displayName];
+          params.set("users", allUsers.join(","));
         }
       }
 

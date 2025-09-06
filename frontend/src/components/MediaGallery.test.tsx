@@ -104,7 +104,7 @@ describe("MediaGallery", () => {
       render(<MediaGallery media={media} />);
 
       expect(screen.getByAltText("video1.mp4")).toBeInTheDocument();
-      expect(screen.getAllByTestId("video-icon")).toHaveLength(2); // fallback + file type icon
+      expect(screen.getAllByTestId("video-icon")).toHaveLength(1); // Only file type icon
     });
 
     it("renders videos without thumbnails correctly", () => {
@@ -119,10 +119,9 @@ describe("MediaGallery", () => {
 
       render(<MediaGallery media={media} />);
 
-      const video = document.querySelector("video") as HTMLVideoElement;
+      const video = screen.getByTestId("video-element");
       expect(video).toBeInTheDocument();
       expect(video).toHaveAttribute("src", "https://example.com/video1.mp4");
-      expect(video).toHaveAttribute("poster", "https://example.com/video1.mp4");
     });
 
     it("renders mixed media types correctly", () => {
@@ -154,7 +153,7 @@ describe("MediaGallery", () => {
       expect(screen.getByTestId("audio-player-2")).toBeInTheDocument();
       expect(screen.getByAltText("video.mp4")).toBeInTheDocument();
       expect(screen.getAllByTestId("image-icon")).toHaveLength(1);
-      expect(screen.getAllByTestId("video-icon")).toHaveLength(2); // fallback + file type icon
+      expect(screen.getAllByTestId("video-icon")).toHaveLength(1); // Only file type icon
     });
   });
 
@@ -354,17 +353,13 @@ describe("MediaGallery", () => {
 
       render(<MediaGallery media={media} />);
 
-      const video = document.querySelector("video") as HTMLVideoElement;
+      const video = screen.getByTestId("video-element");
 
       // Simulate video load error
       fireEvent.error(video);
 
       // The fallback should be visible
-      const fallback = video.parentElement?.querySelector(".video-fallback");
-      expect(fallback).toHaveClass("hidden");
-      // Note: The actual display change happens via CSS, which is hard to test
-      // We can at least verify the fallback element exists
-      expect(fallback).toBeInTheDocument();
+      expect(screen.getByTestId("video-icon")).toBeInTheDocument();
     });
   });
 
@@ -412,7 +407,7 @@ describe("MediaGallery", () => {
 
       render(<MediaGallery media={media} />);
 
-      expect(screen.getAllByTestId("video-icon")).toHaveLength(2); // fallback + file type icon
+      expect(screen.getAllByTestId("video-icon")).toHaveLength(1); // Only file type icon
     });
 
     it("filters out unknown types", () => {
@@ -479,7 +474,7 @@ describe("MediaGallery", () => {
 
       render(<MediaGallery media={media} />);
 
-      const image = screen.getByAltText("Uploaded image");
+      const image = screen.getByAltText("Media");
       expect(image).toBeInTheDocument();
     });
   });

@@ -20,19 +20,22 @@ vi.mock("./ui/button", () => ({
     variant,
     className,
     onClick,
+    disabled,
     ...props
   }: {
     children: React.ReactNode;
     variant?: string;
     className?: string;
     onClick?: () => void;
+    disabled?: boolean;
     [key: string]: any;
   }) => (
     <button
       data-testid="button"
-      data-variant={variant}
+      data-variant={variant || "default"}
       className={className}
       onClick={onClick}
+      disabled={disabled}
       {...props}
     >
       {children}
@@ -293,7 +296,7 @@ describe("FilterBar", () => {
     );
   });
 
-  it("handles cancel", () => {
+  it("handles clear filters", () => {
     render(
       <FilterBar filters={defaultFilters} onFilterChange={mockOnFilterChange} />
     );
@@ -303,10 +306,71 @@ describe("FilterBar", () => {
 
     expect(screen.getByTestId("dialog")).toBeInTheDocument();
 
-    const cancelButton = screen.getByText("Cancel");
-    fireEvent.click(cancelButton);
+    const clearButton = screen.getByText("Clear");
+    // Initially, the user filter has one checked option, so Clear should be enabled
+    expect(clearButton).not.toBeDisabled();
 
-    expect(screen.queryByTestId("dialog")).not.toBeInTheDocument();
+    // Click clear to reset all options
+    fireEvent.click(clearButton);
+
+    // Verify all checkboxes are unchecked
+    const checkboxes = screen.getAllByTestId("checkbox");
+    checkboxes.forEach((checkbox) => {
+      expect(checkbox).not.toBeChecked();
+    });
+
+    // After clearing, no options are checked, so Clear should be disabled
+    expect(clearButton).toBeDisabled();
+  });
+
+  it("clear button is properly styled and positioned", () => {
+    render(
+      <FilterBar filters={defaultFilters} onFilterChange={mockOnFilterChange} />
+    );
+
+    const buttons = screen.getAllByTestId("button");
+    fireEvent.click(buttons[0]); // user filter
+
+    const clearButton = screen.getByText("Clear");
+    const applyButton = screen.getByText("Apply");
+
+    // Verify both buttons are present and styled correctly
+    expect(clearButton).toBeInTheDocument();
+    expect(applyButton).toBeInTheDocument();
+
+    // Verify clear button has outline variant (secondary styling)
+    expect(clearButton).toHaveAttribute("data-variant", "outline");
+
+    // Verify apply button has default variant (primary styling)
+    expect(applyButton).toHaveAttribute("data-variant", "default");
+  });
+
+  it("clear functionality works with multiple checked options", () => {
+    render(
+      <FilterBar filters={defaultFilters} onFilterChange={mockOnFilterChange} />
+    );
+
+    const buttons = screen.getAllByTestId("button");
+    fireEvent.click(buttons[0]); // user filter
+
+    const checkboxes = screen.getAllByTestId("checkbox");
+
+    // Check multiple options
+    fireEvent.click(checkboxes[0]);
+    fireEvent.click(checkboxes[1]);
+
+    const clearButton = screen.getByText("Clear");
+    expect(clearButton).not.toBeDisabled();
+
+    // Clear all options
+    fireEvent.click(clearButton);
+
+    // Verify all checkboxes are unchecked
+    checkboxes.forEach((checkbox) => {
+      expect(checkbox).not.toBeChecked();
+    });
+
+    expect(clearButton).toBeDisabled();
   });
 
   it("applies custom className", () => {
