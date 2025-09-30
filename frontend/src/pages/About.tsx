@@ -8,6 +8,9 @@ import {
 } from "../components/ui/card";
 import { usePageTracking } from "../hooks/useAnalytics";
 
+// Import version from package.json
+import packageJson from "../../package.json";
+
 const aboutSections = [
   {
     title: "What is Freequency?",
@@ -84,7 +87,8 @@ export default function About() {
         </Section>
       ))}
       <p className="text-muted-foreground mt-8 text-sm text-center">
-        Version 1.0.0 &mdash; &copy; {new Date().getFullYear()} Freequency
+        Version {packageJson.version} &mdash; &copy; {new Date().getFullYear()}{" "}
+        Freequency
       </p>
     </Container>
   );
