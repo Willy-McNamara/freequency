@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router";
 import { useAuth } from "../components/auth/AuthProvider";
 import { Button } from "../components/ui/button";
 import { CardContent, CardHeader } from "../components/ui/card";
@@ -69,6 +70,8 @@ const aboutSections = [
 
 const Login: React.FC = () => {
   const { login } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [modal, setModal] = useState<null | "terms" | "privacy" | "about">(
     null
   );
@@ -85,6 +88,18 @@ const Login: React.FC = () => {
       login();
     }
   };
+
+  // Handle URL-based modal opening
+  useEffect(() => {
+    const path = location.pathname;
+    if (path === "/login/termsofservice") {
+      setModal("terms");
+    } else if (path === "/login/privacypolicy") {
+      setModal("privacy");
+    } else {
+      setModal(null);
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
     const loadDoc = async () => {
@@ -178,22 +193,22 @@ const Login: React.FC = () => {
             <p>By continuing, you agree to our</p>
             <p>
               <a
-                href="#"
+                href="/login/termsofservice"
                 className="text-primary hover:underline cursor-pointer"
                 onClick={(e) => {
                   e.preventDefault();
-                  setModal("terms");
+                  navigate("/login/termsofservice");
                 }}
               >
                 Terms of Service
               </a>{" "}
               and{" "}
               <a
-                href="#"
+                href="/login/privacypolicy"
                 className="text-primary hover:underline cursor-pointer"
                 onClick={(e) => {
                   e.preventDefault();
-                  setModal("privacy");
+                  navigate("/login/privacypolicy");
                 }}
               >
                 Privacy Policy
@@ -201,7 +216,15 @@ const Login: React.FC = () => {
             </p>
           </div>
         </CardContent>
-        <Dialog open={modal !== null} onOpenChange={() => setModal(null)}>
+        <Dialog
+          open={modal !== null}
+          onOpenChange={(open) => {
+            if (!open) {
+              // Navigate back to /login when modal is closed
+              navigate("/login");
+            }
+          }}
+        >
           <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle>

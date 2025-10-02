@@ -104,8 +104,10 @@ ReactDOM.createRoot(root).render(
       <AuthProvider>
         <AudioProvider>
           <Routes>
-            {/* Public route */}
+            {/* Public routes */}
             <Route path="/login" element={<Login />} />
+            <Route path="/login/termsofservice" element={<Login />} />
+            <Route path="/login/privacypolicy" element={<Login />} />
 
             {/* Protected routes */}
             <Route
