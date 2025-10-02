@@ -11,10 +11,67 @@ import {
   DialogTitle,
 } from "../components/ui/dialog";
 import { usePageTracking } from "../hooks/useAnalytics";
+import packageJson from "../../package.json";
+
+const aboutSections = [
+  {
+    title: "What is Freequency?",
+    content: (
+      <>
+        <strong>Freequency</strong> is a platform designed to help musicians
+        track their practice and celebrate it with their community.
+      </>
+    ),
+  },
+  {
+    title: "Practice Sessions",
+    content: (
+      <>
+        Whenever you practice, start a session in the <strong>Practice</strong>{" "}
+        tab. You can keep notes in the session, add trackable tags, and use
+        "Tasks".
+      </>
+    ),
+  },
+  {
+    title: "Tasks & Task Library",
+    content: (
+      <>
+        Tasks are repeatable parts of your practice routine. In the{" "}
+        <strong>Task Library</strong> you can see <strong>Tasks</strong> made by
+        musicians across the platform and make your own! You can add them to
+        your practice session where you'll be able to save Task-specific notes
+        and tags.
+      </>
+    ),
+  },
+  {
+    title: "Feed & Growth",
+    content: (
+      <>
+        Check out sessions from your fellow musicians in the filterable{" "}
+        <strong>Feed</strong>, and visit the <strong>Growth</strong> page to set
+        goals or see stats around your practice time (tracked using the tags!).
+      </>
+    ),
+  },
+  {
+    title: "Profile",
+    content: (
+      <>
+        Visit the <strong>Profile</strong> page to describe who you are as a
+        musician and edit some basic data. See other user's profiles by
+        searching for them or clicking their name in posts and tasks.
+      </>
+    ),
+  },
+];
 
 const Login: React.FC = () => {
   const { login } = useAuth();
-  const [modal, setModal] = useState<null | "terms" | "privacy">(null);
+  const [modal, setModal] = useState<null | "terms" | "privacy" | "about">(
+    null
+  );
   const [docText, setDocText] = useState<string>("");
 
   // Track page view for analytics
@@ -85,6 +142,13 @@ const Login: React.FC = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <Button
+            onClick={() => setModal("about")}
+            className="w-full bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+            variant="outline"
+          >
+            About
+          </Button>
+          <Button
             onClick={handleGoogleLogin}
             className="w-full bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
             variant="outline"
@@ -141,13 +205,34 @@ const Login: React.FC = () => {
           <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle>
-                {modal === "terms" ? "Terms of Service" : "Privacy Policy"}
+                {modal === "terms"
+                  ? "Terms of Service"
+                  : modal === "privacy"
+                  ? "Privacy Policy"
+                  : "Welcome!"}
               </DialogTitle>
             </DialogHeader>
             <div className="mt-2 max-h-[70vh] overflow-y-auto pr-2">
-              <div className="prose max-w-none text-left text-sm">
-                <div dangerouslySetInnerHTML={renderMarkdown(docText)} />
-              </div>
+              {modal === "about" ? (
+                <div className="space-y-6">
+                  {aboutSections.map((section) => (
+                    <div key={section.title} className="space-y-2">
+                      <h3 className="text-lg font-semibold text-primary">
+                        {section.title}
+                      </h3>
+                      <p className="text-base">{section.content}</p>
+                    </div>
+                  ))}
+                  <p className="text-muted-foreground mt-8 text-sm text-center">
+                    Version {packageJson.version} &mdash; &copy;{" "}
+                    {new Date().getFullYear()} Freequency
+                  </p>
+                </div>
+              ) : (
+                <div className="prose max-w-none text-left text-sm">
+                  <div dangerouslySetInnerHTML={renderMarkdown(docText)} />
+                </div>
+              )}
             </div>
           </DialogContent>
         </Dialog>
