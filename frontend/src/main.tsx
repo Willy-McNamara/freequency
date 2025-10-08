@@ -84,6 +84,8 @@ const PostView = lazy(() =>
   import("./pages/PostView").then((m) => ({ default: m.PostView }))
 );
 const About = lazy(() => import("./pages/About"));
+const TermsOfService = lazy(() => import("./pages/TermsOfService"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const SessionProvider = lazy(() =>
   import("./components/SessionContext").then((m) => ({
     default: m.SessionProvider,
@@ -106,8 +108,22 @@ ReactDOM.createRoot(root).render(
           <Routes>
             {/* Public routes */}
             <Route path="/login" element={<Login />} />
-            <Route path="/login/termsofservice" element={<Login />} />
-            <Route path="/login/privacypolicy" element={<Login />} />
+            <Route
+              path="/legal/terms"
+              element={
+                <Suspense fallback={<LoadingScreen />}>
+                  <TermsOfService />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/legal/privacy"
+              element={
+                <Suspense fallback={<LoadingScreen />}>
+                  <PrivacyPolicy />
+                </Suspense>
+              }
+            />
 
             {/* Protected routes */}
             <Route

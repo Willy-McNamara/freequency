@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router";
+import React, { useState } from "react";
+import { useNavigate } from "react-router";
 import { useAuth } from "../components/auth/AuthProvider";
 import { Button } from "../components/ui/button";
 import { CardContent, CardHeader } from "../components/ui/card";
@@ -70,12 +70,8 @@ const aboutSections = [
 
 const Login: React.FC = () => {
   const { login } = useAuth();
-  const location = useLocation();
   const navigate = useNavigate();
-  const [modal, setModal] = useState<null | "terms" | "privacy" | "about">(
-    null
-  );
-  const [docText, setDocText] = useState<string>("");
+  const [showAbout, setShowAbout] = useState(false);
 
   // Track page view for analytics
   usePageTracking("Login");
@@ -87,55 +83,6 @@ const Login: React.FC = () => {
     } else {
       login();
     }
-  };
-
-  // Handle URL-based modal opening
-  useEffect(() => {
-    const path = location.pathname;
-    if (path === "/login/termsofservice") {
-      setModal("terms");
-    } else if (path === "/login/privacypolicy") {
-      setModal("privacy");
-    } else {
-      setModal(null);
-    }
-  }, [location.pathname]);
-
-  useEffect(() => {
-    const loadDoc = async () => {
-      if (!modal) return;
-      const path = modal === "terms" ? "/legal/terms.md" : "/legal/privacy.md";
-      try {
-        const resp = await fetch(path, { cache: "no-store" });
-        const text = await resp.text();
-        setDocText(text);
-      } catch {
-        setDocText("Failed to load document. Please try again later.");
-      }
-    };
-    loadDoc();
-  }, [modal]);
-
-  const renderMarkdown = (md: string) => {
-    // Minimal markdown to HTML conversion for headings/paragraphs/lists.
-    // This keeps bundle small and avoids adding a new dependency.
-    let html = md
-      .replace(/^###\s(.+)$/gim, "<h3>$1</h3>")
-      .replace(/^##\s(.+)$/gim, "<h2>$1</h2>")
-      .replace(/^#\s(.+)$/gim, "<h1>$1</h1>")
-      .replace(/^-\s(.+)$/gim, "<li>$1</li>")
-      .replace(/^\*\*(.+)\*\*/gim, "<strong>$1</strong>")
-      .replace(/\*\*(.+?)\*\*/gim, "<strong>$1</strong>")
-      .replace(/\*(.+?)\*/gim, "<em>$1</em>")
-      .replace(/\n\n/g, "<br/><br/>");
-
-    // Wrap loose list items into <ul>
-    html = html.replace(
-      /(<li>[^<]*<\/li>\s*)+/gim,
-      (match) => `<ul>${match}</ul>`
-    );
-
-    return { __html: html };
   };
 
   return (
@@ -157,7 +104,7 @@ const Login: React.FC = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <Button
-            onClick={() => setModal("about")}
+            onClick={() => setShowAbout(true)}
             className="w-full bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
             variant="outline"
           >
@@ -193,22 +140,22 @@ const Login: React.FC = () => {
             <p>By continuing, you agree to our</p>
             <p>
               <a
-                href="/login/termsofservice"
+                href="/legal/terms"
                 className="text-primary hover:underline cursor-pointer"
                 onClick={(e) => {
                   e.preventDefault();
-                  navigate("/login/termsofservice");
+                  navigate("/legal/terms");
                 }}
               >
                 Terms of Service
               </a>{" "}
               and{" "}
               <a
-                href="/login/privacypolicy"
+                href="/legal/privacy"
                 className="text-primary hover:underline cursor-pointer"
                 onClick={(e) => {
                   e.preventDefault();
-                  navigate("/login/privacypolicy");
+                  navigate("/legal/privacy");
                 }}
               >
                 Privacy Policy
@@ -216,46 +163,26 @@ const Login: React.FC = () => {
             </p>
           </div>
         </CardContent>
-        <Dialog
-          open={modal !== null}
-          onOpenChange={(open) => {
-            if (!open) {
-              // Navigate back to /login when modal is closed
-              navigate("/login");
-            }
-          }}
-        >
+        <Dialog open={showAbout} onOpenChange={setShowAbout}>
           <DialogContent className="max-w-lg">
             <DialogHeader>
-              <DialogTitle>
-                {modal === "terms"
-                  ? "Terms of Service"
-                  : modal === "privacy"
-                  ? "Privacy Policy"
-                  : "Welcome!"}
-              </DialogTitle>
+              <DialogTitle>Welcome!</DialogTitle>
             </DialogHeader>
             <div className="mt-2 max-h-[70vh] overflow-y-auto pr-2">
-              {modal === "about" ? (
-                <div className="space-y-6">
-                  {aboutSections.map((section) => (
-                    <div key={section.title} className="space-y-2">
-                      <h3 className="text-lg font-semibold text-primary">
-                        {section.title}
-                      </h3>
-                      <p className="text-base">{section.content}</p>
-                    </div>
-                  ))}
-                  <p className="text-muted-foreground mt-8 text-sm text-center">
-                    Version {packageJson.version} &mdash; &copy;{" "}
-                    {new Date().getFullYear()} Freequency
-                  </p>
-                </div>
-              ) : (
-                <div className="prose max-w-none text-left text-sm">
-                  <div dangerouslySetInnerHTML={renderMarkdown(docText)} />
-                </div>
-              )}
+              <div className="space-y-6">
+                {aboutSections.map((section) => (
+                  <div key={section.title} className="space-y-2">
+                    <h3 className="text-lg font-semibold text-primary">
+                      {section.title}
+                    </h3>
+                    <p className="text-base">{section.content}</p>
+                  </div>
+                ))}
+                <p className="text-muted-foreground mt-8 text-sm text-center">
+                  Version {packageJson.version} &mdash; &copy;{" "}
+                  {new Date().getFullYear()} Freequency
+                </p>
+              </div>
             </div>
           </DialogContent>
         </Dialog>
