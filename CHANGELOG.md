@@ -4,7 +4,21 @@ All notable changes to Freequency v3 will be documented in this file.
 
 ## [Unreleased]
 
-## [3.0.2] - 2025-01-26
+## [3.0.3] - 2025-10-11
+
+### Added
+
+- For Google Auth requirements, formatted pages for Privacy Policy and Terms of Service
+
+### Changed
+
+- Removed modals from Login for Privacy Policy and Terms of Service
+
+### Fixed
+
+- N/A
+
+## [3.0.2] - 2025-10-3
 
 ### Added
 
@@ -18,7 +32,7 @@ All notable changes to Freequency v3 will be documented in this file.
 
 - Modals now auto-open when accessing direct URLs for better Google Branding compliance
 
-## [3.0.1] - 2025-01-26
+## [3.0.1] - 2025-9-28
 
 ### Added
 
