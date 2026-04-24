@@ -57,6 +57,11 @@ services:
     networks:
       - app-network
     restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
     healthcheck:
       test:
         [
